@@ -997,8 +997,8 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("open-year7").addEventListener("click", () => showView("year7-view"));
 
   try {
-    Object.entries(YEARS).forEach(([y, c]) => { renderYear(y, c); setupForm(y); });
-    ["year5", "year6", "year7"].forEach(y => document.getElementById("back-" + y).addEventListener("click", () => showView("menu-view")));
+    Object.entries(YEARS).forEach(([y, c]) => { if (!document.getElementById(y + "-view")) return; renderYear(y, c); setupForm(y); });   // a year without a page in index.html is simply skipped
+    ["year5", "year6", "year7"].forEach(y => { const back = document.getElementById("back-" + y); if (back) back.addEventListener("click", () => showView("menu-view")); });
   } catch (err) { console.error("Form setup failed:", err); }
 
   try { setupOutbox(); } catch (err) { console.error("Outbox setup failed:", err); }
