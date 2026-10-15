@@ -49,6 +49,65 @@
       .menu-hub,.menu-actions,.menu-right,.menu-extra{order:0}
     }
     @media(max-width:640px){.menu-buttons{grid-template-columns:1fr}}
+    /* ===== Year picker: a dropdown tile + one big button that changes colour with the choice ===== */
+    @property --c1{syntax:"<color>";inherits:true;initial-value:#fff37b}
+    @property --c2{syntax:"<color>";inherits:true;initial-value:#67e8f9}
+    @property --ink{syntax:"<color>";inherits:true;initial-value:#073d67}
+    @property --ink2{syntax:"<color>";inherits:true;initial-value:#155b83}
+    @property --acc{syntax:"<color>";inherits:true;initial-value:#076eaa}
+    .yp{align-items:stretch}
+    .yp-tile{transition:--c1 .5s,--c2 .5s;position:relative;z-index:4;display:flex;flex-direction:column;gap:.55rem;min-height:210px;padding:1.1rem 1.3rem;color:var(--t-label)}
+    .yp-step{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#79ebdd}
+    .yp-h{margin:0;font-family:Fraunces,Georgia,serif;font-weight:700;font-size:22px;line-height:1.2;color:var(--t-title)}
+    .yp-dd{position:relative;margin-top:.35rem}
+    .yp-btn{display:flex;align-items:center;gap:.7rem;width:100%;padding:.8rem 1rem;border-radius:16px;border:1px solid var(--edge);background:rgba(255,255,255,.12);color:var(--t-title);font:inherit;font-size:18px;font-weight:700;cursor:pointer;text-align:left;transition:background .2s,border-color .2s}
+    .yp-btn:hover,.yp-btn[aria-expanded="true"]{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.5)}
+    .yp-btn:focus-visible{outline:3px solid #79ebdd;outline-offset:2px}
+    .yp-btn span{flex:1}
+    .yp-chev{flex:none;transition:transform .25s ease}
+    .yp-btn[aria-expanded="true"] .yp-chev{transform:rotate(180deg)}
+    .yp-dot{flex:none;width:16px;height:16px;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.5),0 0 14px var(--dg,transparent);background:linear-gradient(135deg,var(--c1),var(--c2))}
+    .yp-tile[data-y="5"]{--c1:#efe4ff;--c2:#b79af7;--dg:rgba(183,154,247,.8)}
+    .yp-tile[data-y="6"]{--c1:#fff37b;--c2:#67e8f9;--dg:rgba(103,232,249,.7)}
+    .yp-tile[data-y="7"]{--c1:#1e4f96;--c2:#3179b9;--dg:rgba(49,121,185,.9)}
+    .yp-list{position:absolute;left:0;right:0;top:calc(100% + 8px);margin:0;padding:6px;list-style:none;border-radius:18px;border:1px solid rgba(255,255,255,.3);background:rgba(8,24,64,.96);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:0 22px 50px rgba(1,10,37,.55);transform-origin:top;animation:ypOpen .18s ease-out}
+    .yp-list[hidden]{display:none}
+    @keyframes ypOpen{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
+    .yp-list li{display:flex;align-items:center;gap:.75rem;padding:.7rem .8rem;border-radius:12px;color:#eef5ff;cursor:pointer;font-size:16px}
+    .yp-list li b{flex:1;font-weight:700}
+    .yp-list li span{font-size:12px;letter-spacing:.1em;color:#9fb3da}
+    .yp-list li:hover,.yp-list li.hl{background:rgba(255,255,255,.12)}
+    .yp-list li[aria-selected="true"]{background:rgba(121,235,221,.16)}
+    .yp-list li[aria-selected="true"]::after{content:"✓";color:#79ebdd;font-weight:800}
+    .yp-list .d5{--c1:#efe4ff;--c2:#b79af7}.yp-list .d6{--c1:#fff37b;--c2:#67e8f9}.yp-list .d7{--c1:#1e4f96;--c2:#3179b9}
+    .yp-hint{margin-top:auto;font-size:13px;color:var(--t-help)}
+    .yp-go{background:linear-gradient(135deg,var(--c1),var(--c2));color:var(--ink);transition:--c1 .65s ease,--c2 .65s ease,--ink .65s ease,--ink2 .65s ease,--acc .65s ease,transform .2s ease,box-shadow .2s ease;min-height:210px!important;display:flex;flex-direction:column;justify-content:center}
+    .yp-go[data-y="5"]{--c1:#e2d0ff;--c2:#a183ee;--ink:#2a0f5e;--ink2:#432a7d;--acc:#4c1d95}
+    .yp-go[data-y="6"]{--c1:#fff37b;--c2:#67e8f9;--ink:#073d67;--ink2:#155b83;--acc:#076eaa}
+    .yp-go[data-y="7"]{--c1:#1e4f96;--c2:#3179b9;--ink:#f4f9ff;--ink2:#d6e4f7;--acc:#9decE5}
+    .yp-k{color:var(--acc);font-size:13px;transition:opacity .18s ease}
+    .yp-t{color:var(--ink);font-weight:700;font-size:34px;line-height:1.1;transition:opacity .18s ease}
+    .yp-d{color:var(--ink2);font-size:14px;transition:opacity .18s ease}
+    .yp-c{color:var(--ink);font-size:15px;transition:opacity .18s ease}
+    .yp-go.swap .yp-txt{opacity:0}
+    @media(max-width:640px){.yp-tile,.yp-go{min-height:0!important}.yp-hint{display:none}}
+    @media(prefers-reduced-motion:reduce){.yp-go,.yp-dot,.yp-chev,.yp-txt{transition:none!important}.yp-list{animation:none}}
+    /* ---- Variant B: segmented year switcher ---- */
+    .yp{grid-template-columns:1fr!important}
+    .yp-seg{position:relative;display:grid;grid-template-columns:repeat(3,1fr);padding:6px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid var(--edge);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 14px 40px rgba(1,10,37,.3),inset 0 1px 0 rgba(255,255,255,.14)}
+    .yp-thumb{position:absolute;top:6px;bottom:6px;left:6px;width:calc((100% - 12px)/3);border-radius:999px;background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 6px 20px var(--dg);transition:transform .45s cubic-bezier(.3,1.3,.5,1),--c1 .5s,--c2 .5s,box-shadow .5s}
+    .yp-seg[data-y="5"]{--c1:#e2d0ff;--c2:#a183ee;--dg:rgba(161,131,238,.6)}
+    .yp-seg[data-y="6"]{--c1:#fff37b;--c2:#67e8f9;--dg:rgba(103,232,249,.5)}
+    .yp-seg[data-y="7"]{--c1:#1e4f96;--c2:#3179b9;--dg:rgba(49,121,185,.6)}
+    .yp-seg[data-y="5"] .yp-thumb{transform:translateX(0)}
+    .yp-seg[data-y="6"] .yp-thumb{transform:translateX(100%)}
+    .yp-seg[data-y="7"] .yp-thumb{transform:translateX(200%)}
+    .yp-seg button{position:relative;z-index:1;padding:.65rem .5rem;border:0;border-radius:999px;background:none;font:inherit;font-size:16px;font-weight:700;color:#d6e4f7;cursor:pointer;transition:color .3s}
+    .yp-seg button[aria-checked="true"]{color:var(--sel,#073d67)}
+    .yp-seg[data-y="7"] button[aria-checked="true"]{color:#f4f9ff}
+    .yp-seg[data-y="5"] button[aria-checked="true"]{color:#2a0f5e}
+    .yp-seg button:focus-visible{outline:3px solid #79ebdd;outline-offset:2px}
+    .yp-go{min-height:150px!important}
     .meet-card{width:100%;display:flex;flex-direction:column;justify-content:space-between;gap:.7rem;padding:1.1rem 1.5rem;color:var(--t-label)}
     .meet-title{margin:0;font-size:22px;font-weight:700;color:var(--t-title)}
     .meet-head{display:flex;align-items:baseline;justify-content:space-between;gap:1rem}
@@ -233,28 +292,26 @@
       </div>
       <div class="menu-actions">
         <section id="feedback-week" class="glass-panel fw-card rise rounded-[24px]" style="--i:3" aria-live="polite" aria-label="Feedback schools for the coming Monday"></section>
-        <section class="menu-buttons" aria-label="Choose a feedback year">
-          <!-- YEAR 5 button is switched off for now. To bring it back, delete this comment line and the closing line under the button.
-          <button id="open-year5" type="button" class="menu-option rise rounded-[26px] px-5 py-4 text-left shadow-2xl" style="background:linear-gradient(135deg,#8b5cf6,#5b21b6);color:#faf5ff;--i:4;">
-            <span class="relative z-10 block font-bold uppercase tracking-[.14em]" style="color:#e9d5ff;font-size:13px;">Fresh starts, big ideas</span>
-            <span class="relative z-10 mt-2 block font-semibold" style="color:#fff;font-weight:700;font-size:30px;">Year 5</span>
-            <span class="relative z-10 mt-2 block leading-relaxed" style="color:#ede4ff;font-size:14px;">Share your thoughtful reflections on your Year 5 IPT teaching experience.</span>
-            <span class="relative z-10 mt-3 inline-flex items-center gap-2 font-bold"><i data-lucide="star" aria-hidden="true"></i><span style="color:#fff;font-size:15px;">Give Year 5 feedback</span></span>
-          </button>
-          -->
-          <button id="open-year6" type="button" class="menu-option rise rounded-[26px] px-5 py-4 text-left shadow-2xl" style="background:linear-gradient(135deg,#fff37b,#67e8f9);color:#073d67;--i:5;">
-            <span class="relative z-10 block font-bold uppercase tracking-[.14em]" style="color:#076eaa;font-size:13px;">Bright ideas ahead</span>
-            <span class="relative z-10 mt-2 block font-semibold" style="color:#073d67;font-weight:700;font-size:30px;">Year 6</span>
-            <span class="relative z-10 mt-2 block leading-relaxed" style="color:#155b83;font-size:14px;">Share vibrant reflections on your Year 6 IPT teaching experience.</span>
-            <span class="relative z-10 mt-3 inline-flex items-center gap-2 font-bold"><i data-lucide="sparkles" aria-hidden="true"></i><span style="color:#073d67;font-size:15px;">Give Year 6 feedback</span></span>
-          </button>
-          <button id="open-year7" type="button" class="menu-option rise rounded-[26px] px-5 py-4 text-left shadow-2xl" style="background:linear-gradient(135deg,#1e4f96,#3179b9);color:#effcff;--i:6;">
-            <span class="relative z-10 block font-bold uppercase tracking-[.14em]" style="color:#9decE5;font-size:13px;">Reflect and refine</span>
-            <span class="relative z-10 mt-2 block font-semibold" style="color:#f4f9ff;font-weight:700;font-size:30px;">Year 7</span>
-            <span class="relative z-10 mt-2 block leading-relaxed" style="color:#d6e4f7;font-size:14px;">Click here to share your inspiring Year 7 IPT highlights.</span>
-            <span class="relative z-10 mt-3 inline-flex items-center gap-2 font-bold"><i data-lucide="arrow-right" aria-hidden="true"></i><span style="color:#effcff;font-size:15px;">Give Year 7 feedback</span></span>
+        <section class="menu-buttons yp" aria-label="Choose a feedback year">
+          <div class="yp-seg rise" style="--i:4" role="radiogroup" aria-label="Year group" data-y="6">
+            <span class="yp-thumb" aria-hidden="true"></span>
+            <button type="button" role="radio" data-year="5" aria-checked="false">Year 5</button>
+            <button type="button" role="radio" data-year="6" aria-checked="true">Year 6</button>
+            <button type="button" role="radio" data-year="7" aria-checked="false">Year 7</button>
+          </div>
+          <button id="yp-go" type="button" class="menu-option yp-go rise rounded-[26px] px-5 py-4 text-left shadow-2xl" style="--i:5" data-y="6">
+            <span class="yp-txt relative z-10 block font-bold uppercase tracking-[.14em] yp-k">Bright ideas ahead</span>
+            <span class="yp-txt relative z-10 mt-2 block font-semibold yp-t">Year 6</span>
+            <span class="yp-txt relative z-10 mt-2 block leading-relaxed yp-d">Share vibrant reflections on your Year 6 IPT teaching experience.</span>
+            <span class="yp-txt relative z-10 mt-3 inline-flex items-center gap-2 font-bold yp-c"><span class="yp-ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></span><span class="yp-cl">Give Year 6 feedback</span></span>
           </button>
         </section>
+        <!-- The three real year buttons stay here, hidden: the picker above presses the one you chose, so the Saturn animation and the forms work as before. -->
+        <div hidden>
+          <button id="open-year5" type="button" tabindex="-1"></button>
+          <button id="open-year6" type="button" tabindex="-1"></button>
+          <button id="open-year7" type="button" tabindex="-1"></button>
+        </div>
       </div>
     </div>
   </main>
@@ -418,6 +475,32 @@
       document.addEventListener("keydown", function (e) { if (intro && (e.key === "Escape" || e.key === "Enter" || e.key === " ")) skip(); });
       setTimeout(begin, 4000);   // safety nets
       setTimeout(done, 5000);
+    })();
+  </script>
+<script id="year-picker">
+    (function () {
+      var DATA = {
+        5: { k: "Fresh starts", d: "Share your thoughtful reflections on your Year 5 IPT teaching experience.", c: "Give Year 5 feedback" },
+        6: { k: "Bright ideas ahead", d: "Share vibrant reflections on your Year 6 IPT teaching experience.", c: "Give Year 6 feedback" },
+        7: { k: "Reflect and refine", d: "Click here to share your inspiring Year 7 IPT highlights.", c: "Give Year 7 feedback" }
+      };
+      var ic = function (p) { return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>'; };
+      var ICON = { 5: ic('<path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/>'), 6: ic('<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>'), 7: ic('<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>') };
+      var seg = document.querySelector(".yp-seg"), go = document.getElementById("yp-go"); if (!seg || !go) return;
+      var btns = [].slice.call(seg.querySelectorAll("button")), cur = 6, t = 0;
+      try { var sv = parseInt(localStorage.getItem("ipt-year"), 10); if (DATA[sv]) cur = sv; } catch (e) {}
+      function paint(y, instant) {
+        cur = y; seg.dataset.y = y; go.dataset.y = y;
+        btns.forEach(function (b) { var on = +b.dataset.year === y; b.setAttribute("aria-checked", String(on)); b.tabIndex = on ? 0 : -1; });
+        function put() { go.querySelector(".yp-k").textContent = DATA[y].k; go.querySelector(".yp-t").textContent = "Year " + y; go.querySelector(".yp-d").textContent = DATA[y].d; go.querySelector(".yp-cl").textContent = DATA[y].c; go.querySelector(".yp-ic").innerHTML = ICON[y]; go.classList.remove("swap"); }
+        clearTimeout(t); if (instant) put(); else { go.classList.add("swap"); t = setTimeout(put, 180); }
+      }
+      btns.forEach(function (b, i) {
+        b.addEventListener("click", function () { paint(+b.dataset.year); try { localStorage.setItem("ipt-year", String(cur)); } catch (e) {} });
+        b.addEventListener("keydown", function (e) { var d = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0; if (!d) return; e.preventDefault(); var n = btns[(i + d + 3) % 3]; n.focus(); n.click(); });
+      });
+      go.addEventListener("click", function () { var r = document.getElementById("open-year" + cur); if (r) r.click(); });
+      paint(cur, true);
     })();
   </script>
   <script id="saturn-transition">
