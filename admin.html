@@ -464,10 +464,11 @@
   var ROTA = CFG.rotation || {};
   var ROT6 = (Array.isArray(ROTA.year6) && ROTA.year6.length) ? ROTA.year6 : [["Antalya", "Ataşehir"], ["Bahçeşehir", "Bornova"], ["Bursa", "Çamlıca"], ["Çayyolu", "Çukurambar"], ["Esenşehir", "İncek"], ["Maslak", "Sancaktepe", "Kurtköy"]];
   var ROT7 = ROT6.slice().reverse(), CYCLE0 = ROTA.cycleStart || "2026-10-05";
+  var ROT5 = (Array.isArray(ROTA.year5) && ROTA.year5.length) ? ROTA.year5 : null;     // Year 5 only appears here once config.js has a year5 schedule
   function dayNo(ymd) { return Math.round(Date.parse(ymd + "T00:00:00Z") / 864e5); }
   function scheduleFor(mon) {      // schools scheduled for a Monday, or null before the rotation starts
     var w = dayNo(mon) - dayNo(CYCLE0); if (w < 0 || w % 7) return null;
-    var i = (w / 7) % ROT6.length; return { 6: ROT6[i], 7: ROT7[i] };
+    var i = (w / 7) % ROT6.length, r = { 6: ROT6[i], 7: ROT7[i] }; if (ROT5) r[5] = ROT5[(w / 7) % ROT5.length]; return r;
   }
   var missBuilt = false;
   function buildMissWeeks() {
@@ -485,7 +486,8 @@
     var sch = scheduleFor(mon);
     if (!sch) { note.textContent = "No schools are scheduled for this week."; return; }
     var week = all.filter(function (x) { return x._mon === mon; }), noSchool = week.filter(function (x) { return !x.school; }).length, total = 0, done = 0;
-    [6, 7].forEach(function (y) {
+    [5, 6, 7].forEach(function (y) {
+      if (!sch[y]) return;
       var rows = sch[y].map(function (name) { return { name: name, n: week.filter(function (x) { return x.year === y && x.school === name; }).length }; });
       rows.sort(function (a, b) { return (a.n ? 1 : 0) - (b.n ? 1 : 0) || a.name.localeCompare(b.name, "tr"); });   // waiting schools first
       var got = rows.filter(function (r) { return r.n; }).length; total += rows.length; done += got;
