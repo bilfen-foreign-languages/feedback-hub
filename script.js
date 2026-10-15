@@ -205,7 +205,7 @@ function renderYear(y, c) {
           <div class="min-w-0 sm:w-[300px] sm:flex-none"><label for="${y}-email" class="t-label mb-2 block">Email</label>
             <input id="${y}-email" class="field" type="email" required autocomplete="email" placeholder="Enter your school email address"></div>
           <div class="min-w-0 sm:w-[10rem] sm:flex-none"><label for="${y}-school" class="t-label mb-2 block">School</label>
-            <select id="${y}-school" class="field" required><option value="" selected disabled>Select your school</option>${SCHOOLS.map(n => `<option value="${n}">${n}</option>`).join("")}</select></div>
+            <select id="${y}-school" class="field" required><option value="" selected disabled>Select</option>${SCHOOLS.map(n => `<option value="${n}">${n}</option>`).join("")}</select></div>
           <div class="min-w-0 sm:w-[10rem] sm:flex-none"><label for="${y}-week" class="t-label mb-2 block">Week</label>
             <input id="${y}-week" class="field" type="text" inputmode="numeric" maxlength="3" required autocomplete="off" placeholder="No."></div>
           <p class="t-help min-w-0 max-w-xs text-sm leading-relaxed lg:flex-1">${c.emailHelp}</p>
