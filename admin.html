@@ -46,15 +46,37 @@
   .selbar[hidden]{display:none}
   .selbar b{font-size:15px}
   .selbar .linkbtn{background:none;border:0;color:var(--dim);font:inherit;text-decoration:underline;cursor:pointer;padding:.3rem .2rem}
-  .miss-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
-  .miss-head h2{margin:0;font-size:18px}
-  .miss-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:14px}
-  .miss-col h3{margin:0 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;gap:8px}
-  .miss-pills{display:flex;flex-wrap:wrap;gap:8px}
-  .pill{display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .8rem;border-radius:999px;font-size:14px;font-weight:600;border:1px solid}
-  .pill.ok{background:rgba(120,230,170,.13);border-color:rgba(120,230,170,.5);color:#bff3d6}
-  .pill.no{background:rgba(255,120,120,.14);border-color:rgba(255,150,150,.55);color:#ffd2d2}
-  .miss-note{margin:12px 0 0;font-size:13px}
+  .miss{margin:16px 0;padding:18px 20px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid var(--edge)}
+  .miss-head{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .miss-title{display:flex;align-items:center;gap:12px;min-width:0}
+  .miss-ico{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--teal),var(--blue));color:#06214e}
+  .miss-ico svg{width:20px;height:20px}
+  .miss-title h2{font-size:18px;line-height:1.2}
+  .miss-title p{font-size:13px;margin-top:2px}
+  .miss-pick{display:flex;align-items:center;gap:8px}
+  .miss-pick label{margin:0;white-space:nowrap}
+  .miss-pick select{width:auto;min-width:200px;padding:.5rem .8rem}
+  .miss-sum{display:flex;align-items:center;gap:14px;margin:16px 0 4px}
+  .miss-sum b{font-size:15px;white-space:nowrap}
+  .miss-sum b em{font-style:normal;color:var(--teal)}
+  .miss-bar{flex:1;height:10px;border-radius:999px;background:rgba(255,255,255,.14);overflow:hidden}
+  .miss-bar i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--teal),var(--blue));transition:width .45s cubic-bezier(.2,.8,.2,1)}
+  .miss-bar.full i{box-shadow:0 0 14px var(--blue)}
+  .miss-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:14px}
+  .miss-col{border:1px solid var(--edge);border-radius:14px;overflow:hidden;background:rgba(3,14,44,.28)}
+  .miss-col h3{margin:0;padding:.6rem .85rem;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;font-weight:600;color:var(--dim);background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.1)}
+  .miss-row{display:flex;align-items:center;gap:10px;padding:.55rem .85rem;font-size:14px;border-bottom:1px solid rgba(255,255,255,.07)}
+  .miss-row:last-child{border-bottom:0}
+  .miss-dot{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;line-height:1}
+  .miss-row .nm{flex:1;min-width:0;font-weight:600}
+  .miss-row .st{font-size:12.5px;white-space:nowrap}
+  .miss-row.ok .miss-dot{background:rgba(120,230,170,.2);color:var(--good);border:1px solid rgba(120,230,170,.55)}
+  .miss-row.ok .st{color:var(--good)}
+  .miss-row.no{background:rgba(255,120,120,.07)}
+  .miss-row.no .miss-dot{background:rgba(255,120,120,.18);color:var(--bad);border:1px solid rgba(255,150,150,.55)}
+  .miss-row.no .st{color:var(--bad);font-weight:600}
+  .miss-note{margin:14px 0 0;font-size:13px}
+  @media(max-width:560px){.miss-pick{width:100%}.miss-pick select{flex:1;min-width:0}}
   tr.row{cursor:pointer}
   tr.row:hover td{background:rgba(255,255,255,.06)}
   tr.detail td{background:rgba(3,14,44,.5);padding:1rem 1.2rem}
@@ -201,14 +223,18 @@
 
       <div class="stats" id="stats"></div>
 
-      <div class="card" id="missing">
+      <section class="miss" id="missing" aria-labelledby="miss-h">
         <div class="miss-head">
-          <div><h2>Schools yet to respond</h2><p class="dim" style="margin:.2rem 0 0;font-size:13px">Schools scheduled that week, checked against the School chosen on each response (counts responses sent Mon–Sun).</p></div>
-          <div><label for="miss-week">Week of (Monday)</label><select id="miss-week"></select></div>
+          <div class="miss-title">
+            <span class="miss-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V10l7-5 7 5v11"/><path d="M9 21v-6h6v6"/></svg></span>
+            <div><h2 id="miss-h">Schools yet to respond</h2><p class="dim">Scheduled schools checked against the School chosen on each response (Mon–Sun).</p></div>
+          </div>
+          <div class="miss-pick"><label for="miss-week">Week of</label><select id="miss-week"></select></div>
         </div>
+        <div class="miss-sum" id="miss-sum"><b id="miss-count"></b><span class="miss-bar" id="miss-bar"><i></i></span></div>
         <div class="miss-grid" id="miss-body"></div>
         <p class="dim miss-note" id="miss-note"></p>
-      </div>
+      </section>
 
       <div class="tablebox">
         <table>
@@ -454,22 +480,31 @@
   }
   function renderMissing() {
     if (!missBuilt) buildMissWeeks();
-    var mon = $("miss-week").value, body = $("miss-body"), note = $("miss-note"); body.textContent = ""; note.textContent = "";
+    var mon = $("miss-week").value, body = $("miss-body"), note = $("miss-note"), cnt = $("miss-count"), bar = $("miss-bar");
+    body.textContent = ""; note.textContent = ""; cnt.textContent = ""; bar.firstElementChild.style.width = "0"; bar.classList.remove("full");
     var sch = scheduleFor(mon);
     if (!sch) { note.textContent = "No schools are scheduled for this week."; return; }
-    var week = all.filter(function (x) { return x._mon === mon; }), noSchool = week.filter(function (x) { return !x.school; }).length, missing = 0;
+    var week = all.filter(function (x) { return x._mon === mon; }), noSchool = week.filter(function (x) { return !x.school; }).length, total = 0, done = 0;
     [6, 7].forEach(function (y) {
+      var rows = sch[y].map(function (name) { return { name: name, n: week.filter(function (x) { return x.year === y && x.school === name; }).length }; });
+      rows.sort(function (a, b) { return (a.n ? 1 : 0) - (b.n ? 1 : 0) || a.name.localeCompare(b.name, "tr"); });   // waiting schools first
+      var got = rows.filter(function (r) { return r.n; }).length; total += rows.length; done += got;
       var col = document.createElement("div"); col.className = "miss-col";
-      var h = document.createElement("h3"), got = 0, pills = document.createElement("div"); pills.className = "miss-pills";
-      sch[y].forEach(function (name) {
-        var n = week.filter(function (x) { return x.year === y && x.school === name; }).length, p = document.createElement("span");
-        p.className = "pill " + (n ? "ok" : "no"); p.textContent = (n ? "✓ " : "✗ ") + name + (n ? " · " + n : "");
-        if (n) got++; else missing++; pills.append(p);
+      var h = document.createElement("h3"), tag = document.createElement("span"); tag.className = "tag y" + y; tag.textContent = "Year " + y;
+      var c = document.createElement("span"); c.textContent = got + " of " + rows.length + " responded"; h.append(tag, c); col.append(h);
+      rows.forEach(function (r) {
+        var row = document.createElement("div"); row.className = "miss-row " + (r.n ? "ok" : "no");
+        var dot = document.createElement("span"); dot.className = "miss-dot"; dot.textContent = r.n ? "✓" : "!";
+        var nm = document.createElement("span"); nm.className = "nm"; nm.textContent = r.name;
+        var st = document.createElement("span"); st.className = "st"; st.textContent = r.n ? r.n + (r.n === 1 ? " response" : " responses") : "Waiting";
+        row.append(dot, nm, st); col.append(row);
       });
-      h.append("Year " + y); var c = document.createElement("span"); c.textContent = got + " of " + sch[y].length + " responded"; h.append(c);
-      col.append(h, pills); body.append(col);
+      body.append(col);
     });
-    note.textContent = (missing ? missing + (missing === 1 ? " school has" : " schools have") + " not responded yet." : "Every scheduled school has responded.") +
+    var left = total - done;
+    cnt.textContent = ""; var em = document.createElement("em"); em.textContent = done; cnt.append(em, " of " + total + " schools responded");
+    bar.firstElementChild.style.width = (total ? done / total * 100 : 0) + "%"; bar.classList.toggle("full", total > 0 && !left);
+    note.textContent = (left ? left + (left === 1 ? " school is" : " schools are") + " still waiting." : "Every scheduled school has responded.") +
       (noSchool ? " " + noSchool + (noSchool === 1 ? " response this week has" : " responses this week have") + " no school (sent before the School box was added), so they cannot be matched." : "");
   }
 
