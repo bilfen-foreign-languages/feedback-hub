@@ -48,7 +48,8 @@ const EMAIL_RE = new RegExp("^[^\\s@]+@" + ALLOWED_EMAIL_DOMAIN.replace(/\./g, "
 // The schools shown in the "School" box: every school in the rotation (config.js), in alphabetical order.
 const SCHOOLS = (() => {
   const rot = (CFG.rotation && CFG.rotation.year6) || [];
-  const list = Array.isArray(CFG.schools) && CFG.schools.length ? CFG.schools : [].concat(...rot);
+  const rot5 = (CFG.rotation && CFG.rotation.year5) || [];
+  const list = Array.isArray(CFG.schools) && CFG.schools.length ? CFG.schools : [].concat(...rot, ...rot5);
   return Array.from(new Set(list.map(x => String(x).trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b, "tr"));
 })();
 
@@ -193,7 +194,7 @@ function renderYear(y, c) {
           <h1 class="t-title" style="font-size:32px;">${c.title}</h1>
           <p class="t-intro mt-3 max-w-2xl">${c.intro}</p>
         </div>
-        <img class="h-28 w-28 self-start object-contain sm:self-auto" src="${c.logo}" alt="${c.logoAlt}" onerror="this.onerror=null;this.src='assets/logo-year6.png'">
+        <img class="h-28 w-28 self-start object-contain sm:self-auto" src="${c.logo}" alt="${c.logoAlt}" onerror="this.onerror=null;this.src='assets/logo-menu.png'">
       </div>
     </header>
   </div>
@@ -205,7 +206,7 @@ function renderYear(y, c) {
           <div class="min-w-0 sm:w-[300px] sm:flex-none"><label for="${y}-email" class="t-label mb-2 block">Email</label>
             <input id="${y}-email" class="field" type="email" required autocomplete="email" placeholder="Enter your school email address"></div>
           <div class="min-w-0 sm:w-[10rem] sm:flex-none"><label for="${y}-school" class="t-label mb-2 block">School</label>
-            <select id="${y}-school" class="field" required><option value="" selected disabled>Select</option>${SCHOOLS.map(n => `<option value="${n}">${n}</option>`).join("")}</select></div>
+            <select id="${y}-school" class="field" required><option value="" selected disabled>Select your school</option>${SCHOOLS.map(n => `<option value="${n}">${n}</option>`).join("")}</select></div>
           <div class="min-w-0 sm:w-[10rem] sm:flex-none"><label for="${y}-week" class="t-label mb-2 block">Week</label>
             <input id="${y}-week" class="field" type="text" inputmode="numeric" maxlength="3" required autocomplete="off" placeholder="No."></div>
           <p class="t-help min-w-0 max-w-xs text-sm leading-relaxed lg:flex-1">${c.emailHelp}</p>
