@@ -56,12 +56,15 @@ window.IPT_CONFIG = {
       ["Esenşehir", "İncek"],
       ["Maslak", "Sancaktepe", "Kurtköy"]
     ]
+    // Year 5 (optional): add a schedule like the one above, one group of schools per Monday, and Year 5 will show up in
+    // the admin "Schools yet to respond" card and in the School dropdown. Example:
+    // , year5: [ ["School A", "School B"], ["School C", "School D"] ]
   },
 
   /* ----- Help & FAQ window (the "Help" button). Add, remove or reword any question. ----- */
   faq: [
     { q: "How do I give my feedback?",
-      a: "Choose Year 6 or Year 7, then type your school email. The questions open as soon as your email ends with @bilfen.k12.tr. Answer them, then press Submit feedback." },
+      a: "Choose Year 5, Year 6 or Year 7, then type your school email. The questions open as soon as your email ends with @bilfen.k12.tr. Answer them, then press Submit feedback." },
     { q: "Which email should I use?",
       a: "Your Bilfen school address, the one ending with @bilfen.k12.tr. Other addresses cannot open the questions." },
     { q: "Which schools are giving feedback this week?",
