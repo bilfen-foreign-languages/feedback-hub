@@ -118,6 +118,13 @@
     .meet-chip{min-width:4.75rem;text-align:center;font-size:14px;font-weight:700;padding:.3rem .8rem;border-radius:999px}
     .meet-chip-6{background:linear-gradient(135deg,#fff37b,#67e8f9);color:#073d67}
     .meet-chip-7{background:linear-gradient(135deg,#1e4f96,#3179b9);color:#effcff}
+    .meet-chip-5{background:linear-gradient(135deg,#e2d0ff,#a183ee);color:#2a0f5e}
+    /* One Join button per meeting link. Years that share a link share a button; years with their own link get their own. */
+    .meet-btns{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5rem,1fr));gap:.6rem}
+    .meet-btn.meet-btn-5{background:linear-gradient(135deg,#e2d0ff,#a183ee);color:#2a0f5e;box-shadow:0 8px 22px rgba(161,131,238,.3)}
+    .meet-btn.meet-btn-5.is-soon{animation:meetGlow5 2s ease-in-out infinite}
+    @keyframes meetGlow5{0%,100%{box-shadow:0 8px 22px rgba(161,131,238,.3)}50%{box-shadow:0 0 34px rgba(190,160,255,.85)}}
+    @media(prefers-reduced-motion:reduce){.meet-btn.meet-btn-5.is-soon{animation:none;box-shadow:0 8px 30px rgba(190,160,255,.7)}}
     .meet-day{font-size:14px;color:var(--t-help)}
     .meet-time{margin-left:auto;font-size:18px;font-weight:700;color:var(--t-title);font-variant-numeric:tabular-nums;white-space:nowrap}
     .meet-btn{display:flex;align-items:center;justify-content:center;gap:.6rem;padding:.85rem 1.25rem;border-radius:18px;background:linear-gradient(135deg,#52d9ca,#658ff1);color:#06214e;font-size:16px;font-weight:700;text-decoration:none;box-shadow:0 8px 22px rgba(82,217,202,.25);transition:transform .15s ease,filter .15s ease}
@@ -282,12 +289,15 @@
           </div>
           <ul class="meet-list">
             <li class="meet-row" data-day="Mon" data-start="16:45" data-end="17:15"><span class="meet-chip meet-chip-7">Year 7</span><span class="meet-day">Monday</span><span class="meet-time">16:45 – 17:15</span></li>
+            <li class="meet-row" data-day="Mon" data-start="17:40" data-end="18:10"><span class="meet-chip meet-chip-5">Year 5</span><span class="meet-day">Monday</span><span class="meet-time">17:40 – 18:10</span></li>
             <li class="meet-row" data-day="Mon" data-start="17:40" data-end="18:10"><span class="meet-chip meet-chip-6">Year 6</span><span class="meet-day">Monday</span><span class="meet-time">17:40 – 18:10</span></li>
           </ul>
-          <a class="meet-btn" href="https://meet.google.com/ohd-bjdt-bdo" target="_blank" rel="noopener noreferrer">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
-            <span>Join Meeting</span>
-          </a>
+          <div class="meet-btns">
+            <a class="meet-btn" href="https://meet.google.com/ohd-bjdt-bdo" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
+              <span>Join Meeting</span>
+            </a>
+          </div>
         </section>
       </div>
       <div class="menu-actions">
@@ -333,8 +343,10 @@
       if (!card) return;
       const CFG = window.IPT_CONFIG || {};                 // meeting times, link and time zone come from config.js
       const TZ = CFG.timezone || "Europe/Istanbul";       // meeting times are read in this time zone
-      const banner = card.querySelector(".meet-banner"), btn = card.querySelector(".meet-btn");
-      if (CFG.meetingLink) btn.setAttribute("href", CFG.meetingLink);
+      const banner = card.querySelector(".meet-banner"), btnWrap = card.querySelector(".meet-btns");
+      const baseBtn = btnWrap.querySelector(".meet-btn");
+      const DEFAULT_LINK = CFG.meetingLink || baseBtn.getAttribute("href");
+      const yearOf = m => { const y = Number(m.year); return y === 5 || y === 6 ? y : 7; };
       if (Array.isArray(CFG.meetings) && CFG.meetings.length) {
         const FULL = { Mon: "Monday", Tue: "Tuesday", Wed: "Wednesday", Thu: "Thursday", Fri: "Friday", Sat: "Saturday", Sun: "Sunday" };
         const list = card.querySelector(".meet-list");
@@ -342,7 +354,8 @@
         CFG.meetings.forEach(m => {
           const li = document.createElement("li");
           li.className = "meet-row"; li.dataset.day = m.day; li.dataset.start = m.start; li.dataset.end = m.end;
-          const chip = document.createElement("span"); chip.className = "meet-chip meet-chip-" + (Number(m.year) === 6 ? 6 : 7); chip.textContent = "Year " + (Number(m.year) === 6 ? 6 : 7);
+          li.dataset.link = m.link || DEFAULT_LINK;
+          const chip = document.createElement("span"); chip.className = "meet-chip meet-chip-" + yearOf(m); chip.textContent = "Year " + yearOf(m);
           const day = document.createElement("span"); day.className = "meet-day"; day.textContent = FULL[m.day] || m.day;
           const time = document.createElement("span"); time.className = "meet-time"; time.textContent = m.start + " – " + m.end;
           li.append(chip, day, time); list.appendChild(li);
@@ -357,23 +370,52 @@
       const slots = rows.map(row => {
         const day = SHORT.indexOf(row.dataset.day);
         return { row, day, label: row.querySelector(".meet-chip").textContent.trim(),
+                 link: row.dataset.link || DEFAULT_LINK,
                  startTxt: row.dataset.start, endTxt: row.dataset.end,
                  start: day * 1440 + toMin(row.dataset.start), end: day * 1440 + toMin(row.dataset.end) };
       });
 
+      /* Join buttons: one per distinct link. Years that share a link share a button (e.g. "Join Year 6 & 7"). */
+      const groups = [];
+      slots.forEach(s => {
+        let g = groups.find(x => x.link === s.link);
+        if (!g) groups.push(g = { link: s.link, years: [] });
+        const n = s.label.replace(/\D/g, "");
+        if (!g.years.includes(n)) g.years.push(n);
+      });
+      groups.sort((x, y) => Math.min(...x.years) - Math.min(...y.years));
+      const btns = [];
+      if (groups.length <= 1) {
+        baseBtn.setAttribute("href", groups.length ? groups[0].link : DEFAULT_LINK);
+        btns.push({ el: baseBtn, link: groups.length ? groups[0].link : DEFAULT_LINK });
+      } else {
+        const proto = baseBtn.cloneNode(true);
+        btnWrap.textContent = "";
+        groups.forEach(g => {
+          const a = proto.cloneNode(true);
+          a.setAttribute("href", g.link);
+          a.querySelector("span").textContent = "Join Year " + g.years.sort().join(" & ");
+          if (g.years.length === 1 && g.years[0] === "5") a.classList.add("meet-btn-5");
+          btnWrap.appendChild(a); btns.push({ el: a, link: g.link });
+        });
+      }
+
       /*compute-start*/
+      /* Meetings that share the same day and times (Year 5 and Year 6 at 17:40) count as one slot with several years. */
+      function sameTime(slots, s) { return slots.filter(x => x.start === s.start && x.end === s.end); }
       function compute(now, slots) {
         const live = slots.find(s => now >= s.start && now < s.end);
-        if (live) return { live: true, slot: live, diff: 0 };
+        if (live) return { live: true, slot: live, group: sameTime(slots, live), diff: 0 };
         let best = null;
         for (const s of slots) {
           let d = s.start - now; if (d <= 0) d += W;
-          if (!best || d < best.diff) best = { live: false, slot: s, diff: d };
+          if (!best || d < best.diff) best = { live: false, slot: s, group: sameTime(slots, s), diff: d };
         }
         return best;
       }
       function describe(now, r) {
-        const s = r.slot;
+        const names = (r.group || [r.slot]).map(x => x.label.replace(/\D/g, "")).sort();
+        const s = Object.assign({}, r.slot, { label: names.length > 1 ? names.map(n => "Year " + n).join(" & ") : r.slot.label });
         if (r.live) return { live: true, label: "Live now", main: `${s.label} \u00b7 until ${s.endTxt}` };
         let main;
         if (r.diff <= 180) {
@@ -409,12 +451,12 @@
         labelEl.appendChild(document.createTextNode(d.label));
         mainEl.textContent = d.main;
         slots.forEach(s => s.row.classList.remove("is-live", "is-next"));
-        if (r.live) r.slot.row.classList.add("is-live");
-        else if (r.diff < 1440) r.slot.row.classList.add("is-next");
+        if (r.live) r.group.forEach(s => s.row.classList.add("is-live"));
+        else if (r.diff < 1440) r.group.forEach(s => s.row.classList.add("is-next"));
         const soon = r.live || r.diff <= 15;
         banner.classList.toggle("is-live", r.live);
         banner.classList.toggle("is-soon", soon);
-        btn.classList.toggle("is-soon", soon);
+        btns.forEach(b => b.el.classList.toggle("is-soon", soon && r.group.some(s => s.link === b.link)));
       }
       update();
       setInterval(update, 30000);
