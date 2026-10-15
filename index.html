@@ -375,29 +375,31 @@
                  start: day * 1440 + toMin(row.dataset.start), end: day * 1440 + toMin(row.dataset.end) };
       });
 
-      /* Join buttons: one per distinct link. Years that share a link share a button (e.g. "Join Year 6 & 7"). */
-      const groups = [];
-      slots.forEach(s => {
-        let g = groups.find(x => x.link === s.link);
-        if (!g) groups.push(g = { link: s.link, years: [] });
-        const n = s.label.replace(/\D/g, "");
-        if (!g.years.includes(n)) g.years.push(n);
-      });
-      groups.sort((x, y) => Math.min(...x.years) - Math.min(...y.years));
-      const btns = [];
-      if (groups.length <= 1) {
-        baseBtn.setAttribute("href", groups.length ? groups[0].link : DEFAULT_LINK);
-        btns.push({ el: baseBtn, link: groups.length ? groups[0].link : DEFAULT_LINK });
-      } else {
-        const proto = baseBtn.cloneNode(true);
-        btnWrap.textContent = "";
-        groups.forEach(g => {
-          const a = proto.cloneNode(true);
-          a.setAttribute("href", g.link);
-          a.querySelector("span").textContent = "Join Year " + g.years.sort().join(" & ");
-          if (g.years.length === 1 && g.years[0] === "5") a.classList.add("meet-btn-5");
-          btnWrap.appendChild(a); btns.push({ el: a, link: g.link });
+      /* Join buttons follow the meeting that is live or next: one "Join Meeting" button for a single meeting
+         (Year 7), two separate buttons (Year 5, Year 6) once the Year 7 meeting is over and those two come next. */
+      const proto = baseBtn.cloneNode(true);
+      let btnKey = "", btns = [];
+      function showButtons(group) {
+        const links = [];
+        group.forEach(s => {
+          let g = links.find(x => x.link === s.link);
+          if (!g) links.push(g = { link: s.link, years: [] });
+          const n = s.label.replace(/\D/g, "");
+          if (!g.years.includes(n)) g.years.push(n);
         });
+        links.sort((x, y) => Math.min(...x.years) - Math.min(...y.years));
+        const key = links.map(g => g.link + "|" + g.years.join(",")).join(";");
+        if (key !== btnKey) {
+          btnKey = key; btnWrap.textContent = ""; btns = [];
+          links.forEach(g => {
+            const a = proto.cloneNode(true);
+            a.classList.remove("is-soon", "meet-btn-5");
+            a.setAttribute("href", g.link);
+            a.querySelector("span").textContent = links.length > 1 ? "Join Year " + g.years.sort().join(" & ") : "Join Meeting";
+            if (links.length > 1 && g.years.length === 1 && g.years[0] === "5") a.classList.add("meet-btn-5");
+            btnWrap.appendChild(a); btns.push({ el: a, link: g.link });
+          });
+        }
       }
 
       /*compute-start*/
@@ -454,6 +456,7 @@
         if (r.live) r.group.forEach(s => s.row.classList.add("is-live"));
         else if (r.diff < 1440) r.group.forEach(s => s.row.classList.add("is-next"));
         const soon = r.live || r.diff <= 15;
+        showButtons(r.group);
         banner.classList.toggle("is-live", r.live);
         banner.classList.toggle("is-soon", soon);
         btns.forEach(b => b.el.classList.toggle("is-soon", soon && r.group.some(s => s.link === b.link)));
