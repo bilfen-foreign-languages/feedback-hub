@@ -39,6 +39,13 @@
   table{border-collapse:collapse;width:100%;min-width:760px;font-size:14px}
   th,td{padding:.6rem .75rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);vertical-align:top}
   th{position:sticky;top:0;background:#0d2252;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);z-index:1}
+  .sel-col{width:36px;padding-right:0!important}
+  .sel-col input{width:18px;height:18px;accent-color:#52d9ca;cursor:pointer;margin:0;vertical-align:middle}
+  tr.row.picked td{background:rgba(82,217,202,.13)}
+  .selbar{position:sticky;bottom:14px;z-index:5;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px;padding:.7rem 1rem;border-radius:16px;background:rgba(10,28,72,.92);border:1px solid rgba(255,255,255,.25);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 14px 40px rgba(1,10,37,.5)}
+  .selbar[hidden]{display:none}
+  .selbar b{font-size:15px}
+  .selbar .linkbtn{background:none;border:0;color:var(--dim);font:inherit;text-decoration:underline;cursor:pointer;padding:.3rem .2rem}
   tr.row{cursor:pointer}
   tr.row:hover td{background:rgba(255,255,255,.06)}
   tr.detail td{background:rgba(3,14,44,.5);padding:1rem 1.2rem}
@@ -46,13 +53,14 @@
   .q:first-child{margin-top:0}
   .ans{white-space:pre-wrap;word-break:break-word}
   .tag{display:inline-block;padding:.1rem .6rem;border-radius:999px;font-weight:700;font-size:12px;color:#06214e;background:linear-gradient(135deg,var(--teal),var(--blue))}
+  .tag.y5{background:linear-gradient(135deg,#c4b5fd,#7c3aed);color:#fff}
   .tag.y6{background:linear-gradient(135deg,#fff15d,#35c9f4)}
   .empty{padding:2rem;text-align:center;color:var(--dim)}
   [hidden]{display:none!important}
   @media(max-width:560px){.wrap{padding:16px 12px 50px}.card{padding:16px;border-radius:18px}}
   /* ===== charts ===== */
-  .viz{--surface:#14285a;--tx:#f0efec;--tx2:#c3c2b7;--grid:rgba(255,255,255,.14);--y6:#d95926;--y7:#3987e5;--o1:#256abf;--o2:#3987e5;--o3:#6da7ec;--o4:#9ec5f4;--o5:#cde2fb;--hov:rgba(255,255,255,.08)}
-  .viz.light{--surface:#ffffff;--tx:#0b0b0b;--tx2:#52514e;--grid:rgba(0,0,0,.1);--y6:#eb6834;--y7:#2a78d6;--o1:#86b6ef;--o2:#5598e7;--o3:#2a78d6;--o4:#1c5cab;--o5:#104281;--hov:rgba(0,0,0,.05)}
+  .viz{--surface:#14285a;--tx:#f0efec;--tx2:#c3c2b7;--grid:rgba(255,255,255,.14);--y5:#a78bfa;--y6:#d95926;--y7:#3987e5;--o1:#256abf;--o2:#3987e5;--o3:#6da7ec;--o4:#9ec5f4;--o5:#cde2fb;--hov:rgba(255,255,255,.08)}
+  .viz.light{--surface:#ffffff;--tx:#0b0b0b;--tx2:#52514e;--grid:rgba(0,0,0,.1);--y5:#7c4dff;--y6:#eb6834;--y7:#2a78d6;--o1:#86b6ef;--o2:#5598e7;--o3:#2a78d6;--o4:#1c5cab;--o5:#104281;--hov:rgba(0,0,0,.05)}
   .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;margin-top:14px}
   .chart-card{background:rgba(3,14,44,.34);border:1px solid var(--edge);border-radius:18px;padding:14px 16px;min-width:0}
   .chart-card h3{margin:0;font-size:15px}
@@ -67,10 +75,10 @@
   .viz .val{fill:var(--tx);font-size:11px;font-weight:600}
   .viz .lab{fill:var(--tx);font-size:12px}
   .viz .big{fill:var(--tx);font-size:26px;font-weight:700}
-  .viz path.m6,.viz path.m7,.viz circle.m6,.viz circle.m7{stroke:none}
-  .viz .m6{fill:var(--y6)} .viz .m7{fill:var(--y7)}
+  .viz path.m5,.viz circle.m5,.viz path.m6,.viz path.m7,.viz circle.m6,.viz circle.m7{stroke:none}
+  .viz .m5{fill:var(--y5)} .viz .m6{fill:var(--y6)} .viz .m7{fill:var(--y7)}
   .viz .ln{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-  .viz .l6{stroke:var(--y6)} .viz .l7{stroke:var(--y7)}
+  .viz .l5{stroke:var(--y5)} .viz .l6{stroke:var(--y6)} .viz .l7{stroke:var(--y7)}
   .viz .dot{stroke:var(--surface);stroke-width:2}
   .viz .o1{fill:var(--o1)} .viz .o2{fill:var(--o2)} .viz .o3{fill:var(--o3)} .viz .o4{fill:var(--o4)} .viz .o5{fill:var(--o5)}
   .viz .slice{stroke:var(--surface);stroke-width:2}
@@ -80,7 +88,7 @@
   .lg-row{display:flex;gap:16px;margin:0 0 4px;font-size:13px;color:var(--tx2)}
   .lg{display:inline-flex;align-items:center;gap:6px}
   .lg .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
-  .lg .m6{background:var(--y6)} .lg .m7{background:var(--y7)}
+  .lg .m5{background:var(--y5)} .lg .m6{background:var(--y6)} .lg .m7{background:var(--y7)}
   .chart-empty{padding:1.6rem 1rem;text-align:center;color:var(--dim);font-size:14px}
   .tv{margin-top:6px;font-size:13px;color:var(--tx2)}
   .tv summary{cursor:pointer;width:max-content}
@@ -118,7 +126,7 @@
   .rbody .chart-card{background:#fbfcfe;border:1px solid #dfe5f1}
   .rbody .chart-card h3{color:#0d2252}
   .ypill{display:inline-block;font-family:system-ui,sans-serif;font-size:13px;font-weight:700;padding:.15rem .7rem;border-radius:999px;color:#fff;background:var(--yc)}
-  .ry6{--yc:#eb6834} .ry7{--yc:#2a78d6}
+  .ry5{--yc:#7c4dff} .ry6{--yc:#eb6834} .ry7{--yc:#2a78d6}
   .rq h3{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#52514e;margin:16px 0 6px}
   .rc{margin:8px 0;padding:10px 14px;border-left:4px solid var(--yc);background:#f4f7fc;border-radius:0 10px 10px 0}
   .rc p{margin:0;white-space:pre-wrap;word-break:break-word;color:#14213d}
@@ -178,7 +186,7 @@
         <div id="from-box" hidden><label for="from">From</label><input id="from" type="date"></div>
         <div id="to-box" hidden><label for="to">To</label><input id="to" type="date"></div>
         <div><label for="yr">Year level</label>
-          <select id="yr"><option value="">Year 6 and Year 7</option><option value="6">Year 6</option><option value="7">Year 7</option></select></div>
+          <select id="yr"><option value="">All years</option><option value="5">Year 5</option><option value="6">Year 6</option><option value="7">Year 7</option></select></div>
         <div><label for="find">Search</label><input id="find" type="search" placeholder="Name, email or words"></div>
       </div>
 
@@ -186,12 +194,18 @@
 
       <div class="tablebox">
         <table>
-          <thead><tr><th>Date</th><th>Year</th><th>Week</th><th>Email</th><th>Overall</th><th>Resources</th><th>Engage.</th><th>Clarity</th></tr></thead>
+          <thead><tr><th class="sel-col"><input type="checkbox" id="selall" aria-label="Select all shown responses" title="Select all shown"></th><th>Date</th><th>Year</th><th>Week</th><th>Email</th><th>Overall</th><th>Resources</th><th>Engage.</th><th>Clarity</th></tr></thead>
           <tbody id="rows"></tbody>
         </table>
         <div class="empty" id="empty" hidden>No feedback for this selection.</div>
       </div>
-      <p class="dim" style="font-size:13px;margin-top:8px">Click a row to read the full answers.</p>
+      <div class="selbar" id="selbar" role="region" aria-label="Selected responses" hidden>
+        <b id="selcount"></b>
+        <button type="button" class="btn danger" id="seldel">Delete selected</button>
+        <button type="button" class="linkbtn" id="selclear">Clear selection</button>
+        <span class="dim" id="selinfo" style="font-size:13px"></span>
+      </div>
+      <p class="dim" style="font-size:13px;margin-top:8px">Click a row to read the full answers. Tick the boxes (hold Shift to pick a range) to delete several at once.</p>
 
       <div class="actions">
         <button class="btn" id="xlsx" type="button">Download Excel</button>
@@ -351,15 +365,23 @@
     var tb = $("rows"); tb.textContent = ""; $("empty").hidden = shown.length > 0;
     shown.forEach(function (x) {
       var tr = document.createElement("tr"); tr.className = "row"; tr.tabIndex = 0;
+      var pc = document.createElement("td"); pc.className = "sel-col";
+      var pk = document.createElement("input"); pk.type = "checkbox"; pk.checked = !!sel[x.id]; pk.setAttribute("aria-label", "Select response from " + x.email);
+      pc.append(pk); tr.append(pc);
+      pc.addEventListener("click", function (e) { e.stopPropagation(); });
+      pk.addEventListener("keydown", function (e) { e.stopPropagation(); });
+      pk.addEventListener("click", function (e) { pick(x.id, pk.checked, e.shiftKey); });
+      if (pk.checked) tr.classList.add("picked");
+      tr.dataset.id = x.id;
       cell(tr, nice(x._day) + ", " + x._time);
-      var tag = document.createElement("span"); tag.className = "tag " + (x.year === 6 ? "y6" : "y7"); tag.textContent = "Year " + x.year; cell(tr, "", tag);
+      var tag = document.createElement("span"); tag.className = "tag " + "y" + x.year; tag.textContent = "Year " + x.year; cell(tr, "", tag);
       cell(tr, x.week); cell(tr, x.email);
       ["overall", "resources", "engagement", "clarity"].forEach(function (k) { cell(tr, x[k] == null ? "–" : String(x[k])); });
       var dt = null;
       function toggle() {
         if (dt) { dt.remove(); dt = null; delete openIds[x.id]; return; }
         openIds[x.id] = 1;
-        dt = document.createElement("tr"); dt.className = "detail"; var td = document.createElement("td"); td.colSpan = 8;
+        dt = document.createElement("tr"); dt.className = "detail"; var td = document.createElement("td"); td.colSpan = 9;
         [["What worked well?", x.worked], ["What didn't work?", x.challenge], ["Shape the next plan", x.plan], ["One more thought", x.notes]].forEach(function (p) {
           if (!p[1]) return;
           var q = document.createElement("div"); q.className = "q"; q.textContent = p[0];
@@ -390,7 +412,62 @@
       tb.append(tr);
       if (openIds[x.id]) toggle();
     });
+    updateSel();
   }
+
+  /* ---------- picking several rows and deleting them in one go ---------- */
+  var sel = {}, lastPicked = null, delArmed = 0, delTimer = 0, delBusy = false;
+  function selIds() { return shown.map(function (x) { return x.id; }).filter(function (id) { return sel[id]; }); }   // only rows that are visible can be deleted
+  function paintRows() {
+    Array.prototype.forEach.call($("rows").querySelectorAll("tr.row"), function (tr) {
+      var on = !!sel[tr.dataset.id] || !!sel[Number(tr.dataset.id)];
+      tr.classList.toggle("picked", on); var c = tr.querySelector(".sel-col input"); if (c) c.checked = on;
+    });
+  }
+  function updateSel() {
+    var keep = {}; shown.forEach(function (x) { if (sel[x.id]) keep[x.id] = 1; }); sel = keep;   // forget rows that are no longer shown
+    var n = selIds().length, bar = $("selbar"), all_ = $("selall");
+    bar.hidden = n === 0;
+    $("selcount").textContent = n + (n === 1 ? " response selected" : " responses selected");
+    all_.checked = n > 0 && n === shown.length; all_.indeterminate = n > 0 && n < shown.length;
+    if (!n) disarm();
+    paintRows();
+  }
+  function pick(id, on, range) {
+    var ids = shown.map(function (x) { return x.id; }), i = ids.indexOf(id), j = lastPicked === null ? -1 : ids.indexOf(lastPicked);
+    if (range && j > -1 && i > -1) { for (var k = Math.min(i, j); k <= Math.max(i, j); k++) { if (on) sel[ids[k]] = 1; else delete sel[ids[k]]; } }
+    else if (on) sel[id] = 1; else delete sel[id];
+    lastPicked = id; disarm(); updateSel();
+  }
+  function disarm() { delArmed = 0; clearTimeout(delTimer); var b = $("seldel"); if (b && !delBusy) { b.textContent = "Delete selected"; $("selinfo").textContent = ""; } }
+  $("selall").addEventListener("change", function () {
+    if (this.checked) shown.forEach(function (x) { sel[x.id] = 1; }); else sel = {};
+    lastPicked = null; disarm(); updateSel();
+  });
+  $("selclear").addEventListener("click", function () { sel = {}; lastPicked = null; updateSel(); });
+  $("seldel").addEventListener("click", async function () {
+    var ids = selIds(); if (!ids.length || delBusy) return;
+    if (!delArmed) {      // first click only asks; the second click (within 6 seconds) deletes
+      delArmed = 1; this.textContent = "Click again to delete " + ids.length + " for good";
+      $("selinfo").textContent = "This cannot be undone.";
+      delTimer = setTimeout(disarm, 6000); return;
+    }
+    clearTimeout(delTimer); delBusy = true; this.disabled = true; this.textContent = "Deleting…"; $("selinfo").textContent = "";
+    var gone = [];
+    try {
+      for (var i = 0; i < ids.length; i += 50) {
+        var part = ids.slice(i, i + 50), res = await api("/rest/v1/feedback?id=in.(" + part.map(encodeURIComponent).join(",") + ")", "DELETE");
+        res.forEach(function (r) { gone.push(r.id); });
+      }
+    } catch (err) { say($("msg"), (gone.length ? gone.length + " deleted, then it stopped: " : "") + err.message, "err"); }
+    all = all.filter(function (z) { return gone.indexOf(z.id) === -1; });
+    gone.forEach(function (id) { delete sel[id]; delete openIds[id]; });
+    delBusy = false; this.disabled = false; delArmed = 0; this.textContent = "Delete selected";
+    if (gone.length === ids.length) say($("msg"), gone.length + (gone.length === 1 ? " response deleted." : " responses deleted."), "ok");
+    else if (!gone.length) say($("msg"), "Nothing was deleted. Check that you are signed in as the admin.", "err");
+    else say($("msg"), gone.length + " of " + ids.length + " deleted. The rest are still selected.", "err");
+    render();
+  });
 
   /* ---------- Excel ---------- */
   function sheetFrom(list) {
@@ -424,7 +501,8 @@
     if (!shown.length) return say($("msg"), "There is no feedback in this selection to download.", "err");
     var wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, sheetFrom(shown), "All feedback");
-    var y6 = shown.filter(function (x) { return x.year === 6; }), y7 = shown.filter(function (x) { return x.year === 7; });
+    var y5 = shown.filter(function (x) { return x.year === 5; }), y6 = shown.filter(function (x) { return x.year === 6; }), y7 = shown.filter(function (x) { return x.year === 7; });
+    if (y5.length) XLSX.utils.book_append_sheet(wb, sheetFrom(y5), "Year 5");
     if (y6.length) XLSX.utils.book_append_sheet(wb, sheetFrom(y6), "Year 6");
     if (y7.length) XLSX.utils.book_append_sheet(wb, sheetFrom(y7), "Year 7");
     XLSX.utils.book_append_sheet(wb, summarySheet(shown), "Summary");
@@ -453,7 +531,7 @@
   function legend(years) {
     return '<div class="lg-row">' + years.map(function (y) { return '<span class="lg"><i class="sw m' + y + '"></i>Year ' + y + "</span>"; }).join("") + "</div>";
   }
-  function yearsOf(list) { return [6, 7].filter(function (y) { return list.some(function (x) { return x.year === y; }); }); }
+  function yearsOf(list) { return [5, 6, 7].filter(function (y) { return list.some(function (x) { return x.year === y; }); }); }
 
   /* 1) Average score in each category, Year 6 next to Year 7 */
   function chartCats(list) {
@@ -586,7 +664,7 @@
   }
   function reportHTML() {
     var list = shown, years = yearsOf(list), now = new Date();
-    var yl = $("yr").value ? "Year " + $("yr").value : "Year 6 and Year 7";
+    var yl = $("yr").value ? "Year " + $("yr").value : "All years";
     var weeks = Object.keys(list.reduce(function (a, x) { a[x._mon] = 1; return a; }, {})).length;
     var h = '<header class="rhead"><div><p class="rkick">IPT FEEDBACK REPORT</p><h1>' + esc(periodText()) + '</h1><p class="rsub">' + esc(yl) + " · " + list.length + (list.length === 1 ? " response" : " responses") + " · prepared " + nice(fmtDay(now)) + '</p></div><img class="rlogo" src="assets/logo-menu.png" alt="" onerror="this.remove()"></header><div class="rbody">';
     if (!list.length) return h + '<p class="chart-empty">There is no feedback in this selection.</p></div>';
