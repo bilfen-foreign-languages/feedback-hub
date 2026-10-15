@@ -15,16 +15,21 @@ function sendFeedback(p) {
   }
   const num = v => { const n = parseInt(v, 10); return n >= 1 && n <= 5 ? n : null; };
   const row = {
-    year: parseInt(String(p["Year level"] || "").replace(/\D/g, ""), 10) || 6, week: p["Week"], email: p.email,
+    year: parseInt(String(p["Year level"] || "").replace(/\D/g, ""), 10) || 6, week: p["Week"], email: p.email, school: p["School"] || null,
     worked: p["What worked well?"], challenge: p["What didn't work?"], plan: p["Shape the next plan"],
     overall: num(p["Overall rating of the week (1-5)"]), resources: num(p["Effectiveness of teaching resources (1-5)"]),
     engagement: num(p["Student engagement (1-5)"]), clarity: num(p["Learning objectives clarity (1-5)"]),
     notes: p["One more thought"] || null
   };
-  return fetch(SUPABASE_URL + "/rest/v1/feedback", {
+  const post = r => fetch(SUPABASE_URL + "/rest/v1/feedback", {
     method: "POST",
     headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Prefer": "return=minimal" },
-    body: JSON.stringify(row)
+    body: JSON.stringify(r)
+  });
+  // If the database does not have the "school" column yet (the SQL has not been run), save without it rather than lose the response.
+  return post(row).then(res => {
+    if (res.status === 400 && row.school !== null) { const { school, ...rest } = row; return post(rest); }
+    return res;
   }).then(res => {
     // Saved safely. Now also send the e-mail copy through Formspree. It never delays or breaks the real submission,
     // and it only runs after a successful save, so a retry later cannot send the same e-mail twice.
@@ -39,6 +44,13 @@ function sendFeedback(p) {
 const ALLOWED_EMAIL_DOMAIN = CFG.emailDomain || "bilfen.k12.tr";
 const EMAIL_WARNING = "Please enter with your Bilfen credentials. Your school email must end with @" + ALLOWED_EMAIL_DOMAIN + ".";
 const EMAIL_RE = new RegExp("^[^\\s@]+@" + ALLOWED_EMAIL_DOMAIN.replace(/\./g, "\\.") + "$", "i");
+
+// The schools shown in the "School" box: every school in the rotation (config.js), in alphabetical order.
+const SCHOOLS = (() => {
+  const rot = (CFG.rotation && CFG.rotation.year6) || [];
+  const list = Array.isArray(CFG.schools) && CFG.schools.length ? CFG.schools : [].concat(...rot);
+  return Array.from(new Set(list.map(x => String(x).trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b, "tr"));
+})();
 
 const YEARS = {
   year5: {
@@ -189,12 +201,14 @@ function renderYear(y, c) {
     <form id="${y}-form" class="form-shell mx-auto max-w-5xl space-y-5" novalidate>
       <div class="hp-field" aria-hidden="true"><label for="${y}-gotcha">Leave this field empty</label><input type="text" id="${y}-gotcha" name="_gotcha" tabindex="-1" autocomplete="off"></div>
       <section class="glass-panel rounded-[24px] p-5 sm:p-6">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-end">
-          <div class="min-w-0 flex-1"><label for="${y}-email" class="t-label mb-2 block">Email</label>
+        <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap lg:flex-nowrap sm:items-end">
+          <div class="min-w-0 sm:w-[300px] sm:flex-none"><label for="${y}-email" class="t-label mb-2 block">Email</label>
             <input id="${y}-email" class="field" type="email" required autocomplete="email" placeholder="Enter your school email address"></div>
-          <div class="min-w-0 flex-1"><label for="${y}-week" class="t-label mb-2 block">Week</label>
-            <input id="${y}-week" class="field" type="text" required autocomplete="off" placeholder="Enter week"></div>
-          <p class="t-help max-w-xs text-sm leading-relaxed">${c.emailHelp}</p>
+          <div class="min-w-0 sm:w-[10rem] sm:flex-none"><label for="${y}-school" class="t-label mb-2 block">School</label>
+            <select id="${y}-school" class="field" required><option value="" selected disabled>Select your school</option>${SCHOOLS.map(n => `<option value="${n}">${n}</option>`).join("")}</select></div>
+          <div class="min-w-0 sm:w-[10rem] sm:flex-none"><label for="${y}-week" class="t-label mb-2 block">Week</label>
+            <input id="${y}-week" class="field" type="text" inputmode="numeric" maxlength="3" required autocomplete="off" placeholder="No."></div>
+          <p class="t-help min-w-0 max-w-xs text-sm leading-relaxed lg:flex-1">${c.emailHelp}</p>
         </div>
         <p id="${y}-email-warn" class="email-warn" role="alert" hidden></p>
       </section>
@@ -323,7 +337,7 @@ function setupForm(y) {
 
   /* ----- Draft saving: keeps what was typed on this device, so a refresh or lost signal doesn't lose it ----- */
   const DRAFT_KEY = "ipt-draft-" + y, DRAFT_DAYS = 14;
-  const draftFields = ["email", "week", "worked", "challenge", "plan", "overall", "resources", "engagement", "clarity", "notes"]
+  const draftFields = ["email", "school", "week", "worked", "challenge", "plan", "overall", "resources", "engagement", "clarity", "notes"]
     .map(id => document.getElementById(`${y}-${id}`));
   const draftBox = document.getElementById(y + "-draft"), draftText = draftBox.querySelector(".draft-text");
   let draftTimer = 0, draftOff = false;
@@ -372,7 +386,7 @@ function setupForm(y) {
     button.disabled = true;
     const pretty = {
       _subject: `New ${YEARS[y].label} IPT feedback (Week ${val("week")})`, email: val("email"),
-      "Year level": YEARS[y].label, "Week": val("week"),
+      "Year level": YEARS[y].label, "School": val("school"), "Week": val("week"),
       "What worked well?": val("worked"), "What didn't work?": val("challenge"), "Shape the next plan": val("plan"),
       "Overall rating of the week (1-5)": val("overall"), "Effectiveness of teaching resources (1-5)": val("resources"),
       "Student engagement (1-5)": val("engagement"), "Learning objectives clarity (1-5)": slider.value,
