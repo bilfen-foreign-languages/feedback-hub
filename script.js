@@ -15,7 +15,7 @@ function sendFeedback(p) {
   }
   const num = v => { const n = parseInt(v, 10); return n >= 1 && n <= 5 ? n : null; };
   const row = {
-    year: /7/.test(p["Year level"]) ? 7 : 6, week: p["Week"], email: p.email,
+    year: parseInt(String(p["Year level"] || "").replace(/\D/g, ""), 10) || 6, week: p["Week"], email: p.email,
     worked: p["What worked well?"], challenge: p["What didn't work?"], plan: p["Shape the next plan"],
     overall: num(p["Overall rating of the week (1-5)"]), resources: num(p["Effectiveness of teaching resources (1-5)"]),
     engagement: num(p["Student engagement (1-5)"]), clarity: num(p["Learning objectives clarity (1-5)"]),
@@ -41,6 +41,21 @@ const EMAIL_WARNING = "Please enter with your Bilfen credentials. Your school em
 const EMAIL_RE = new RegExp("^[^\\s@]+@" + ALLOWED_EMAIL_DOMAIN.replace(/\./g, "\\.") + "$", "i");
 
 const YEARS = {
+  year5: {
+    label: "Year 5", logo: "assets/logo-year5.png", logoAlt: "Year 5 IPT school badge logo", kicker: "YEAR 5 IPT",
+    title: "Teaching feedback, gently collected.",
+    intro: "Dear colleagues, please complete this form after teaching Year 5 IPT. Your reflections, ideas, and suggestions help us improve together.",
+    emailHelp: "Your designated school email will be included with this Year 5 response. Please enter your email to proceed.",
+    workedHelp: "Celebrate the strongest topic, strategy, or classroom moment from Year 5.",
+    workedQ: "What was the best topic for you and your Year 5 classes? *",
+    planHelp: "Your ideas can make future Year 5 weeks clearer, smoother, and more impactful.",
+    planQ: "What would you change in this Year 5 plan? How would you change it? *",
+    pulseHelp: "Choose the score that best represents your Year 5 teaching experience.",
+    slider: "Move the soft slider from very unclear to very clear.",
+    note: "* Indicates a required response. Thank you for sharing your expertise.",
+    backBtn: "background:#fff;color:#5b21b6;", submitBtn: "background:linear-gradient(135deg,#a78bfa,#6d28d9);color:#fff;",
+    submitTxt: "#ffffff", boxCls: "border-white/30 bg-white/15", outCls: "bg-white/60", accent: "accent-violet-600"
+  },
   year6: {
     label: "Year 6", logo: "assets/logo-year6.png", logoAlt: "Year 7 IPT school badge logo", kicker: "YEAR 6 IPT",
     title: "Teaching feedback, brightly collected.",
@@ -166,7 +181,7 @@ function renderYear(y, c) {
           <h1 class="t-title" style="font-size:32px;">${c.title}</h1>
           <p class="t-intro mt-3 max-w-2xl">${c.intro}</p>
         </div>
-        <img class="h-28 w-28 self-start object-contain sm:self-auto" src="${c.logo}" alt="${c.logoAlt}">
+        <img class="h-28 w-28 self-start object-contain sm:self-auto" src="${c.logo}" alt="${c.logoAlt}" onerror="this.onerror=null;this.src='assets/logo-year6.png'">
       </div>
     </header>
   </div>
@@ -239,7 +254,7 @@ function showView(id) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-/* ---- Progress bar at the top of each form: fills as the ten answers are completed ---- */
+/* ---- Progress bar at the top of each form: fills as the eight answers are completed ---- */
 function setupProgress(y) {
   const form = document.getElementById(y + "-form"); if (!form || form.querySelector(".fp-bar")) return;
   if (!document.getElementById("fp-css")) {
@@ -256,19 +271,18 @@ function setupProgress(y) {
     document.head.appendChild(st);
   }
   const bar = document.createElement("div"); bar.className = "fp-bar";
-  bar.style.setProperty("--fp-a", y === "year6" ? "#fff15d" : "#52d9ca"); bar.style.setProperty("--fp-b", y === "year6" ? "#35c9f4" : "#658ff1");
-  bar.setAttribute("role", "progressbar"); bar.setAttribute("aria-label", "Form progress"); bar.setAttribute("aria-valuemin", "0"); bar.setAttribute("aria-valuemax", "10");
+  bar.style.setProperty("--fp-a", y === "year5" ? "#c4b5fd" : y === "year6" ? "#fff15d" : "#52d9ca"); bar.style.setProperty("--fp-b", y === "year5" ? "#7c3aed" : y === "year6" ? "#35c9f4" : "#658ff1");
+  bar.setAttribute("role", "progressbar"); bar.setAttribute("aria-label", "Form progress"); bar.setAttribute("aria-valuemin", "0"); bar.setAttribute("aria-valuemax", "8");
   bar.innerHTML = '<span>Progress</span><span class="fp-track"><span class="fp-fill"></span></span><span class="fp-count" aria-live="polite"></span>';
   form.insertBefore(bar, form.firstChild);
   const fill = bar.querySelector(".fp-fill"), count = bar.querySelector(".fp-count"), g = id => document.getElementById(`${y}-${id}`);
+  const TOTAL = 8;
   let touched = false, last = -1;
   g("clarity").addEventListener("input", () => { touched = true; });
   form.addEventListener("reset", () => { touched = false; });
   const answered = () => {
-    const email = g("email");
+    // Email and Week are not counted: the bar starts at "What worked well?" and ends at "One more thought".
     return [
-      email.checkValidity() && EMAIL_RE.test(email.value.trim()),
-      g("week").value.trim() !== "",
       g("worked").value.trim() !== "", g("challenge").value.trim() !== "", g("plan").value.trim() !== "",
       g("overall").value !== "", g("resources").value !== "", g("engagement").value !== "",
       touched, g("notes").value.trim() !== ""
@@ -276,9 +290,9 @@ function setupProgress(y) {
   };
   const update = () => {
     const n = answered(); if (n === last) return; last = n;
-    fill.style.width = (n * 10) + "%"; bar.setAttribute("aria-valuenow", String(n));
-    bar.classList.toggle("done", n === 10);
-    count.textContent = n === 10 ? "All set ✓" : n + " of 10";
+    fill.style.width = (n * 100 / TOTAL) + "%"; bar.setAttribute("aria-valuenow", String(n));
+    bar.classList.toggle("done", n === TOTAL);
+    count.textContent = n === TOTAL ? "All set ✓" : n + " of " + TOTAL;
   };
   update();
   setInterval(update, 500);       // also catches answers filled in by voice or restored from a saved draft
@@ -773,7 +787,7 @@ function setupDictation() {
     return true;
   }
 
-  ["year6", "year7"].forEach(y => {
+  ["year5", "year6", "year7"].forEach(y => {
     const el = hfEl(y);
     if (el.btn) el.btn.addEventListener("click", () => { if (hf.on) hfEnd("Hands-free stopped."); else hfStart(y); });
     if (el.status) el.status.addEventListener("click", e => { if (e.target.closest(".hf-stop")) hfEnd("Hands-free stopped."); });
@@ -784,7 +798,7 @@ function setupDictation() {
 /* ============ HELP & FAQ WINDOW ============ */
 // The questions and answers come from config.js (faq). This short list is only a safety net.
 const DEFAULT_FAQ = [
-  { q: "How do I give my feedback?", a: "Choose Year 6 or Year 7, type your school email, answer the questions and press Submit feedback." },
+  { q: "How do I give my feedback?", a: "Choose Year 5, Year 6 or Year 7, type your school email, answer the questions and press Submit feedback." },
   { q: "Can I speak instead of typing?", a: "Yes. Press Speak in the corner of any answer box, or use Hands-free at the top of the questions." }
 ];
 
@@ -864,6 +878,7 @@ function setupDictationGlow() {
 
 /* ============ AFTER SUBMIT: CONFETTI + THANK-YOU BOX ============ */
 const CONFETTI_COLORS = {
+  year5: ["#c4b5fd", "#a78bfa", "#ffffff", "#7c3aed", "#e9d5ff"],
   year6: ["#fff37b", "#67e8f9", "#ffffff", "#35c9f4", "#9decE5"],
   year7: ["#52d9ca", "#658ff1", "#9decE5", "#ffffff", "#bfe3ff"]
 };
@@ -977,12 +992,13 @@ function celebrate(y) {
 
 document.addEventListener("DOMContentLoaded", () => {
   // Menu first, so it always works
+  const open5 = document.getElementById("open-year5"); if (open5) open5.addEventListener("click", () => showView("year5-view"));
   document.getElementById("open-year6").addEventListener("click", () => showView("year6-view"));
   document.getElementById("open-year7").addEventListener("click", () => showView("year7-view"));
 
   try {
     Object.entries(YEARS).forEach(([y, c]) => { renderYear(y, c); setupForm(y); });
-    ["year6", "year7"].forEach(y => document.getElementById("back-" + y).addEventListener("click", () => showView("menu-view")));
+    ["year5", "year6", "year7"].forEach(y => document.getElementById("back-" + y).addEventListener("click", () => showView("menu-view")));
   } catch (err) { console.error("Form setup failed:", err); }
 
   try { setupOutbox(); } catch (err) { console.error("Outbox setup failed:", err); }
