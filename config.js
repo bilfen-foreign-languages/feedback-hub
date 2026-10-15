@@ -38,9 +38,12 @@ window.IPT_CONFIG = {
   /* ----- Online meetings ----- */
   timezone: "Europe/Istanbul",                        // the time zone the meeting times below are written in
   meetingLink: "https://meet.google.com/ohd-bjdt-bdo", // the Join Meeting button opens this
-  // One line per meeting.  year: 6 or 7   day: Mon Tue Wed Thu Fri Sat Sun   times: 24-hour "HH:MM"
+  // One line per meeting.  year: 5, 6 or 7   day: Mon Tue Wed Thu Fri Sat Sun   times: 24-hour "HH:MM"
+  // link (optional): a meeting with its own link gets its own Join button; without it, meetingLink above is used.
+  // Meetings at the same time (Year 5 and Year 6) are shown together in the banner.
   meetings: [
     { year: 7, day: "Mon", start: "16:45", end: "17:15" },
+    { year: 5, day: "Mon", start: "17:40", end: "18:10", link: "https://meet.google.com/ove-dzhk-srb" },
     { year: 6, day: "Mon", start: "17:40", end: "18:10" }
   ],
 
