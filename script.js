@@ -45,12 +45,16 @@ const ALLOWED_EMAIL_DOMAIN = CFG.emailDomain || "bilfen.k12.tr";
 const EMAIL_WARNING = "Please enter with your Bilfen credentials. Your school email must end with @" + ALLOWED_EMAIL_DOMAIN + ".";
 const EMAIL_RE = new RegExp("^[^\\s@]+@" + ALLOWED_EMAIL_DOMAIN.replace(/\./g, "\\.") + "$", "i");
 
-// The schools shown in the "School" box: every school in the rotation (config.js), in alphabetical order.
-const SCHOOLS = (() => {
+// The schools shown in the "School" box, alphabetical. Year 5 shows the Year 5 schools; Year 6 and 7 show the Year 6/7 schools.
+// (If config.js has a plain `schools` list, everyone gets that list.)
+const tidy = list => Array.from(new Set(list.map(x => String(x).trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b, "tr"));
+const SCHOOLS_BY_YEAR = (() => {
   const rot = (CFG.rotation && CFG.rotation.year6) || [];
   const rot5 = (CFG.rotation && CFG.rotation.year5) || [];
-  const list = Array.isArray(CFG.schools) && CFG.schools.length ? CFG.schools : [].concat(...rot, ...rot5);
-  return Array.from(new Set(list.map(x => String(x).trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b, "tr"));
+  const all = tidy([].concat(...rot, ...rot5));
+  if (Array.isArray(CFG.schools) && CFG.schools.length) { const t = tidy(CFG.schools); return { year5: t, year6: t, year7: t }; }
+  const six = tidy([].concat(...rot)), five = tidy([].concat(...rot5));
+  return { year5: five.length ? five : all, year6: six.length ? six : all, year7: six.length ? six : all };
 })();
 
 const YEARS = {
@@ -206,7 +210,7 @@ function renderYear(y, c) {
           <div class="min-w-0 sm:w-[300px] sm:flex-none"><label for="${y}-email" class="t-label mb-2 block">Email</label>
             <input id="${y}-email" class="field" type="email" required autocomplete="email" placeholder="Enter your school email address"></div>
           <div class="min-w-0 sm:w-[10rem] sm:flex-none"><label for="${y}-school" class="t-label mb-2 block">School</label>
-            <select id="${y}-school" class="field" required><option value="" selected disabled>Select your school</option>${SCHOOLS.map(n => `<option value="${n}">${n}</option>`).join("")}</select></div>
+            <select id="${y}-school" class="field" required><option value="" selected disabled>Select your school</option>${(SCHOOLS_BY_YEAR[y] || []).map(n => `<option value="${n}">${n}</option>`).join("")}</select></div>
           <div class="min-w-0 sm:w-[10rem] sm:flex-none"><label for="${y}-week" class="t-label mb-2 block">Week</label>
             <input id="${y}-week" class="field" type="text" inputmode="numeric" maxlength="3" required autocomplete="off" placeholder="No."></div>
           <p class="t-help min-w-0 max-w-xs text-sm leading-relaxed lg:flex-1">${c.emailHelp}</p>
