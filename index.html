@@ -94,20 +94,32 @@
     @media(prefers-reduced-motion:reduce){.yp-go,.yp-dot,.yp-chev,.yp-txt{transition:none!important}.yp-list{animation:none}}
     /* ---- Variant B: segmented year switcher ---- */
     .yp{grid-template-columns:1fr!important}
-    .yp-seg{position:relative;display:grid;grid-template-columns:repeat(3,1fr);padding:6px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid var(--edge);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 14px 40px rgba(1,10,37,.3),inset 0 1px 0 rgba(255,255,255,.14)}
-    .yp-thumb{position:absolute;top:6px;bottom:6px;left:6px;width:calc((100% - 12px)/3);border-radius:999px;background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 6px 20px var(--dg);transition:transform .45s cubic-bezier(.3,1.3,.5,1),--c1 .5s,--c2 .5s,box-shadow .5s}
+    .yp-seg{position:relative;display:grid;grid-template-columns:repeat(3,1fr);padding:4px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid var(--edge);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 14px 40px rgba(1,10,37,.3),inset 0 1px 0 rgba(255,255,255,.14)}
+    .yp-thumb{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/3);border-radius:999px;background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 6px 20px var(--dg);transition:transform .45s cubic-bezier(.3,1.3,.5,1),--c1 .5s,--c2 .5s,box-shadow .5s}
     .yp-seg[data-y="5"]{--c1:#e2d0ff;--c2:#a183ee;--dg:rgba(161,131,238,.6)}
     .yp-seg[data-y="6"]{--c1:#fff37b;--c2:#67e8f9;--dg:rgba(103,232,249,.5)}
     .yp-seg[data-y="7"]{--c1:#1e4f96;--c2:#3179b9;--dg:rgba(49,121,185,.6)}
     .yp-seg[data-y="5"] .yp-thumb{transform:translateX(0)}
     .yp-seg[data-y="6"] .yp-thumb{transform:translateX(100%)}
     .yp-seg[data-y="7"] .yp-thumb{transform:translateX(200%)}
-    .yp-seg button{position:relative;z-index:1;padding:.65rem .5rem;border:0;border-radius:999px;background:none;font:inherit;font-size:16px;font-weight:700;color:#d6e4f7;cursor:pointer;transition:color .3s}
+    .yp-seg button{position:relative;z-index:1;padding:.38rem .5rem;border:0;border-radius:999px;background:none;font:inherit;font-size:15px;font-weight:700;color:#d6e4f7;cursor:pointer;transition:color .3s}
     .yp-seg button[aria-checked="true"]{color:var(--sel,#073d67)}
     .yp-seg[data-y="7"] button[aria-checked="true"]{color:#f4f9ff}
     .yp-seg[data-y="5"] button[aria-checked="true"]{color:#2a0f5e}
     .yp-seg button:focus-visible{outline:3px solid #79ebdd;outline-offset:2px}
     .yp-go{min-height:150px!important}
+    /* A thin line of teal, cyan, blue, yellow and purple slowly travels around the feedback button's frame.
+       No glow at rest; on hover it gets a very small glow. */
+    @property --yp-ring{syntax:"<angle>";inherits:false;initial-value:0deg}
+    .yp-go{position:relative}
+    .yp-go::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;z-index:5;
+      background:conic-gradient(from var(--yp-ring),#36d9c5,#3fd0ff,#4f7dff,#ffe14a,#a77bff,#36d9c5);
+      -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+      mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
+      animation:ypRing 9s linear infinite}
+    .yp-go:hover,.yp-go:focus-visible{box-shadow:0 0 10px rgba(150,215,255,.45),0 25px 50px -12px rgba(0,0,0,.25)}
+    @keyframes ypRing{to{--yp-ring:360deg}}
+    @media(prefers-reduced-motion:reduce){.yp-go::before{animation:none}}
     .meet-card{width:100%;display:flex;flex-direction:column;justify-content:space-between;gap:.7rem;padding:1.1rem 1.5rem;color:var(--t-label)}
     .meet-title{margin:0;font-size:22px;font-weight:700;color:var(--t-title)}
     .meet-head{display:flex;align-items:baseline;justify-content:space-between;gap:1rem}
