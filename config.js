@@ -59,9 +59,42 @@ window.IPT_CONFIG = {
       ["Esenşehir", "İncek"],
       ["Maslak", "Sancaktepe", "Kurtköy"]
     ]
-    // Year 5 (optional): add a schedule like the one above, one group of schools per Monday, and Year 5 will show up in
-    // the admin "Schools yet to respond" card and in the School dropdown. Example:
-    // , year5: [ ["School A", "School B"], ["School C", "School D"] ]
+    ,
+    // Year 5: ONE school per Monday, in this order, starting on year5Start. It does not repeat: after the last
+    // school the Year 5 rows simply stop. A Monday listed in year5Skip (holiday) is skipped, and the list waits
+    // so no school is lost: every school after it moves one Monday later.
+    year5Start: "2026-10-19",                         // the Monday the first Year 5 school gives feedback
+    year5Skip: [],                                    // holiday Mondays to skip, e.g. ["2026-12-28", "2027-01-04"]
+    year5: [
+      ["Bursa"],
+      ["Çamlıca"],
+      ["Çayyolu"],
+      ["Esenşehir"],
+      ["Halkalı"],
+      ["İskenderun"],
+      ["Kayseri"],
+      ["Koşuyolu"],
+      ["Kurtköy"],
+      ["Maslak"],
+      ["Sancaktepe"],
+      ["Ataşehir"],
+      ["Antalya"],
+      ["Bahçeşehir"],
+      ["Bursa"],
+      ["Çamlıca"],
+      ["Çayyolu"],
+      ["Esenşehir"],
+      ["Halkalı"],
+      ["İskenderun"],
+      ["Kayseri"],
+      ["Koşuyolu"],
+      ["Kurtköy"],
+      ["Maslak"],
+      ["Sancaktepe"],
+      ["Ataşehir"],
+      ["Antalya"],
+      ["Bahçeşehir"]
+    ]
   },
 
   /* ----- Help & FAQ window (the "Help" button). Add, remove or reword any question. ----- */
@@ -83,4 +116,18 @@ window.IPT_CONFIG = {
     { q: "Who receives my feedback?",
       a: "It is saved securely and only the IPT team can read it, together with the school email address you entered, so they can follow up if needed." }
   ]
+};
+
+/* Year 5 schedule helper (used by the calendar and the admin page). Give it a Monday as "YYYY-MM-DD";
+   it returns that Monday's school list, or null when Year 5 has no feedback that day. */
+window.IPT_year5For = function (iso) {
+  var R = (window.IPT_CONFIG || {}).rotation || {};
+  if (!Array.isArray(R.year5) || !R.year5.length || !R.year5Start) return null;
+  var day = function (t) { return Math.round(Date.parse(t + "T00:00:00Z") / 864e5); };
+  var w = day(iso) - day(R.year5Start);
+  if (!(w >= 0) || w % 7) return null;
+  var skip = (R.year5Skip || []).map(day), d = day(iso);
+  if (skip.indexOf(d) > -1) return null;
+  var k = w / 7 - skip.filter(function (x) { return x >= day(R.year5Start) && x < d && (x - day(R.year5Start)) % 7 === 0; }).length;
+  return R.year5[k] || null;
 };
