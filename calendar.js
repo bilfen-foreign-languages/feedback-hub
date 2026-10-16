@@ -1,3 +1,4 @@
+/* IPT Feedback · Created by Ufuk Korkmaz, 2026. */
 /* ============ SCHOOL SCHEDULE CALENDAR ============ */
 (function () {
   /* ---------- SETTINGS (edit here) ---------- */
@@ -70,7 +71,9 @@
     const w = dn(date) - startN;
     if (w < 0 || w % 7 !== 0) return null;
     const i = (w / 7) % YEAR6.length;
-    return { y6: YEAR6[i], y7: YEAR7[i] };
+    const dt = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const iso = dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0") + "-" + String(dt.getDate()).padStart(2, "0");
+    return { y5: window.IPT_year5For ? window.IPT_year5For(iso) : null, y6: YEAR6[i], y7: YEAR7[i] };
   }
 
   /* ---------- BUILD ---------- */
@@ -121,7 +124,7 @@
       const [yy, mm, dd] = btn.dataset.date.split("-").map(Number);
       const date = new Date(yy, mm - 1, dd), s = schools(date);
       if (!s) return;
-      tip.innerHTML = `<strong>${fmt(date, { weekday: "long", day: "numeric", month: "long" })}</strong>${line("Year 6", s.y6)}${line("Year 7", s.y7)}`;
+      tip.innerHTML = `<strong>${fmt(date, { weekday: "long", day: "numeric", month: "long" })}</strong>${s.y5 ? line("Year 5", s.y5) : ""}${line("Year 6", s.y6)}${line("Year 7", s.y7)}`;
       tip.hidden = false;
       const w = tip.offsetWidth;
       const cx = btn.offsetLeft + btn.offsetWidth / 2;   // position inside the panel (not affected by page scaling)
@@ -195,6 +198,7 @@
       if (u) {
         box.innerHTML =
           `<div class="fw-head"><span class="fw-title">Feedback this week</span><span class="fw-date">${fmt(up, { weekday: "short", day: "numeric", month: "short" })}</span></div>` +
+          (u.y5 ? `<div class="fw-row"><span class="fw-chip fw-chip-5">Year 5</span><span class="fw-schools">${u.y5.join(", ")}</span></div>` : "") +
           `<div class="fw-row"><span class="fw-chip fw-chip-6">Year 6</span><span class="fw-schools">${u.y6.join(", ")}</span></div>` +
           `<div class="fw-row"><span class="fw-chip fw-chip-7">Year 7</span><span class="fw-schools">${u.y7.join(", ")}</span></div>`;
       }
