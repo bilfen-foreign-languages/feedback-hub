@@ -45,7 +45,7 @@ const ALLOWED_EMAIL_DOMAIN = CFG.emailDomain || "bilfen.k12.tr";
 const EMAIL_WARNING = "Please enter with your Bilfen credentials. Your school email must end with @" + ALLOWED_EMAIL_DOMAIN + ".";
 const EMAIL_RE = new RegExp("^[^\\s@]+@" + ALLOWED_EMAIL_DOMAIN.replace(/\./g, "\\.") + "$", "i");
 
-// The schools shown in the "School" box, alphabetical. Year 5 shows the Year 5 schools; Year 6 and 7 show the Year 6/7 schools.
+// The schools shown in the "School" box, alphabetical. Year 5 shows the Year 5 schools; Year 6 and 7 show every school.
 // (If config.js has a plain `schools` list, everyone gets that list.)
 const tidy = list => Array.from(new Set(list.map(x => String(x).trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b, "tr"));
 const SCHOOLS_BY_YEAR = (() => {
@@ -54,7 +54,7 @@ const SCHOOLS_BY_YEAR = (() => {
   const all = tidy([].concat(...rot, ...rot5));
   if (Array.isArray(CFG.schools) && CFG.schools.length) { const t = tidy(CFG.schools); return { year5: t, year6: t, year7: t }; }
   const six = tidy([].concat(...rot)), five = tidy([].concat(...rot5));
-  return { year5: five.length ? five : all, year6: six.length ? six : all, year7: six.length ? six : all };
+  return { year5: five.length ? five : all, year6: all, year7: all };   // Years 6 and 7 list every school (their own plus Year 5's)
 })();
 
 const YEARS = {
