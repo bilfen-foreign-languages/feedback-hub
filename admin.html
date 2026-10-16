@@ -464,11 +464,11 @@
   var ROTA = CFG.rotation || {};
   var ROT6 = (Array.isArray(ROTA.year6) && ROTA.year6.length) ? ROTA.year6 : [["Antalya", "Ataşehir"], ["Bahçeşehir", "Bornova"], ["Bursa", "Çamlıca"], ["Çayyolu", "Çukurambar"], ["Esenşehir", "İncek"], ["Maslak", "Sancaktepe", "Kurtköy"]];
   var ROT7 = ROT6.slice().reverse(), CYCLE0 = ROTA.cycleStart || "2026-10-05";
-  var ROT5 = (Array.isArray(ROTA.year5) && ROTA.year5.length) ? ROTA.year5 : null;     // Year 5 only appears here once config.js has a year5 schedule
+  var ROT5 = (Array.isArray(ROTA.year5) && ROTA.year5.length) ? ROTA.year5 : null;     // Year 5 only appears here once config.js has a year5 schedule (own start date, one school per Monday)
   function dayNo(ymd) { return Math.round(Date.parse(ymd + "T00:00:00Z") / 864e5); }
   function scheduleFor(mon) {      // schools scheduled for a Monday, or null before the rotation starts
     var w = dayNo(mon) - dayNo(CYCLE0); if (w < 0 || w % 7) return null;
-    var i = (w / 7) % ROT6.length, r = { 6: ROT6[i], 7: ROT7[i] }; if (ROT5) r[5] = ROT5[(w / 7) % ROT5.length]; return r;
+    var i = (w / 7) % ROT6.length, r = { 6: ROT6[i], 7: ROT7[i] }; var s5 = ROT5 && window.IPT_year5For ? window.IPT_year5For(mon) : null; if (s5) r[5] = s5; return r;
   }
   var missBuilt = false;
   function buildMissWeeks() {
