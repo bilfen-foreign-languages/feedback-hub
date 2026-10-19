@@ -52,12 +52,14 @@ window.IPT_CONFIG = {
     cycleStart: "2026-10-05",                         // the Monday when the first group starts (YYYY-MM-DD, must be a Monday)
     // Year 6: one group of schools per Monday, repeating forever. Year 7 uses the same list from the bottom up.
     year6: [
-      ["Antalya", "Ataşehir"],
-      ["Bahçeşehir", "Bornova"],
-      ["Bursa", "Çamlıca"],
-      ["Çayyolu", "Çukurambar"],
-      ["Esenşehir", "İncek"],
-      ["Maslak", "Sancaktepe", "Kurtköy"]
+      ["Antalya", "Sancaktepe"],
+      ["Ataşehir", "Maslak"],
+      ["Bahçeşehir", "Kurtköy"],
+      ["Bornova", "Kayseri"],
+      ["Bursa", "İskenderun"],
+      ["Çamlıca", "Halkalı"],
+      ["İncek", "Güzelbahçe"],
+      ["Çayyolu", "Esenşehir"]
     ]
     ,
     // Year 5: ONE school per Monday, in this order, starting on year5Start. It does not repeat: after the last
