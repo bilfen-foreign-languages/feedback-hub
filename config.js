@@ -113,8 +113,8 @@ window.IPT_CONFIG = {
     { date: "12-31", to: "01-01", greet: "Happy New Year,", banner: "Happy New Year! Wishing you a wonderful year ahead. 🎆", effect: "confetti" },
     { date: "12-20", to: "01-03", effect: "snow" },
     { date: "03-08", greet: "Happy Women's Day,", banner: "Happy International Women's Day! 💐", effect: "confetti", colors: ["#a183ee", "#ff9ec7", "#ffffff", "#52d9ca"] },
-    { date: "03-18", greet: "In remembrance,", banner: "Today we remember the heroes of Çanakkale with respect and gratitude.", solemn: true },
-    { date: "04-23", greet: "Happy 23 Nisan,", banner: "Happy National Sovereignty and Children's Day! 23 Nisan kutlu olsun! 🎈", effect: "confetti" },
+    { date: "03-18", greet: "In remembrance,", banner: "Today we remember the heroes of Çanakkale with respect and gratitude.", solemn: true, noName: true },
+    { date: "04-23", greet: "Happy Children's Day,", banner: "Happy Children's Day! 23 Nisan kutlu olsun! 🎈", effect: "confetti" },
     { date: "05-01", greet: "Happy Labour Day,", banner: "Happy Labour and Solidarity Day! 🌷", effect: "confetti" },
     { date: "05-19", greet: "Happy 19 Mayıs,", banner: "Happy Atatürk Commemoration, Youth and Sports Day! 19 Mayıs kutlu olsun! ⚽", effect: "confetti" }
   ],
