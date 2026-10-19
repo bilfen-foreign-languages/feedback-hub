@@ -51,7 +51,7 @@
   /* the line shown on the welcome screen: { hello, tail } */
   function line(back) {
     var occ = first(today(), "greet");
-    if (occ) return { hello: occ.greet, tail: occ.solemn ? "." : "!" };
+    if (occ) return occ.noName ? { hello: occ.greet.replace(/[,.!\s]+$/, ""), tail: "", noName: true } : { hello: occ.greet, tail: occ.solemn ? "." : "!" };
     if (!back) return { hello: "Welcome,", tail: "!" };
     var t = now(), p = pool(t), last = read("ipt-greet"), pick;
     var opts = p.filter(function (x) { return x !== last; }); if (!opts.length) opts = p;
@@ -61,26 +61,30 @@
   }
 
   /* ---------- the message on the home page ---------- */
+  function css() {
+    if (document.getElementById("occ-css")) return;
+    var st = document.createElement("style"); st.id = "occ-css";
+    st.textContent =
+      ".occ-pill{margin:.9rem auto 0;max-width:34rem;padding:.6rem 1.1rem;border-radius:999px;font-size:15px;font-weight:600;line-height:1.35;color:#f4f9ff;text-align:center;" +
+      "background:linear-gradient(135deg,rgba(82,217,202,.22),rgba(161,131,238,.22));border:1px solid rgba(255,255,255,.3);box-shadow:0 10px 30px rgba(1,10,37,.28),inset 0 1px 0 rgba(255,255,255,.2)}" +
+      ".occ-pill.solemn{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25);font-weight:500}" +
+      ".occ-pill{animation:occIn .7s cubic-bezier(.2,.8,.2,1) .35s backwards}@keyframes occIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}" +
+      "@media(prefers-reduced-motion:reduce){.occ-pill{animation:none}}" +
+      ".occ-fx{position:fixed;left:0;top:0;width:100vw;height:100vh;pointer-events:none;z-index:9400}";
+    document.head.appendChild(st);
+  }
+
   function pill() {
     var list = today(), occ = first(list, "banner"), hub = document.querySelector("#menu-view .menu-hub");
     if (!occ || !hub || hub.querySelector(".occ-pill")) return;
-    if (!document.getElementById("occ-css")) {
-      var st = document.createElement("style"); st.id = "occ-css";
-      st.textContent =
-        ".occ-pill{margin:.9rem auto 0;max-width:34rem;padding:.6rem 1.1rem;border-radius:999px;font-size:15px;font-weight:600;line-height:1.35;color:#f4f9ff;text-align:center;" +
-        "background:linear-gradient(135deg,rgba(82,217,202,.22),rgba(161,131,238,.22));border:1px solid rgba(255,255,255,.3);box-shadow:0 10px 30px rgba(1,10,37,.28),inset 0 1px 0 rgba(255,255,255,.2)}" +
-        ".occ-pill.solemn{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25);font-weight:500}" +
-        ".occ-pill{animation:occIn .7s cubic-bezier(.2,.8,.2,1) .35s backwards}@keyframes occIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}" +
-        "@media(prefers-reduced-motion:reduce){.occ-pill{animation:none}}" +
-        ".occ-fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9400}";
-      document.head.appendChild(st);
-    }
+    css();
     var d = document.createElement("div"); d.className = "occ-pill" + (occ.solemn ? " solemn" : ""); d.setAttribute("role", "note");
     d.textContent = occ.banner; hub.appendChild(d);
   }
 
   /* ---------- effects: confetti once a day, snow while the home page is open ---------- */
   function canvas() {
+    css();
     var c = document.createElement("canvas"); c.className = "occ-fx"; c.setAttribute("aria-hidden", "true");
     document.body.appendChild(c); var x = c.getContext("2d"); if (!x) { c.remove(); return null; }
     function size() { var r = window.devicePixelRatio || 1; c.width = innerWidth * r; c.height = innerHeight * r; x.setTransform(r, 0, 0, r, 0, 0); }
