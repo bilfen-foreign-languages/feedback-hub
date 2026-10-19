@@ -8,7 +8,7 @@
    ============================================================================ */
 (function () {
   "use strict";
-  var KEY = "ipt-name", SKIPPED = "ipt-name-skipped", SHOW_MS = 1500;
+  var KEY = "ipt-name", SKIPPED = "ipt-name-skipped", SHOW_MS = 3000;
   var reduce = function () { return window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches; };
 
   function read(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
@@ -117,8 +117,9 @@
   function splash(o, name, back, onStartFade) {
     o.className = "ws-overlay splash"; o.classList.add("show");
     o.innerHTML = '<div class="ws-splash" role="status">' + SATURN + '<p class="ws-line"><span class="ws-hello"></span> <span class="ws-name"></span></p></div>';
-    o.querySelector(".ws-hello").textContent = back ? "Welcome back," : "Welcome,";
-    o.querySelector(".ws-name").textContent = name + "!";
+    var g = null; try { g = window.IPTGreet && window.IPTGreet.line(back); } catch (e) {}      // changing greetings and special days (occasions.js)
+    o.querySelector(".ws-hello").textContent = g ? g.hello : (back ? "Welcome back," : "Welcome,");
+    o.querySelector(".ws-name").textContent = name + (g ? g.tail : "!");
     (function fit(){
       var el = o.querySelector(".ws-line"), max = window.innerWidth * 0.9;
       el.style.display = "inline-block";
