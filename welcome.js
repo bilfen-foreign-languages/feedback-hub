@@ -119,7 +119,7 @@
     o.innerHTML = '<div class="ws-splash" role="status">' + SATURN + '<p class="ws-line"><span class="ws-hello"></span> <span class="ws-name"></span></p></div>';
     var g = null; try { g = window.IPTGreet && window.IPTGreet.line(back); } catch (e) {}      // changing greetings and special days (occasions.js)
     o.querySelector(".ws-hello").textContent = g ? g.hello : (back ? "Welcome back," : "Welcome,");
-    o.querySelector(".ws-name").textContent = name + (g ? g.tail : "!");
+    o.querySelector(".ws-name").textContent = g && g.noName ? "" : name + (g ? g.tail : "!");
     (function fit(){
       var el = o.querySelector(".ws-line"), max = window.innerWidth * 0.9;
       el.style.display = "inline-block";
