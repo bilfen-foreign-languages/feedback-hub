@@ -45,7 +45,7 @@
       ".ws-overlay.show .ws-card{transform:none}" +
       ".ws-card .ws-saturn{width:5.2rem;height:auto;margin:-.2rem auto .5rem;display:block;filter:drop-shadow(0 0 16px rgba(121,235,221,.5))}" +
       ".ws-kicker{margin:0;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#79ebdd;font-weight:700}" +
-      ".ws-title{margin:.35rem 0 0;font-family:Fraunces,Georgia,serif;font-weight:700;font-size:30px;line-height:1.15}" +
+      ".ws-title{margin:.35rem 0 0;font-family:Montserrat,'Ubuntu',system-ui,sans-serif;font-weight:700;font-size:30px;line-height:1.15}" +
       ".ws-field{position:relative;margin:1.4rem 0 0;border-radius:18px;padding:2px;background:conic-gradient(from var(--ws-angle,0deg),#3fc7ff,#36d9c5,#fff,#a9d2ff,#3fc7ff);animation:wsSpin 6s linear infinite;box-shadow:0 0 22px rgba(63,199,255,.35)}" +
       "@keyframes wsSpin{to{--ws-angle:360deg}}" +
       ".ws-field input{display:block;width:100%;border:0;outline:0;border-radius:16px;padding:.95rem 1.1rem;font:600 20px Work Sans,system-ui,sans-serif;text-align:center;color:#fff;background:#0b1d4d;caret-color:#79ebdd}" +
@@ -59,7 +59,7 @@
       ".ws-splash{text-align:center;color:#fff;padding:1rem}" +
       ".ws-splash .ws-saturn{width:min(34vw,9rem);height:auto;display:block;margin:0 auto 1.2rem;filter:drop-shadow(0 0 26px rgba(121,235,221,.55));animation:wsIn 1s cubic-bezier(.2,.8,.2,1) both}" +
       "@keyframes wsIn{0%{opacity:0;transform:scale(.6) rotate(-180deg)}40%{opacity:1}100%{opacity:1;transform:none}}" +
-      ".ws-line{margin:0;font-family:Fraunces,Georgia,serif;font-weight:600;font-size:clamp(20px,4.2vw,30px);letter-spacing:.2em;text-transform:uppercase;white-space:nowrap;animation:wsUp .8s cubic-bezier(.2,.8,.2,1) .35s both}" +
+      ".ws-line{margin:0;font-family:Montserrat,'Ubuntu',system-ui,sans-serif;font-weight:600;font-size:clamp(20px,4.2vw,30px);letter-spacing:.2em;text-transform:uppercase;white-space:nowrap;animation:wsUp .8s cubic-bezier(.2,.8,.2,1) .35s both}" +
       ".ws-hello{color:#d6e2fb}" +
       ".ws-name{color:#fff;text-shadow:0 0 12px rgba(255,255,255,.6),0 0 30px rgba(121,235,221,.8),0 0 64px rgba(101,143,241,.7);animation:wsGlow 2.2s ease-in-out 1.2s infinite alternate}" +
       "@keyframes wsUp{from{opacity:0;transform:translateY(18px) scale(.96)}to{opacity:1;transform:none}}" +
@@ -120,13 +120,15 @@
     var g = null; try { g = window.IPTGreet && window.IPTGreet.line(back); } catch (e) {}      // changing greetings and special days (occasions.js)
     o.querySelector(".ws-hello").textContent = g ? g.hello : (back ? "Welcome back," : "Welcome,");
     o.querySelector(".ws-name").textContent = g && g.noName ? "" : name + (g ? g.tail : "!");
-    (function fit(){
+    function fit() {
       var el = o.querySelector(".ws-line"), max = window.innerWidth * 0.9;
-      el.style.display = "inline-block";
+      el.style.letterSpacing = ""; el.style.fontSize = ""; el.style.display = "inline-block";
       var w = el.getBoundingClientRect().width, fs = parseFloat(getComputedStyle(el).fontSize);
       if (w > max) { el.style.letterSpacing = ".06em"; w = el.getBoundingClientRect().width; }
       if (w > max) el.style.fontSize = Math.max(10, Math.floor(fs * max / w)) + "px";
-    })();
+    }
+    fit();
+    try { if (document.fonts && document.fonts.load) document.fonts.load("600 24px Montserrat").then(fit, function () {}); } catch (e) {}   // measure again once the font has arrived
     var ended = false;
     function end() {
       if (ended) return; ended = true; clearTimeout(t);
