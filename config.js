@@ -52,14 +52,12 @@ window.IPT_CONFIG = {
     cycleStart: "2026-10-05",                         // the Monday when the first group starts (YYYY-MM-DD, must be a Monday)
     // Year 6: one group of schools per Monday, repeating forever. Year 7 uses the same list from the bottom up.
     year6: [
-      ["Antalya", "Sancaktepe"],
-      ["Ataşehir", "Maslak"],
-      ["Bahçeşehir", "Kurtköy"],
-      ["Bornova", "Kayseri"],
-      ["Bursa", "İskenderun"],
-      ["Çamlıca", "Halkalı"],
-      ["İncek", "Güzelbahçe"],
-      ["Çayyolu", "Esenşehir"]
+      ["Antalya", "Ataşehir"],
+      ["Bahçeşehir", "Bornova"],
+      ["Bursa", "Çamlıca"],
+      ["Çayyolu", "Çukurambar"],
+      ["Esenşehir", "İncek"],
+      ["Maslak", "Sancaktepe", "Kurtköy"]
     ]
     ,
     // Year 5: ONE school per Monday, in this order, starting on year5Start. It does not repeat: after the last
@@ -98,6 +96,29 @@ window.IPT_CONFIG = {
       ["Bahçeşehir"]
     ]
   },
+
+  /* ----- Special days (greeting on the welcome screen, a message on the home page, optional effect) -----
+     date: "MM-DD" repeats every year, or "YYYY-MM-DD" for one year only. to: (optional) the last day of a range.
+     greet: replaces the welcome line that day, e.g. "Happy Teachers' Day," (keep the comma at the end).
+     banner: the message shown on the home page.   effect: "confetti" (once a day) or "snow" (while the home page is open).
+     colors: (optional) confetti colours.   solemn: true = quiet day: no effect and a calm tone.
+     The first matching line decides the greeting and the message, so put the specific days above season lines.
+     Religious holidays move every year, so their dates are for 2027; add next year's when you know them. */
+  occasions: [
+    { date: "10-05", greet: "Happy World Teachers' Day,", banner: "Happy World Teachers' Day! Thank you for everything you do. 🍎", effect: "confetti" },
+    { date: "10-29", greet: "Happy Republic Day,", banner: "Happy Republic Day! Cumhuriyet Bayramımız kutlu olsun! 🎉", effect: "confetti", colors: ["#e30a17", "#ffffff", "#f5c542"] },
+    { date: "11-10", greet: "In remembrance,", banner: "Today we remember Mustafa Kemal Atatürk with respect and gratitude.", solemn: true },
+    { date: "11-24", greet: "Happy Teachers' Day,", banner: "Happy Teachers' Day! Thank you for inspiring our students every day. 🍎", effect: "confetti" },
+    { date: "12-31", to: "01-01", greet: "Happy New Year,", banner: "Happy New Year! Wishing you a wonderful year ahead. 🎆", effect: "confetti" },
+    { date: "12-20", to: "01-03", effect: "snow" },
+    { date: "03-08", greet: "Happy Women's Day,", banner: "Happy International Women's Day! 💐", effect: "confetti", colors: ["#a183ee", "#ff9ec7", "#ffffff", "#52d9ca"] },
+    { date: "03-18", greet: "In remembrance,", banner: "Today we remember the heroes of Çanakkale with respect and gratitude.", solemn: true },
+    { date: "2027-03-09", to: "2027-03-11", greet: "Happy Eid,", banner: "Ramazan Bayramınız kutlu olsun! Happy Eid al-Fitr! 🌙", effect: "confetti", colors: ["#f5c542", "#52d9ca", "#ffffff"] },
+    { date: "04-23", greet: "Happy 23 Nisan,", banner: "Happy National Sovereignty and Children's Day! 23 Nisan kutlu olsun! 🎈", effect: "confetti" },
+    { date: "05-01", greet: "Happy Labour Day,", banner: "Happy Labour and Solidarity Day! 🌷", effect: "confetti" },
+    { date: "2027-05-16", to: "2027-05-19", greet: "Happy Eid,", banner: "Kurban Bayramınız kutlu olsun! Happy Eid al-Adha! 🌙", effect: "confetti", colors: ["#f5c542", "#52d9ca", "#ffffff"] },
+    { date: "05-19", greet: "Happy 19 Mayıs,", banner: "Happy Atatürk Commemoration, Youth and Sports Day! 19 Mayıs kutlu olsun! ⚽", effect: "confetti" }
+  ],
 
   /* ----- Help & FAQ window (the "Help" button). Add, remove or reword any question. ----- */
   faq: [
