@@ -104,8 +104,7 @@
       "#wx-glow.on{opacity:1;animation:wxBreathe 9s ease-in-out infinite alternate}#wx-glow.on.still{animation:none}" +
       "@keyframes wxBreathe{from{filter:brightness(.88)}to{filter:brightness(1.12)}}" +
       "#wx-fx{opacity:0;transition:opacity 1.6s ease}#wx-fx.on{opacity:1}" +
-      ".wx-wrap{position:relative;display:block;margin:.7rem auto 0;text-align:center}" +
-      ".wx-chip{display:inline-flex;align-items:center;gap:.4rem;height:26px;padding:0 10px;border-radius:999px;" +
+      ".wx-chip{position:fixed;left:44px;bottom:12px;z-index:9600;display:none;align-items:center;gap:.4rem;height:22px;padding:0 9px;border-radius:999px;transition:left .3s ease;" +
         "font:500 12.5px 'Work Sans',system-ui,sans-serif;color:#d6e2fb;background:rgba(6,22,60,.5);border:1px solid rgba(225,244,255,.24);" +
         "backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);cursor:pointer;white-space:nowrap}" +
       ".wx-chip:hover{background:rgba(6,22,60,.72)}" +
@@ -338,6 +337,26 @@
     var gb = pop && pop.querySelector("[data-geo]"); if (gb) gb.setAttribute("aria-pressed", String(!!pl.geo));
     var t = pop && pop.querySelector("[data-toggle]"); if (t) { t.setAttribute("aria-pressed", String(!off)); t.firstChild.textContent = "Weather effects"; }
   }
+  var whoRO = null, whoEl = null;
+  function syncChip() {
+    if (!chip) return;
+    var mv = document.getElementById("menu-view"), home = !mv || mv.classList.contains("active");
+    chip.style.display = home ? "inline-flex" : "none";
+    var w = document.querySelector(".ws-whoami"), visible = w && w.offsetWidth > 0;
+    if (w !== whoEl) {                                              // the dot is rebuilt when the name changes: watch the new one
+      if (whoRO) { whoRO.disconnect(); whoRO = null; }
+      whoEl = w || null;
+      if (w && window.ResizeObserver) { whoRO = new ResizeObserver(syncChip); whoRO.observe(w); }
+    }
+    chip.style.left = (visible ? Math.round(w.getBoundingClientRect().right) + 8 : 12) + "px";
+    if (pop && pop.classList.contains("open")) placePop();
+  }
+  function placePop() {
+    var r = chip.getBoundingClientRect(), w = pop.offsetWidth || 200, h = pop.offsetHeight || 260;
+    var x = clamp(r.left, 8, window.innerWidth - w - 8), y = r.bottom + 6;
+    if (y + h > window.innerHeight - 8) y = Math.max(8, r.top - h - 6);
+    pop.style.left = x + "px"; pop.style.top = y + "px";
+  }
   function buildChip() {
     chip = document.createElement("button"); chip.type = "button"; chip.className = "wx-chip"; chip.setAttribute("aria-haspopup", "true"); chip.setAttribute("aria-expanded", "false");
     chip.innerHTML = '<span class="wx-i" aria-hidden="true">🌤️</span><span class="wx-t"></span>';
@@ -347,17 +366,11 @@
     h += '<hr><button type="button" data-geo aria-pressed="false"><span>📍 Use my exact location</span></button><p class="wx-note" role="status" hidden></p>';
     h += '<hr><button type="button" data-toggle aria-pressed="true"><span>Weather effects</span></button>';
     pop.innerHTML = h;
-    var wrap = document.createElement("div"); wrap.className = "wx-wrap"; wrap.appendChild(chip);
-    var hub = document.querySelector("#menu-view .menu-hub"); (hub || document.body).appendChild(wrap); document.body.appendChild(pop);   // the menu sits on the page itself so no panel can cover it
+    document.body.appendChild(chip); document.body.appendChild(pop);   // fixed in the bottom-left corner, right next to the "change name" dot
+    syncChip();
     function close() { pop.classList.remove("open"); chip.setAttribute("aria-expanded", "false"); }
-    function place() {
-      var r = chip.getBoundingClientRect(), w = pop.offsetWidth || 200, h = pop.offsetHeight || 260;
-      var x = clamp(r.left + r.width / 2 - w / 2, 8, window.innerWidth - w - 8), y = r.bottom + 6;
-      if (y + h > window.innerHeight - 8) y = Math.max(8, r.top - h - 6);
-      pop.style.left = x + "px"; pop.style.top = y + "px";
-    }
-    chip.addEventListener("click", function (e) { e.stopPropagation(); var o = pop.classList.toggle("open"); chip.setAttribute("aria-expanded", String(o)); if (o) place(); });
-    window.addEventListener("scroll", function () { if (pop.classList.contains("open")) place(); }, true);
+    chip.addEventListener("click", function (e) { e.stopPropagation(); var o = pop.classList.toggle("open"); chip.setAttribute("aria-expanded", String(o)); if (o) placePop(); });
+    window.addEventListener("scroll", function () { if (pop.classList.contains("open")) placePop(); }, true);
     pop.addEventListener("click", function (e) {
       e.stopPropagation(); var b = e.target.closest && e.target.closest("button"); if (!b) return;
       var note = pop.querySelector(".wx-note"); note.hidden = true;
@@ -381,6 +394,11 @@
 
   function init() {
     css(); ensureLayers(); buildChip(); load();
+    try {
+      var mv = document.getElementById("menu-view"); if (mv) new MutationObserver(syncChip).observe(mv, { attributes: true, attributeFilter: ["class"] });
+      new MutationObserver(syncChip).observe(document.body, { childList: true });
+    } catch (e) {}
+    window.addEventListener("resize", syncChip); setTimeout(syncChip, 1500); setTimeout(syncChip, 4000);
     setInterval(function () { if (!document.hidden && !state.forced && !isOff()) load(); }, 30 * 60e3);   // refresh every half hour
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
