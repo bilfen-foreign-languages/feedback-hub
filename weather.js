@@ -19,7 +19,7 @@
   ];
   var WIND_KMH = CFG.windKmh || 32;                          // wind at or above this (km/h) counts as "windy"
   var K = typeof CFG.strength === "number" ? Math.max(0, Math.min(2, CFG.strength)) : 1;   // 1 = normal, 0.5 = fainter, 1.5 = stronger
-  var KEY = { geo: "ipt-wx-geo", place: "ipt-wx-place", off: "ipt-wx-off", force: "ipt-wx-force", cache: "ipt-wx-cache", snow0: "ipt-wx-snow0" };
+  var KEY = { slow: "ipt-wx-slow", strikes: "ipt-wx-strikes", on: "ipt-wx-on", geo: "ipt-wx-geo", place: "ipt-wx-place", off: "ipt-wx-off", force: "ipt-wx-force", cache: "ipt-wx-cache", snow0: "ipt-wx-snow0" };
   var ICON = { sun: "☀️", night: "🌙", cloud: "☁️", fog: "🌫️", rain: "🌧️", storm: "⛈️", snow: "❄️", wind: "💨" };
   var NAME = { sun: "Sunny", night: "Clear night", cloud: "Cloudy", fog: "Foggy", rain: "Rainy", storm: "Stormy", snow: "Snowy", wind: "Windy" };
   var COLOR = {   // glow colour (r,g,b)
@@ -30,6 +30,43 @@
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  /* ---------- slow computers: switch the effect off by itself ---------- */
+  var LOW_MODE = CFG.lowEndMode === "glow" ? "glow" : "off";          // "off" = nothing at all on a slow computer, "glow" = keep only the still glow
+  var lite = false, sessionSlow = false;
+  function userOff() { return lsGet(KEY.off) === "1"; }
+  function staticLow() {                                              // what the browser tells us about the computer
+    try {
+      var n = navigator, c = n.connection || {};
+      return !!((n.deviceMemory && n.deviceMemory <= 2) || (n.hardwareConcurrency && n.hardwareConcurrency <= 2) || c.saveData === true || /(^|slow-)2g$/.test(c.effectiveType || ""));
+    } catch (e) { return false; }
+  }
+  function slowRecent() { var t = parseInt(lsGet(KEY.slow) || "0", 10); return !!t && Date.now() - t < 7 * 864e5; }   // measured slow within the last week
+  function autoOff() { return CFG.autoLowEnd !== false && lsGet(KEY.on) !== "1" && (sessionSlow || slowRecent() || staticLow()); }
+  function isOff() { return userOff() || (autoOff() && LOW_MODE === "off"); }
+  var mon = { on: false, prev: 0, t0: 0, samples: [] };               // measures how smoothly the page really runs
+  function monitor(ts) {
+    if (!mon.on) return;
+    if (mon.prev) {
+      var d = ts - mon.prev;
+      if (d > 1000) { mon.samples = []; mon.t0 = 0; }                  // the tab was asleep: start the count again
+      else if (!mon.t0) { if (document.body.classList.contains("page-ready") || ts > 9000) mon.t0 = ts + 1500; }   // wait until the intro is over
+      else if (ts >= mon.t0) {
+        mon.samples.push(d);
+        if (mon.samples.length >= 90) {
+          mon.on = false; var a = mon.samples.slice().sort(function (x, y) { return x - y; });
+          if (a[a.length >> 1] > 42) slowDown();                       // typical frame slower than 42 ms = under about 24 pictures a second
+          else lsDel(KEY.strikes);
+        }
+      }
+    }
+    mon.prev = ts;
+  }
+  function slowDown() {
+    sessionSlow = true;                                              // off for this visit right away; remembered for a week only if it happens on two visits
+    var n = (parseInt(lsGet(KEY.strikes) || "0", 10) || 0) + 1; lsSet(KEY.strikes, String(n)); if (n >= 2) lsSet(KEY.slow, String(Date.now()));
+    if (LOW_MODE === "off") clearFx(); else { lite = true; stop(); if (cv) cv.classList.remove("on"); if (glow) glow.classList.add("still"); }
+    label();
+  }
   var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
   var rnd = function (a, b) { return a + Math.random() * (b - a); };
 
@@ -64,7 +101,7 @@
         "radial-gradient(140% 64% at 50% 114%,rgba(var(--wx),calc(.62*var(--k))),transparent 72%)," +
         "radial-gradient(70% 40% at 50% -8%,rgba(var(--wx),calc(.13*var(--k))),transparent 72%)," +
         "var(--wx-extra,none)}" +
-      "#wx-glow.on{opacity:1;animation:wxBreathe 9s ease-in-out infinite alternate}" +
+      "#wx-glow.on{opacity:1;animation:wxBreathe 9s ease-in-out infinite alternate}#wx-glow.on.still{animation:none}" +
       "@keyframes wxBreathe{from{filter:brightness(.88)}to{filter:brightness(1.12)}}" +
       "#wx-fx{opacity:0;transition:opacity 1.6s ease}#wx-fx.on{opacity:1}" +
       ".wx-wrap{position:relative;display:block;margin:.7rem auto 0;text-align:center}" +
@@ -226,13 +263,14 @@
 
   function loop(ts) {
     raf = requestAnimationFrame(loop);
+    monitor(ts);
     if (ts - last < 32) return;                                // about 30 frames a second is plenty for something this soft
     var dt = Math.min(.1, (ts - last) / 1000); last = ts;
     if (cur) step(dt);
   }
   function start() { if (!raf && !reduce) { last = performance.now(); raf = requestAnimationFrame(loop); } }
   function stop() { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
-  document.addEventListener("visibilitychange", function () { if (document.hidden) stop(); else if (cur && glow && glow.classList.contains("on")) start(); });
+  document.addEventListener("visibilitychange", function () { if (document.hidden) { stop(); mon.prev = 0; mon.samples = []; mon.t0 = 0; } else if (cur && !lite && glow && glow.classList.contains("on")) start(); });
 
   /* ---------- apply a weather ---------- */
   function apply(w) {
@@ -240,9 +278,11 @@
     try { var o = window.IPTGreet && window.IPTGreet.today && window.IPTGreet.today(); seasonalSnow = !!(o && o.effect === "snow"); } catch (e) { seasonalSnow = false; }
     glow.style.setProperty("--wx", COLOR[w.kind]);
     glow.style.setProperty("--wx-extra", w.kind === "sun" ? "radial-gradient(circle at 90% 4%,rgba(255,222,110,calc(.22*var(--k))),transparent 30%)" : w.kind === "night" ? "radial-gradient(circle at 88% 8%,rgba(205,215,255,calc(.14*var(--k))),transparent 18%)" : "none");
-    glow.classList.add("on"); cv.classList.add("on");
-    if (reduce) { ctx.clearRect(0, 0, W, H); return; }       // reduced motion: only the still glow
-    seed(); start();
+    glow.classList.add("on"); glow.classList.toggle("still", !!(lite || reduce)); cv.classList.toggle("on", !(lite || reduce));
+    if (lite || reduce) { ctx.clearRect(0, 0, W, H); return; }   // reduced motion or a slow computer: only the still glow
+    seed();
+    mon.on = CFG.autoLowEnd !== false && lsGet(KEY.on) !== "1" && !state.forced; mon.prev = 0; mon.t0 = 0; mon.samples = [];
+    start();
   }
   function clearFx() { stop(); cur = null; if (glow) { glow.classList.remove("on"); cv.classList.remove("on"); } }
 
@@ -265,9 +305,11 @@
     return COLOR[f] ? f : (f === "clear" ? "sun" : "");
   }
   function load() {
-    if (lsGet(KEY.off) === "1") { clearFx(); label(); return; }
+    if (userOff()) { clearFx(); label(); return; }
     var f = forced();
     if (f) { state = { temp: null, kind: f, forced: true }; apply({ kind: f, inten: f === "storm" ? 1.4 : 1, wind: f === "wind" || f === "storm" ? 40 : 0 }); label(); return; }
+    lite = false;
+    if (autoOff()) { if (LOW_MODE === "off") { clearFx(); label(); return; } lite = true; }   // slow computer: no moving effect, and no weather request at all
     var pl = placeNow(), cache = null;
     try { cache = JSON.parse(lsGet(KEY.cache) || "null"); } catch (e) {}
     var ck = pl.name + "|" + pl.lat + "|" + pl.lon;
@@ -288,8 +330,8 @@
   /* ---------- the small chip + place picker ---------- */
   function label() {
     if (!chip) return;
-    var off = lsGet(KEY.off) === "1", pl = placeNow();
-    chip.querySelector(".wx-t").textContent = off ? "Weather off" : (state.kind ? (state.forced ? NAME[state.kind] + " (test)" : (state.temp !== null ? state.temp + "°  " : "") + pl.name) : pl.name);
+    var uo = userOff(), off = uo || (!state.forced && isOff()), pl = placeNow();
+    chip.querySelector(".wx-t").textContent = off ? (uo ? "Weather off" : "Weather off · slow device") : (state.kind ? (state.forced ? NAME[state.kind] + " (test)" : (state.temp !== null ? state.temp + "°  " : "") + pl.name) : pl.name);
     chip.querySelector(".wx-i").textContent = (!off && state.kind) ? ICON[state.kind] : "🌤️";
     chip.setAttribute("aria-label", "Weather background: " + (off ? "off" : (state.kind ? NAME[state.kind] + " in " + pl.name : pl.name)) + ". Change");
     if (pop) [].forEach.call(pop.querySelectorAll("[data-place]"), function (b) { b.setAttribute("aria-pressed", String(!pl.geo && b.getAttribute("data-place") === pl.name)); });
@@ -328,7 +370,7 @@
         }, function () { note.textContent = "Location is blocked or unavailable. Pick a city instead."; note.hidden = false; }, { timeout: 10000, maximumAge: 600000 });
         return;
       }
-      if (b.hasAttribute("data-toggle")) { if (lsGet(KEY.off) === "1") lsDel(KEY.off); else lsSet(KEY.off, "1"); }
+      if (b.hasAttribute("data-toggle")) { if (isOff()) { lsDel(KEY.off); lsSet(KEY.on, "1"); lsDel(KEY.slow); lsDel(KEY.strikes); sessionSlow = false; } else lsSet(KEY.off, "1"); }   // turning it back on yourself overrides the automatic switch-off
       else if (b.getAttribute("data-place")) { lsSet(KEY.place, b.getAttribute("data-place")); lsDel(KEY.geo); lsDel(KEY.off); close(); }
       load(); label();
     });
@@ -339,7 +381,7 @@
 
   function init() {
     css(); ensureLayers(); buildChip(); load();
-    setInterval(function () { if (!document.hidden && !state.forced && lsGet(KEY.off) !== "1") load(); }, 30 * 60e3);   // refresh every half hour
+    setInterval(function () { if (!document.hidden && !state.forced && !isOff()) load(); }, 30 * 60e3);   // refresh every half hour
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 
