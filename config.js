@@ -126,12 +126,16 @@ window.IPT_CONFIG = {
      enabled: false switches it off for everyone.   defaultPlace: the city used until a visitor picks another.
      strength: 1 = normal, 0.6 = fainter, 1.4 = stronger.   windKmh: wind speed (km/h) from which it counts as windy.
      places: add or remove cities; lat and lon are the map coordinates.
+     autoLowEnd: true = a slow computer (little memory, few cores, data saver, or a page that really runs slowly) switches the effect off by itself.
+     lowEndMode: "off" = nothing at all on slow computers, "glow" = keep only the still soft glow. A visitor can always turn it back on from the chip.
      To test a weather without waiting for it, add ?wx=rain to the site address (rain, snow, sun, wind, cloud, fog, storm, night). */
   weather: {
     enabled: true,
     defaultPlace: "Istanbul",
     strength: 1,
     windKmh: 32,
+    autoLowEnd: true,
+    lowEndMode: "off",
     places: [
       { name: "Istanbul", lat: 41.01, lon: 28.98 },
       { name: "Ankara", lat: 39.93, lon: 32.86 },
