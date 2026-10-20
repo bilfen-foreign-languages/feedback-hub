@@ -109,17 +109,39 @@ window.IPT_CONFIG = {
      Holidays that move every year need their dates added when you know them (use the full YYYY-MM-DD form). */
   occasions: [
     { date: "10-05", greet: "Happy World Teachers' Day,", banner: "Happy World Teachers' Day! Thank you for everything you do. 🍎", effect: "confetti" },
-    { date: "10-29", greet: "Happy Republic Day,", banner: "Happy Republic Day! 🎉", effect: "confetti", colors: ["#e30a17", "#ffffff", "#f5c542"] },
+    { date: "10-29", greet: "Happy Republic Day,", banner: "Happy Republic Day! Cumhuriyet Bayramımız kutlu olsun! 🎉", effect: "confetti", colors: ["#e30a17", "#ffffff", "#f5c542"] },
     { date: "11-10", greet: "In remembrance,", banner: "Today we remember Mustafa Kemal Atatürk with respect and gratitude.", solemn: true, noName: true },
-    { date: "11-24", greet: "Happy Teachers' Day,", banner: "Happy Teachers' Day! Thank you for inspiring every day. 🍎", effect: "confetti" },
+    { date: "11-24", greet: "Happy Teachers' Day,", banner: "Happy Teachers' Day! Thank you for inspiring our students every day. 🍎", effect: "confetti" },
     { date: "12-31", to: "01-01", greet: "Happy New Year,", banner: "Happy New Year! Wishing you a wonderful year ahead. 🎆", effect: "confetti" },
     { date: "12-20", to: "01-03", effect: "snow" },
     { date: "03-08", greet: "Happy Women's Day,", banner: "Happy International Women's Day! 💐", effect: "confetti", colors: ["#a183ee", "#ff9ec7", "#ffffff", "#52d9ca"], noName: true },
     { date: "03-18", greet: "In remembrance,", banner: "Today we remember the heroes of Çanakkale with respect and gratitude.", solemn: true, noName: true },
-    { date: "04-23", greet: "Happy Children's Day,", banner: "Happy Children's Day! 🎈", effect: "confetti" },
+    { date: "04-23", greet: "Happy Children's Day,", banner: "Happy Children's Day! 23 Nisan kutlu olsun! 🎈", effect: "confetti" },
     { date: "05-01", greet: "Happy Labour Day,", banner: "Happy Labour and Solidarity Day! 🌷", effect: "confetti" },
-    { date: "05-19", greet: "Happy 19 May,", banner: "Happy Atatürk Commemoration, Youth and Sports Day! ⚽", effect: "confetti" }
+    { date: "05-19", greet: "Happy 19 Mayıs,", banner: "Happy Atatürk Commemoration, Youth and Sports Day! 19 Mayıs kutlu olsun! ⚽", effect: "confetti" }
   ],
+
+  /* ----- Weather background (a soft glow and a very light effect behind the home page that follow the real weather) -----
+     Data comes from Open-Meteo (free, no account). Each visitor can pick their city with the small weather chip (bottom right).
+     enabled: false switches it off for everyone.   defaultPlace: the city used until a visitor picks another.
+     strength: 1 = normal, 0.6 = fainter, 1.4 = stronger.   windKmh: wind speed (km/h) from which it counts as windy.
+     places: add or remove cities; lat and lon are the map coordinates.
+     To test a weather without waiting for it, add ?wx=rain to the site address (rain, snow, sun, wind, cloud, fog, storm, night). */
+  weather: {
+    enabled: true,
+    defaultPlace: "Istanbul",
+    strength: 1,
+    windKmh: 32,
+    places: [
+      { name: "Istanbul", lat: 41.01, lon: 28.98 },
+      { name: "Ankara", lat: 39.93, lon: 32.86 },
+      { name: "İzmir", lat: 38.42, lon: 27.14 },
+      { name: "Bursa", lat: 40.19, lon: 29.06 },
+      { name: "Antalya", lat: 36.90, lon: 30.70 },
+      { name: "Kayseri", lat: 38.73, lon: 35.49 },
+      { name: "İskenderun", lat: 36.59, lon: 36.17 }
+    ]
+  },
 
   /* ----- Help & FAQ window (the "Help" button). Add, remove or reword any question. ----- */
   faq: [
