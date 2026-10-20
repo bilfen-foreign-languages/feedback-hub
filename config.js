@@ -52,12 +52,14 @@ window.IPT_CONFIG = {
     cycleStart: "2026-10-05",                         // the Monday when the first group starts (YYYY-MM-DD, must be a Monday)
     // Year 6: one group of schools per Monday, repeating forever. Year 7 uses the same list from the bottom up.
     year6: [
-      ["Antalya", "Ataşehir"],
-      ["Bahçeşehir", "Bornova"],
-      ["Bursa", "Çamlıca"],
-      ["Çayyolu", "Çukurambar"],
-      ["Esenşehir", "İncek"],
-      ["Maslak", "Sancaktepe", "Kurtköy"]
+      ["Antalya", "Esenşehir"],
+      ["Ataşehir", "Halkalı"],
+      ["Bahçeşehir", "İskenderun"],
+      ["Bornova", "Kayseri"],
+      ["Bursa", "Kurtköy"],
+      ["Çamlıca", "Maslak"],
+      ["İncek", "Sancaktepe"],
+      ["Çayyolu", "İskenderun"]
     ]
     ,
     // Year 5: ONE school per Monday, in this order, starting on year5Start. It does not repeat: after the last
@@ -112,7 +114,7 @@ window.IPT_CONFIG = {
     { date: "11-24", greet: "Happy Teachers' Day,", banner: "Happy Teachers' Day! Thank you for inspiring our students every day. 🍎", effect: "confetti" },
     { date: "12-31", to: "01-01", greet: "Happy New Year,", banner: "Happy New Year! Wishing you a wonderful year ahead. 🎆", effect: "confetti" },
     { date: "12-20", to: "01-03", effect: "snow" },
-    { date: "03-08", greet: "Happy Women's Day,", banner: "Happy International Women's Day! 💐", effect: "confetti", colors: ["#a183ee", "#ff9ec7", "#ffffff", "#52d9ca"] },
+    { date: "03-08", greet: "Happy Women's Day,", banner: "Happy International Women's Day! 💐", effect: "confetti", colors: ["#a183ee", "#ff9ec7", "#ffffff", "#52d9ca"], noName: true },
     { date: "03-18", greet: "In remembrance,", banner: "Today we remember the heroes of Çanakkale with respect and gratitude.", solemn: true, noName: true },
     { date: "04-23", greet: "Happy Children's Day,", banner: "Happy Children's Day! 23 Nisan kutlu olsun! 🎈", effect: "confetti" },
     { date: "05-01", greet: "Happy Labour Day,", banner: "Happy Labour and Solidarity Day! 🌷", effect: "confetti" },
