@@ -86,6 +86,9 @@
   .tag{display:inline-block;padding:.1rem .6rem;border-radius:999px;font-weight:700;font-size:12px;color:#06214e;background:linear-gradient(135deg,var(--teal),var(--blue))}
   .tag.y5{background:linear-gradient(135deg,#c4b5fd,#7c3aed);color:#fff}
   .tag.y6{background:linear-gradient(135deg,#fff15d,#35c9f4)}
+  .flag{display:inline-block;margin-left:.5rem;padding:.04rem .55rem;border-radius:999px;font-size:11.5px;font-weight:700;color:#4a2a00;background:linear-gradient(135deg,#ffe08a,#ffb347);vertical-align:middle;cursor:help}
+  .flagnote{margin:0 0 12px;padding:.55rem .8rem;border-radius:12px;background:rgba(255,196,87,.14);border:1px solid rgba(255,196,87,.5);font-size:14px;line-height:1.45}
+  .flagnote b{color:#ffd68a}
   .empty{padding:2rem;text-align:center;color:var(--dim)}
   [hidden]{display:none!important}
   @media(max-width:560px){.wrap{padding:16px 12px 50px}.card{padding:16px;border-radius:18px}}
@@ -219,6 +222,8 @@
         <div><label for="yr">Year level</label>
           <select id="yr"><option value="">All years</option><option value="5">Year 5</option><option value="6">Year 6</option><option value="7">Year 7</option></select></div>
         <div><label for="find">Search</label><input id="find" type="search" placeholder="Name, email or words"></div>
+        <div><label for="thin">Answers</label>
+          <select id="thin"><option value="">All answers</option><option value="1">Flagged as thin only</option></select></div>
       </div>
 
       <div class="stats" id="stats"></div>
@@ -386,14 +391,39 @@
     if (p === "custom") return [$("from").value || "0000-01-01", $("to").value || "9999-12-31"];
     return ["0000-01-01", "9999-12-31"];
   }
+  /* ---------- thin answers: very short, placeholder or copied answers get a flag ---------- */
+  var THIN_WORDS = (CFG.admin && Number(CFG.admin.thinWords)) || 6;       // fewer words than this = "very short" (config.js > admin > thinWords)
+  var FILLER = /^(n a|na|none|nothing|no|yes|ok|okay|good|fine|great|nil|x+|test|asd+)$/;
+  var thinInPeriod = 0, dupCount = {};
+  function norm(t) { return String(t || "").toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim(); }
+  function buildDup() {
+    dupCount = {};
+    all.forEach(function (x) { ["worked", "challenge", "plan"].forEach(function (k) { var n = norm(x[k]); if (n.split(" ").length >= 3) dupCount[n] = (dupCount[n] || 0) + 1; }); });
+  }
+  function flagsOf(x) {
+    var out = [], seen = {};
+    [["worked", "What worked well?"], ["challenge", "What didn't work?"], ["plan", "Shape the next plan"]].forEach(function (p) {
+      var n = norm(x[p[0]]), w = n ? n.split(" ").length : 0;
+      if (!w) out.push(p[1] + " is empty");
+      else if (FILLER.test(n)) out.push(p[1] + " is just \u201c" + String(x[p[0]]).trim() + "\u201d");
+      else if (w < THIN_WORDS) out.push(p[1] + " is very short (" + w + (w === 1 ? " word)" : " words)"));
+      else if (dupCount[n] > 1) out.push(p[1] + " has exactly the same words as another response");
+      if (n && n.split(" ").length >= 3) { if (seen[n]) out.push(p[1] + " repeats another box of this response"); seen[n] = 1; }
+    });
+    return out;
+  }
   function filtered() {
     var r = range(), y = $("yr").value, q = $("find").value.trim().toLowerCase();
-    return all.filter(function (x) {
+    buildDup();
+    var list = all.filter(function (x) {
       if (x._day < r[0] || x._day > r[1]) return false;
       if (y && String(x.year) !== y) return false;
       if (q && ![x.email, x.school, x.week, x.worked, x.challenge, x.plan, x.notes].join(" ").toLowerCase().includes(q)) return false;
       return true;
     });
+    list.forEach(function (x) { x._flags = flagsOf(x); });
+    thinInPeriod = list.filter(function (x) { return x._flags.length; }).length;
+    return $("thin").value === "1" ? list.filter(function (x) { return x._flags.length; }) : list;
   }
   function avg(list, k) { var v = list.map(function (x) { return x[k]; }).filter(function (n) { return typeof n === "number"; }); return v.length ? v.reduce(function (a, b) { return a + b; }, 0) / v.length : null; }
   function f1(n) { return n === null ? "–" : (Math.round(n * 10) / 10).toFixed(1); }
@@ -405,6 +435,7 @@
     shown = filtered();
     var st = $("stats"); st.textContent = "";
     st.append(chip("Responses", shown.length), chip("Overall", f1(avg(shown, "overall"))), chip("Resources", f1(avg(shown, "resources"))), chip("Engagement", f1(avg(shown, "engagement"))), chip("Clarity", f1(avg(shown, "clarity"))));
+    if (thinInPeriod) st.append(chip("Thin answers", thinInPeriod));
     renderCharts();
     var tb = $("rows"); tb.textContent = ""; $("empty").hidden = shown.length > 0;
     shown.forEach(function (x) {
@@ -419,13 +450,17 @@
       tr.dataset.id = x.id;
       cell(tr, nice(x._day) + ", " + x._time);
       var tag = document.createElement("span"); tag.className = "tag " + "y" + x.year; tag.textContent = "Year " + x.year; cell(tr, "", tag);
-      cell(tr, x.school || "–"); cell(tr, x.week); cell(tr, x.email);
+      cell(tr, x.school || "–"); cell(tr, x.week);
+      var em = document.createElement("span"); em.textContent = x.email;
+      if (x._flags && x._flags.length) { var fl = document.createElement("span"); fl.className = "flag"; fl.textContent = "Thin"; fl.title = x._flags.join("\n"); em.append(fl); }
+      cell(tr, "", em);
       ["overall", "resources", "engagement", "clarity"].forEach(function (k) { cell(tr, x[k] == null ? "–" : String(x[k])); });
       var dt = null;
       function toggle() {
         if (dt) { dt.remove(); dt = null; delete openIds[x.id]; return; }
         openIds[x.id] = 1;
         dt = document.createElement("tr"); dt.className = "detail"; var td = document.createElement("td"); td.colSpan = 10;
+        if (x._flags && x._flags.length) { var fn = document.createElement("div"); fn.className = "flagnote"; var fb = document.createElement("b"); fb.textContent = "Flagged as thin: "; fn.append(fb, x._flags.join(" · ")); td.append(fn); }
         [["What worked well?", x.worked], ["What didn't work?", x.challenge], ["Shape the next plan", x.plan], ["One more thought", x.notes]].forEach(function (p) {
           if (!p[1]) return;
           var q = document.createElement("div"); q.className = "q"; q.textContent = p[0];
@@ -572,11 +607,11 @@
         [subCol]: x._day + " " + x._time, "Week of (Monday)": x._mon, "Year level": "Year " + x.year, "School": x.school || "", "Week": x.week, "Email": x.email,
         "What worked well?": x.worked || "", "What didn't work?": x.challenge || "", "Shape the next plan": x.plan || "",
         "Overall rating (1-5)": x.overall, "Teaching resources (1-5)": x.resources, "Student engagement (1-5)": x.engagement, "Objectives clarity (1-5)": x.clarity,
-        "One more thought": x.notes || ""
+        "One more thought": x.notes || "", "Flag": (x._flags || flagsOf(x)).join("; ")
       };
     });
     var ws = XLSX.utils.json_to_sheet(rows.length ? rows : [{ "No feedback": "" }]);
-    ws["!cols"] = [{ wch: 18 }, { wch: 14 }, { wch: 10 }, { wch: 10 }, { wch: 30 }, { wch: 60 }, { wch: 60 }, { wch: 60 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 50 }];
+    ws["!cols"] = [{ wch: 18 }, { wch: 14 }, { wch: 10 }, { wch: 10 }, { wch: 30 }, { wch: 60 }, { wch: 60 }, { wch: 60 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 50 }, { wch: 50 }];
     return ws;
   }
   function summarySheet(list) {
@@ -877,7 +912,7 @@
   $("dist-bar").addEventListener("click", function () { distMode = "bar"; renderCharts(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("report").hidden) closeReport(); });
   $("period").addEventListener("change", function () { var c = $("period").value === "custom"; $("from-box").hidden = !c; $("to-box").hidden = !c; render(); });
-  ["from", "to", "yr"].forEach(function (id) { $(id).addEventListener("change", render); });
+  ["from", "to", "yr", "thin"].forEach(function (id) { $(id).addEventListener("change", render); });
   $("find").addEventListener("input", render);
 
   session = loadSession();
