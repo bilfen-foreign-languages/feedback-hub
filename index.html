@@ -192,7 +192,7 @@
     /* ===== Intro: glass Saturn spins, then the intro fades out and the boxes rise in ===== */
     #intro{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;overflow:hidden;
       background:radial-gradient(circle at 14% 12%,rgba(114,242,217,.40),transparent 27%),radial-gradient(circle at 86% 16%,rgba(151,182,255,.39),transparent 27%),linear-gradient(135deg,#020c27,#173067);
-      will-change:opacity,transform;animation:introOut .5s ease-out 1.15s forwards}
+      will-change:opacity,transform;animation:introOut .5s ease-out .75s forwards}
     #intro.skip{animation:introSkip .35s ease forwards}
     .intro-orb{position:absolute;border-radius:50%;filter:blur(5px);opacity:.5;animation:drift 9s ease-in-out infinite alternate}
     .intro-orb.o1{width:210px;height:210px;right:-52px;top:7%;background:#7df4df}
@@ -200,7 +200,7 @@
     .intro-stage{position:relative;display:grid;place-items:center}
     .intro-stage>*{grid-area:1/1}
     .saturn{width:min(34vw,9rem);height:auto;opacity:0;filter:drop-shadow(0 0 18px rgba(121,235,221,.35));
-      animation:saturnIn 1s cubic-bezier(.2,.8,.2,1) .1s forwards}
+      animation:saturnIn .6s cubic-bezier(.2,.8,.2,1) .05s forwards}
     .saturn-sheen{animation:saturnSheen 1.1s ease-in-out infinite}
     @keyframes saturnIn{0%{opacity:0;transform:scale(.6) rotate(-180deg)}40%{opacity:1}100%{opacity:1;transform:scale(1) rotate(0)}}
     @keyframes saturnSheen{from{transform:translateX(0)}to{transform:translateX(90px)}}
@@ -347,6 +347,7 @@
   <script src="config.js"></script>
   <script src="welcome.js"></script>
   <script src="occasions.js"></script>
+  <script src="weather.js"></script>
   <script src="boost.js"></script>
   <script src="script.js"></script>
   <script src="calendar.js"></script>
@@ -526,7 +527,7 @@
       try { known = !!(window.IPTWelcome && window.IPTWelcome.getName()); } catch (e) {}
       // Returning visitor (name saved): no big Saturn intro, go straight to "Welcome back" with the small Saturn.
       if (!intro || reduce || window.__pv || known) { begin(); if (intro) intro.remove(); return; }
-      var t = setTimeout(begin, 1250);                     // the welcome starts as the intro fades
+      var t = setTimeout(begin, 900);                     // the welcome starts as the intro fades
       function done() { if (intro && intro.parentNode) intro.parentNode.removeChild(intro); intro = null; }
       function skip() { if (!intro) return; clearTimeout(t); begin(); intro.classList.add("skip"); }
       intro.addEventListener("animationend", function (e) { if (e.target === intro) done(); });
