@@ -129,10 +129,11 @@ window.IPT_CONFIG = {
      autoLowEnd: true = a slow computer (little memory, few cores, data saver, or a page that really runs slowly) switches the effect off by itself.
      lowEndMode: "off" = nothing at all on slow computers, "glow" = keep only the still soft glow. A visitor can always turn it back on from the chip.
      To test a weather without waiting for it, add ?wx=rain to the site address (rain, snow, sun, wind, cloud, fog, storm, night). */
-  weather: {
+    weather: {
     enabled: true,
     defaultPlace: "Istanbul",
     strength: 1,
+    birdOpacity: 0.4,                                 // only the birds: 1 = as before, 0.4 = fainter, 0.2 = barely there, 0 = no birds
     glowStrength: 0.65,                               // only the colour glow: 0.65 = gentle, 1 = stronger, 0.4 = barely there
     windKmh: 32,
     autoLowEnd: true,
