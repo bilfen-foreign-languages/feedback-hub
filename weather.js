@@ -17,6 +17,7 @@
     { name: "Antalya", lat: 36.90, lon: 30.70 }, { name: "Kayseri", lat: 38.73, lon: 35.49 },
     { name: "İskenderun", lat: 36.59, lon: 36.17 }
   ];
+  var G = typeof CFG.glowStrength === "number" ? Math.max(0, Math.min(2, CFG.glowStrength)) : .65;   // only the soft colour glow (1 = the old, stronger glow)
   var WIND_KMH = CFG.windKmh || 32;                          // wind at or above this (km/h) counts as "windy"
   var K = typeof CFG.strength === "number" ? Math.max(0, Math.min(2, CFG.strength)) : 1;   // 1 = normal, 0.5 = fainter, 1.5 = stronger
   var KEY = { slow: "ipt-wx-slow", strikes: "ipt-wx-strikes", on: "ipt-wx-on", geo: "ipt-wx-geo", place: "ipt-wx-place", off: "ipt-wx-off", force: "ipt-wx-force", cache: "ipt-wx-cache", snow0: "ipt-wx-snow0" };
@@ -128,7 +129,7 @@
     var host = document.body, ref = host.querySelector(".orb-two") || host.firstChild;
     host.insertBefore(glow, ref ? ref.nextSibling : null); host.insertBefore(cv, glow.nextSibling);
     ctx = cv.getContext("2d");
-    glow.style.setProperty("--k", K);
+    glow.style.setProperty("--k", K * G);
     resize(); window.addEventListener("resize", function () { resize(); if (cur) seed(); });
   }
 
