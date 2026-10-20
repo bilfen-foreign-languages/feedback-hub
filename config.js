@@ -132,7 +132,7 @@ window.IPT_CONFIG = {
     weather: {
     enabled: true,
     defaultPlace: "Istanbul",
-    strength: 0.5,
+    strength: 0.7,
     birdOpacity: 0.2,                                 // only the birds: 1 = as before, 0.4 = fainter, 0.2 = barely there, 0 = no birds
     glowStrength: 0.65,                               // only the colour glow: 0.65 = gentle, 1 = stronger, 0.4 = barely there
     windKmh: 32,
