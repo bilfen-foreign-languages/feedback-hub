@@ -65,7 +65,7 @@ window.IPT_CONFIG = {
     // Year 5: ONE school per Monday, in this order, starting on year5Start. It does not repeat: after the last
     // school the Year 5 rows simply stop. A Monday listed in year5Skip (holiday) is skipped, and the list waits
     // so no school is lost: every school after it moves one Monday later.
-    year5Start: "2026-10-19",                         // the Monday the first Year 5 school gives feedback
+    year5Start: "2026-10-12",                         // the Monday the first Year 5 school gives feedback
     year5Skip: [],                                    // holiday Mondays to skip, e.g. ["2026-12-28", "2027-01-04"]
     year5: [
       ["Bursa"],
