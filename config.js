@@ -65,7 +65,7 @@ window.IPT_CONFIG = {
     // Year 5: ONE school per Monday, in this order, starting on year5Start. It does not repeat: after the last
     // school the Year 5 rows simply stop. A Monday listed in year5Skip (holiday) is skipped, and the list waits
     // so no school is lost: every school after it moves one Monday later.
-    year5Start: "2026-10-12",                         // the Monday the first Year 5 school gives feedback
+    year5Start: "2026-10-19",                         // the Monday the first Year 5 school gives feedback
     year5Skip: [],                                    // holiday Mondays to skip, e.g. ["2026-12-28", "2027-01-04"]
     year5: [
       ["Bursa"],
@@ -129,11 +129,10 @@ window.IPT_CONFIG = {
      autoLowEnd: true = a slow computer (little memory, few cores, data saver, or a page that really runs slowly) switches the effect off by itself.
      lowEndMode: "off" = nothing at all on slow computers, "glow" = keep only the still soft glow. A visitor can always turn it back on from the chip.
      To test a weather without waiting for it, add ?wx=rain to the site address (rain, snow, sun, wind, cloud, fog, storm, night). */
-    weather: {
+  weather: {
     enabled: true,
     defaultPlace: "Istanbul",
-    strength: 0.7,
-    birdOpacity: 0.2,                                 // only the birds: 1 = as before, 0.4 = fainter, 0.2 = barely there, 0 = no birds
+    strength: 1,
     glowStrength: 0.65,                               // only the colour glow: 0.65 = gentle, 1 = stronger, 0.4 = barely there
     windKmh: 32,
     autoLowEnd: true,
@@ -147,6 +146,20 @@ window.IPT_CONFIG = {
       { name: "Kayseri", lat: 38.73, lon: 35.49 },
       { name: "İskenderun", lat: 36.59, lon: 36.17 }
     ]
+  },
+
+  /* ----- First-visit tour (a short guided tour of the home page for people opening the site for the first time) -----
+     enabled: false removes it completely.   autoStart: false = never shows by itself, only from the Help window.
+     To see it again yourself: add ?tour=1 to the site address. */
+  tour: {
+    enabled: true,
+    autoStart: true
+  },
+
+  /* ----- Admin page -----
+     thinWords: an answer with fewer words than this (or "n/a", "good", a copy of another answer...) is flagged "Thin" on the admin page. */
+  admin: {
+    thinWords: 6
   },
 
   /* ----- Help & FAQ window (the "Help" button). Add, remove or reword any question. ----- */
