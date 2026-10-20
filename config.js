@@ -109,16 +109,16 @@ window.IPT_CONFIG = {
      Holidays that move every year need their dates added when you know them (use the full YYYY-MM-DD form). */
   occasions: [
     { date: "10-05", greet: "Happy World Teachers' Day,", banner: "Happy World Teachers' Day! Thank you for everything you do. 🍎", effect: "confetti" },
-    { date: "10-29", greet: "Happy Republic Day,", banner: "Happy Republic Day! Cumhuriyet Bayramımız kutlu olsun! 🎉", effect: "confetti", colors: ["#e30a17", "#ffffff", "#f5c542"] },
+    { date: "10-29", greet: "Happy Republic Day,", banner: "Happy Republic Day! 🎉", effect: "confetti", colors: ["#e30a17", "#ffffff", "#f5c542"] },
     { date: "11-10", greet: "In remembrance,", banner: "Today we remember Mustafa Kemal Atatürk with respect and gratitude.", solemn: true, noName: true },
-    { date: "11-24", greet: "Happy Teachers' Day,", banner: "Happy Teachers' Day! Thank you for inspiring our students every day. 🍎", effect: "confetti" },
+    { date: "11-24", greet: "Happy Teachers' Day,", banner: "Happy Teachers' Day! Thank you for inspiring every day. 🍎", effect: "confetti" },
     { date: "12-31", to: "01-01", greet: "Happy New Year,", banner: "Happy New Year! Wishing you a wonderful year ahead. 🎆", effect: "confetti" },
     { date: "12-20", to: "01-03", effect: "snow" },
     { date: "03-08", greet: "Happy Women's Day,", banner: "Happy International Women's Day! 💐", effect: "confetti", colors: ["#a183ee", "#ff9ec7", "#ffffff", "#52d9ca"], noName: true },
     { date: "03-18", greet: "In remembrance,", banner: "Today we remember the heroes of Çanakkale with respect and gratitude.", solemn: true, noName: true },
-    { date: "04-23", greet: "Happy Children's Day,", banner: "Happy Children's Day! 23 Nisan kutlu olsun! 🎈", effect: "confetti" },
+    { date: "04-23", greet: "Happy Children's Day,", banner: "Happy Children's Day! 🎈", effect: "confetti" },
     { date: "05-01", greet: "Happy Labour Day,", banner: "Happy Labour and Solidarity Day! 🌷", effect: "confetti" },
-    { date: "05-19", greet: "Happy 19 Mayıs,", banner: "Happy Atatürk Commemoration, Youth and Sports Day! 19 Mayıs kutlu olsun! ⚽", effect: "confetti" }
+    { date: "05-19", greet: "Happy 19 May,", banner: "Happy Atatürk Commemoration, Youth and Sports Day! ⚽", effect: "confetti" }
   ],
 
   /* ----- Help & FAQ window (the "Help" button). Add, remove or reword any question. ----- */
