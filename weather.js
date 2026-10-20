@@ -19,7 +19,7 @@
   ];
   var WIND_KMH = CFG.windKmh || 32;                          // wind at or above this (km/h) counts as "windy"
   var K = typeof CFG.strength === "number" ? Math.max(0, Math.min(2, CFG.strength)) : 1;   // 1 = normal, 0.5 = fainter, 1.5 = stronger
-  var KEY = { place: "ipt-wx-place", off: "ipt-wx-off", force: "ipt-wx-force", cache: "ipt-wx-cache", snow0: "ipt-wx-snow0" };
+  var KEY = { geo: "ipt-wx-geo", place: "ipt-wx-place", off: "ipt-wx-off", force: "ipt-wx-force", cache: "ipt-wx-cache", snow0: "ipt-wx-snow0" };
   var ICON = { sun: "☀️", night: "🌙", cloud: "☁️", fog: "🌫️", rain: "🌧️", storm: "⛈️", snow: "❄️", wind: "💨" };
   var NAME = { sun: "Sunny", night: "Clear night", cloud: "Cloudy", fog: "Foggy", rain: "Rainy", storm: "Stormy", snow: "Snowy", wind: "Windy" };
   var COLOR = {   // glow colour (r,g,b)
@@ -80,7 +80,7 @@
       ".wx-pop button:hover{background:rgba(255,255,255,.1);transform:none}" +
       ".wx-pop button[aria-pressed=true]{background:rgba(121,235,221,.18)}" +
       ".wx-pop button[aria-pressed=true]::after{content:'✓';color:#9decE5}" +
-      ".wx-pop hr{border:0;border-top:1px solid rgba(225,244,255,.18);margin:.4rem 0}" +
+      ".wx-note{margin:.3rem .5rem .1rem;font-size:12px;line-height:1.35;color:#ffd9a8}.wx-pop hr{border:0;border-top:1px solid rgba(225,244,255,.18);margin:.4rem 0}" +
       "@media(max-width:560px){.wx-pop{width:min(220px,86vw)}}";
     document.head.appendChild(s);
   }
@@ -248,7 +248,12 @@
 
   /* ---------- fetching ---------- */
   var chip, pop, state = { temp: null, kind: null, forced: false };
+  function geoNow() {
+    try { var g = JSON.parse(lsGet(KEY.geo) || "null"); if (g && isFinite(g.lat) && isFinite(g.lon)) return { name: "My location", lat: g.lat, lon: g.lon, geo: true }; } catch (e) {}
+    return null;
+  }
   function placeNow() {
+    var gp = geoNow(); if (gp) return gp;
     var n = lsGet(KEY.place), def = CFG.defaultPlace || "Istanbul";
     for (var i = 0; i < PLACES.length; i++) if (PLACES[i].name === n) return PLACES[i];
     for (i = 0; i < PLACES.length; i++) if (PLACES[i].name === def) return PLACES[i];
@@ -265,16 +270,17 @@
     if (f) { state = { temp: null, kind: f, forced: true }; apply({ kind: f, inten: f === "storm" ? 1.4 : 1, wind: f === "wind" || f === "storm" ? 40 : 0 }); label(); return; }
     var pl = placeNow(), cache = null;
     try { cache = JSON.parse(lsGet(KEY.cache) || "null"); } catch (e) {}
-    if (cache && cache.place === pl.name && Date.now() - cache.t < 30 * 60e3) { show(cache.c); return; }
+    var ck = pl.name + "|" + pl.lat + "|" + pl.lon;
+    if (cache && cache.place === ck && Date.now() - cache.t < 30 * 60e3) { show(cache.c); return; }
     var url = "https://api.open-meteo.com/v1/forecast?latitude=" + pl.lat + "&longitude=" + pl.lon + "&current=temperature_2m,weather_code,wind_speed_10m,is_day&timezone=auto";
     var ctl = window.AbortController ? new AbortController() : null, to = setTimeout(function () { if (ctl) ctl.abort(); }, 7000);
     fetch(url, ctl ? { signal: ctl.signal } : {}).then(function (r) { return r.json(); }).then(function (j) {
       clearTimeout(to); var c = j && j.current; if (!c) throw 0;
       var data = { code: c.weather_code, wind: c.wind_speed_10m, day: c.is_day !== 0, temp: Math.round(c.temperature_2m) };
-      lsSet(KEY.cache, JSON.stringify({ place: pl.name, t: Date.now(), c: data })); show(data);
+      lsSet(KEY.cache, JSON.stringify({ place: ck, t: Date.now(), c: data })); show(data);
     }).catch(function () {
       clearTimeout(to);
-      if (cache && cache.place === pl.name && Date.now() - cache.t < 4 * 3600e3) show(cache.c); else { clearFx(); state = { temp: null, kind: null, forced: false }; label(); }
+      if (cache && cache.place === ck && Date.now() - cache.t < 4 * 3600e3) show(cache.c); else { clearFx(); state = { temp: null, kind: null, forced: false }; label(); }
     });
   }
   function show(c) { var w = kindFrom(c); state = { temp: c.temp, kind: w.kind, forced: false }; apply(w); label(); }
@@ -286,7 +292,8 @@
     chip.querySelector(".wx-t").textContent = off ? "Weather off" : (state.kind ? (state.forced ? NAME[state.kind] + " (test)" : (state.temp !== null ? state.temp + "°  " : "") + pl.name) : pl.name);
     chip.querySelector(".wx-i").textContent = (!off && state.kind) ? ICON[state.kind] : "🌤️";
     chip.setAttribute("aria-label", "Weather background: " + (off ? "off" : (state.kind ? NAME[state.kind] + " in " + pl.name : pl.name)) + ". Change");
-    if (pop) [].forEach.call(pop.querySelectorAll("[data-place]"), function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-place") === pl.name)); });
+    if (pop) [].forEach.call(pop.querySelectorAll("[data-place]"), function (b) { b.setAttribute("aria-pressed", String(!pl.geo && b.getAttribute("data-place") === pl.name)); });
+    var gb = pop && pop.querySelector("[data-geo]"); if (gb) gb.setAttribute("aria-pressed", String(!!pl.geo));
     var t = pop && pop.querySelector("[data-toggle]"); if (t) { t.setAttribute("aria-pressed", String(!off)); t.firstChild.textContent = "Weather effects"; }
   }
   function buildChip() {
@@ -295,6 +302,7 @@
     pop = document.createElement("div"); pop.className = "wx-pop"; pop.setAttribute("role", "group"); pop.setAttribute("aria-label", "Weather background");
     var h = '<h4>Your city</h4>';
     PLACES.forEach(function (p) { h += '<button type="button" data-place="' + p.name + '" aria-pressed="false"><span>' + p.name + '</span></button>'; });
+    h += '<hr><button type="button" data-geo aria-pressed="false"><span>📍 Use my exact location</span></button><p class="wx-note" role="status" hidden></p>';
     h += '<hr><button type="button" data-toggle aria-pressed="true"><span>Weather effects</span></button>';
     pop.innerHTML = h;
     var wrap = document.createElement("div"); wrap.className = "wx-wrap"; wrap.appendChild(chip);
@@ -310,8 +318,18 @@
     window.addEventListener("scroll", function () { if (pop.classList.contains("open")) place(); }, true);
     pop.addEventListener("click", function (e) {
       e.stopPropagation(); var b = e.target.closest && e.target.closest("button"); if (!b) return;
+      var note = pop.querySelector(".wx-note"); note.hidden = true;
+      if (b.hasAttribute("data-geo")) {
+        if (!navigator.geolocation) { note.textContent = "This browser can't share a location. Pick a city instead."; note.hidden = false; return; }
+        note.textContent = "Asking your browser…"; note.hidden = false;
+        navigator.geolocation.getCurrentPosition(function (pos) {
+          lsSet(KEY.geo, JSON.stringify({ lat: Math.round(pos.coords.latitude * 100) / 100, lon: Math.round(pos.coords.longitude * 100) / 100 }));   // rounded to ~1 km, kept only on this device
+          lsDel(KEY.off); lsDel(KEY.cache); note.hidden = true; close(); load(); label();
+        }, function () { note.textContent = "Location is blocked or unavailable. Pick a city instead."; note.hidden = false; }, { timeout: 10000, maximumAge: 600000 });
+        return;
+      }
       if (b.hasAttribute("data-toggle")) { if (lsGet(KEY.off) === "1") lsDel(KEY.off); else lsSet(KEY.off, "1"); }
-      else if (b.getAttribute("data-place")) { lsSet(KEY.place, b.getAttribute("data-place")); lsDel(KEY.off); close(); }
+      else if (b.getAttribute("data-place")) { lsSet(KEY.place, b.getAttribute("data-place")); lsDel(KEY.geo); lsDel(KEY.off); close(); }
       load(); label();
     });
     document.addEventListener("click", close);
