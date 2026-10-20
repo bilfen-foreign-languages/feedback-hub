@@ -124,7 +124,7 @@ window.IPT_CONFIG = {
   /* ----- Weather background (a soft glow and a very light effect behind the home page that follow the real weather) -----
      Data comes from Open-Meteo (free, no account). Each visitor can pick their city with the small weather chip (bottom right).
      enabled: false switches it off for everyone.   defaultPlace: the city used until a visitor picks another.
-     strength: 1 = normal, 0.6 = fainter, 1.4 = stronger.   windKmh: wind speed (km/h) from which it counts as windy.
+     strength: 1 = normal, 0.6 = fainter, 1.4 = stronger (rain, snow, birds, wind and the glow together).   glowStrength: only the soft colour glow.   windKmh: wind speed (km/h) from which it counts as windy.
      places: add or remove cities; lat and lon are the map coordinates.
      autoLowEnd: true = a slow computer (little memory, few cores, data saver, or a page that really runs slowly) switches the effect off by itself.
      lowEndMode: "off" = nothing at all on slow computers, "glow" = keep only the still soft glow. A visitor can always turn it back on from the chip.
@@ -133,6 +133,7 @@ window.IPT_CONFIG = {
     enabled: true,
     defaultPlace: "Istanbul",
     strength: 1,
+    glowStrength: 0.65,                               // only the colour glow: 0.65 = gentle, 1 = stronger, 0.4 = barely there
     windKmh: 32,
     autoLowEnd: true,
     lowEndMode: "off",
