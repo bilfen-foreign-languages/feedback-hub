@@ -109,16 +109,16 @@ window.IPT_CONFIG = {
      Holidays that move every year need their dates added when you know them (use the full YYYY-MM-DD form). */
   occasions: [
     { date: "10-05", greet: "Happy World Teachers' Day,", banner: "Happy World Teachers' Day! Thank you for everything you do. 🍎", effect: "confetti" },
-    { date: "10-29", greet: "Happy Republic Day,", banner: "Happy Republic Day! 🎉", effect: "confetti", colors: ["#e30a17", "#ffffff", "#f5c542"] },
+    { date: "10-29", greet: "Happy Republic Day,", banner: "Happy Republic Day! Cumhuriyet Bayramımız kutlu olsun! 🎉", effect: "confetti", colors: ["#e30a17", "#ffffff", "#f5c542"] },
     { date: "11-10", greet: "In remembrance,", banner: "Today we remember Mustafa Kemal Atatürk with respect and gratitude.", solemn: true, noName: true },
-    { date: "11-24", greet: "Happy Teachers' Day,", banner: "Happy Teachers' Day! Thank you for inspiring every day. 🍎", effect: "confetti" },
+    { date: "11-24", greet: "Happy Teachers' Day,", banner: "Happy Teachers' Day! Thank you for inspiring our students every day. 🍎", effect: "confetti" },
     { date: "12-31", to: "01-01", greet: "Happy New Year,", banner: "Happy New Year! Wishing you a wonderful year ahead. 🎆", effect: "confetti" },
     { date: "12-20", to: "01-03", effect: "snow" },
     { date: "03-08", greet: "Happy Women's Day,", banner: "Happy International Women's Day! 💐", effect: "confetti", colors: ["#a183ee", "#ff9ec7", "#ffffff", "#52d9ca"], noName: true },
     { date: "03-18", greet: "In remembrance,", banner: "Today we remember the heroes of Çanakkale with respect and gratitude.", solemn: true, noName: true },
-    { date: "04-23", greet: "Happy Children's Day,", banner: "Happy Children's Day! 🎈", effect: "confetti" },
+    { date: "04-23", greet: "Happy Children's Day,", banner: "Happy Children's Day! 23 Nisan kutlu olsun! 🎈", effect: "confetti" },
     { date: "05-01", greet: "Happy Labour Day,", banner: "Happy Labour and Solidarity Day! 🌷", effect: "confetti" },
-    { date: "05-19", greet: "Happy 19 May,", banner: "Happy Atatürk Commemoration, Youth and Sports Day! ⚽", effect: "confetti" }
+    { date: "05-19", greet: "Happy 19 Mayıs,", banner: "Happy Atatürk Commemoration, Youth and Sports Day! 19 Mayıs kutlu olsun! ⚽", effect: "confetti" }
   ],
 
   /* ----- Weather background (a soft glow and a very light effect behind the home page that follow the real weather) -----
@@ -130,9 +130,9 @@ window.IPT_CONFIG = {
      lowEndMode: "off" = nothing at all on slow computers, "glow" = keep only the still soft glow. A visitor can always turn it back on from the chip.
      To test a weather without waiting for it, add ?wx=rain to the site address (rain, snow, sun, wind, cloud, fog, storm, night). */
   weather: {
-    enabled: false,
+    enabled: true,
     defaultPlace: "Istanbul",
-    strength: 0.50,
+    strength: 1,
     glowStrength: 0.65,                               // only the colour glow: 0.65 = gentle, 1 = stronger, 0.4 = barely there
     windKmh: 32,
     autoLowEnd: true,
@@ -160,6 +160,14 @@ window.IPT_CONFIG = {
      It fades away as soon as the visitor presses a year. enabled: false removes the feature. To see it yourself: add ?glow=1 to the site address. */
   selectorGlow: {
     enabled: true
+  },
+
+  /* ----- "Before you start" card (shown once, the first time a teacher opens a feedback form, with an animated clip) -----
+     enabled: false removes it completely.   minutes: 6 adds "It takes about 6 minutes." to the card (leave it out to say nothing).
+     To see it again yourself: add ?guide=1 to the site address, then open a form. It can also be replayed from the Help window. */
+  beforeStart: {
+    enabled: true
+    // minutes: 6
   },
 
   /* ----- Admin page -----
