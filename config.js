@@ -130,9 +130,9 @@ window.IPT_CONFIG = {
      lowEndMode: "off" = nothing at all on slow computers, "glow" = keep only the still soft glow. A visitor can always turn it back on from the chip.
      To test a weather without waiting for it, add ?wx=rain to the site address (rain, snow, sun, wind, cloud, fog, storm, night). */
   weather: {
-    enabled: false,
+    enabled: true,
     defaultPlace: "Istanbul",
-    strength: 1,
+    strength: 0.50,
     glowStrength: 0.65,                               // only the colour glow: 0.65 = gentle, 1 = stronger, 0.4 = barely there
     windKmh: 32,
     autoLowEnd: true,
