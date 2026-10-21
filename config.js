@@ -156,6 +156,12 @@ window.IPT_CONFIG = {
     autoStart: true
   },
 
+  /* ----- Soft glow around the Year 5 / 6 / 7 selector (a hint for brand-new visitors that it can be tapped) -----
+     It fades away as soon as the visitor presses a year. enabled: false removes the feature. To see it yourself: add ?glow=1 to the site address. */
+  selectorGlow: {
+    enabled: true
+  },
+
   /* ----- Admin page -----
      thinWords: an answer with fewer words than this (or "n/a", "good", a copy of another answer...) is flagged "Thin" on the admin page. */
   admin: {
