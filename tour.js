@@ -31,7 +31,28 @@
     { title: "You're all set", text: "That is everything. Press Done. You can replay this tour from the Help window." }
   ];
 
-  var steps = [], idx = 0, ov, spot, card, els = {}, raf = 0, prevFocus = null;
+  var steps = [], idx = 0, ov, spot, dark, darkPath, card, els = {}, raf = 0, prevFocus = null;
+  var cur = { x: 0, y: 0, w: 0, h: 0 }, tw = 0;
+
+  /* The dark layer is a full-screen shape with a rounded hole, so every corner of the screen is always covered. */
+  function draw() {
+    var W = window.innerWidth, H = window.innerHeight, x = cur.x, y = cur.y, w = Math.max(0, cur.w), h = Math.max(0, cur.h), r = Math.min(20, w / 2, h / 2);
+    dark.setAttribute("viewBox", "0 0 " + W + " " + H);
+    darkPath.setAttribute("d", "M0 0H" + W + "V" + H + "H0Z M" + (x + r) + " " + y + "H" + (x + w - r) + "A" + r + " " + r + " 0 0 1 " + (x + w) + " " + (y + r) + "V" + (y + h - r) +
+      "A" + r + " " + r + " 0 0 1 " + (x + w - r) + " " + (y + h) + "H" + (x + r) + "A" + r + " " + r + " 0 0 1 " + x + " " + (y + h - r) + "V" + (y + r) + "A" + r + " " + r + " 0 0 1 " + (x + r) + " " + y + "Z");
+    spot.style.left = x + "px"; spot.style.top = y + "px"; spot.style.width = w + "px"; spot.style.height = h + "px";
+    spot.className = "tour-spot" + (w < 2 ? " none" : "");
+  }
+  function setRect(t, animate) {
+    cancelAnimationFrame(tw);
+    if (!animate || reduce) { cur = { x: t.x, y: t.y, w: t.w, h: t.h }; draw(); return; }
+    var from = { x: cur.x, y: cur.y, w: cur.w, h: cur.h }, t0 = performance.now();
+    (function f(now) {
+      var k = Math.min(1, (now - t0) / 320), e = 1 - Math.pow(1 - k, 3);
+      cur = { x: from.x + (t.x - from.x) * e, y: from.y + (t.y - from.y) * e, w: from.w + (t.w - from.w) * e, h: from.h + (t.h - from.h) * e };
+      draw(); if (k < 1) tw = requestAnimationFrame(f);
+    })(t0);
+  }
 
   function visible(el) {
     if (!el) return false;
@@ -44,9 +65,9 @@
     var s = document.createElement("style"); s.id = "tour-css";
     s.textContent =
       ".tour-ov{position:fixed;inset:0;z-index:9985}" +
-      ".tour-spot{position:fixed;left:50%;top:50%;width:0;height:0;border-radius:20px;pointer-events:none;box-shadow:0 0 0 100vmax rgba(3,10,34,.74),0 0 0 2px rgba(121,235,221,.85),0 0 28px 4px rgba(121,235,221,.45);" +
-        (reduce ? "" : "transition:left .32s ease,top .32s ease,width .32s ease,height .32s ease;") + "}" +
-      ".tour-spot.none{box-shadow:0 0 0 100vmax rgba(3,10,34,.74)}" +
+      ".tour-dark{position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:9984;pointer-events:none}" +
+      ".tour-spot{position:fixed;left:0;top:0;width:0;height:0;z-index:9985;border-radius:20px;pointer-events:none;box-shadow:0 0 0 2px rgba(121,235,221,.85),0 0 28px 4px rgba(121,235,221,.45)}" +
+      ".tour-spot.none{opacity:0}" +
       ".tour-card{position:fixed;z-index:9986;width:min(340px,calc(100vw - 24px));padding:1rem 1.1rem 1rem;border-radius:20px;color:#eef5ff;background:rgba(6,22,60,.96);" +
         "border:1px solid rgba(225,244,255,.3);box-shadow:0 18px 50px rgba(0,0,0,.5);font:400 15px/1.5 'Work Sans',system-ui,sans-serif;" +
         (reduce ? "" : "transition:opacity .2s ease;") + "}" +
@@ -81,6 +102,9 @@
     if (steps.length < 2) return;
     idx = 0; prevFocus = document.activeElement;
     ov = el("div", "tour-ov"); spot = el("div", "tour-spot none");
+    var NS = "http://www.w3.org/2000/svg"; dark = document.createElementNS(NS, "svg"); dark.setAttribute("class", "tour-dark"); dark.setAttribute("aria-hidden", "true");
+    darkPath = document.createElementNS(NS, "path"); darkPath.setAttribute("fill", "rgba(3,10,34,.74)"); darkPath.setAttribute("fill-rule", "evenodd"); dark.appendChild(darkPath);
+    cur = { x: window.innerWidth / 2, y: window.innerHeight / 2, w: 0, h: 0 };
     card = el("div", "tour-card"); card.setAttribute("role", "dialog"); card.setAttribute("aria-modal", "true"); card.setAttribute("aria-labelledby", "tour-h"); card.tabIndex = -1;
     els.count = el("p", "tour-count"); els.h = el("h2"); els.h.id = "tour-h"; els.p = el("p"); els.dots = el("div", "tour-dots");
     els.back = el("button", "tour-btn", "Back"); els.back.type = "button";
@@ -88,7 +112,7 @@
     els.skip = el("button", "tour-skip", "Skip tour"); els.skip.type = "button";
     var row = el("div", "tour-row"); row.append(els.skip, el("span", "sp"), els.back, els.next);
     card.append(els.count, els.h, els.p, els.dots, row);
-    document.body.append(ov, spot, card);
+    document.body.append(dark, ov, spot, card);
     els.back.addEventListener("click", function () { go(idx - 1); });
     els.next.addEventListener("click", function () { if (idx >= steps.length - 1) finish(); else go(idx + 1); });
     els.skip.addEventListener("click", finish);
@@ -121,7 +145,7 @@
     els.skip.hidden = idx === steps.length - 1;
     var target = s.sel ? document.querySelector(s.sel) : null;
     if (target) bring(target);
-    place();
+    place(true);
     els.next.focus({ preventScroll: true });
   }
 
@@ -137,20 +161,18 @@
     window.scrollBy({ top: y, left: 0, behavior: "auto" });
   }
 
-  function place() {
+  function place(animate) {
     if (!ov) return;
     var s = steps[idx], t = s.sel ? document.querySelector(s.sel) : null, vw = window.innerWidth, vh = window.innerHeight;
     var mobile = vw < 640, cw = card.offsetWidth, ch = card.offsetHeight;
     card.classList.toggle("m", mobile); card.classList.remove("t");
     if (!t || !visible(t)) {
-      spot.className = "tour-spot none"; spot.style.cssText = "left:50%;top:50%;width:0;height:0";
+      setRect({ x: vw / 2, y: vh / 2, w: 0, h: 0 }, animate);
       if (!mobile) { card.style.left = Math.round((vw - cw) / 2) + "px"; card.style.top = Math.round((vh - ch) / 2) + "px"; }
       return;
     }
     var r = t.getBoundingClientRect(), pad = 8;
-    spot.className = "tour-spot";
-    spot.style.left = Math.round(r.left - pad) + "px"; spot.style.top = Math.round(r.top - pad) + "px";
-    spot.style.width = Math.round(r.width + pad * 2) + "px"; spot.style.height = Math.round(r.height + pad * 2) + "px";
+    setRect({ x: Math.round(r.left - pad), y: Math.round(r.top - pad), w: Math.round(r.width + pad * 2), h: Math.round(r.height + pad * 2) }, animate);
     if (mobile) { if (getComputedStyle(t).position === "fixed" && r.top > vh * 0.45) card.classList.add("t"); return; }   // things pinned to the bottom of the screen: card goes to the top
     var x = Math.max(12, Math.min(vw - cw - 12, r.left + r.width / 2 - cw / 2)), y;
     if (r.bottom + pad + 14 + ch <= vh - 12) y = r.bottom + pad + 14;                          // below
@@ -166,8 +188,9 @@
     lsSet(KEY, "1");
     window.removeEventListener("resize", queue); window.removeEventListener("scroll", queue, true);
     document.removeEventListener("keydown", onKey, true);
-    [ov, spot, card].forEach(function (n) { if (n && n.parentNode) n.parentNode.removeChild(n); });
-    ov = spot = card = null;
+    cancelAnimationFrame(tw);
+    [dark, ov, spot, card].forEach(function (n) { if (n && n.parentNode) n.parentNode.removeChild(n); });
+    ov = spot = card = dark = darkPath = null;
     try { if (prevFocus && prevFocus.focus) prevFocus.focus({ preventScroll: true }); } catch (e) {}
   }
 
