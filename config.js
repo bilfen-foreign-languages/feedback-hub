@@ -170,6 +170,12 @@ window.IPT_CONFIG = {
     // minutes: 6
   },
 
+  /* ----- Hands-free cheat sheet (a small card listing the voice commands while hands-free is running) -----
+     enabled: false removes it. */
+  handsFreeCheat: {
+    enabled: true
+  },
+
   /* ----- Admin page -----
      thinWords: an answer with fewer words than this (or "n/a", "good", a copy of another answer...) is flagged "Thin" on the admin page. */
   admin: {
