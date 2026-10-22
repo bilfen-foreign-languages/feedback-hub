@@ -845,19 +845,27 @@
         svg.setAttribute("width", Math.round(b.width)); svg.setAttribute("height", Math.round(b.height));
         svg.style.width = Math.round(b.width) + "px"; svg.style.height = Math.round(b.height) + "px"; svg.style.maxWidth = "none";
       });
-      var list = root.querySelectorAll(".rhead, .tiles, .chart-card, .rc, .rsec h2, .rq h3");
-      for (var i = 0; i < list.length; i++) {
-        var el = list[i], base = root.getBoundingClientRect().top, r = el.getBoundingClientRect();
-        var top = r.top - base, h = r.height, isHead = el.tagName === "H2" || el.tagName === "H3";
-        var need = isHead ? h + (el.tagName === "H2" ? 150 : 90) : h;       // a heading must keep company with what follows it
-        if (need >= pageH) continue;
-        var page = Math.floor(top / pageH);
-        if (top + need > (page + 1) * pageH) {
-          var push = (page + 1) * pageH - top + 2;
-          if (getComputedStyle(el.parentNode).display === "grid") el.style.marginTop = push + "px";      // grid items never merge their margins
-          else { var sp = document.createElement("div"); sp.style.cssText = "height:" + push + "px;margin:0;padding:0"; el.parentNode.insertBefore(sp, el); }   // a spacer, because neighbouring margins would otherwise swallow part of the push
-        }
+      // Page breaks are decided by the PDF tool itself (see "avoid" in savePdf): it knows the real page height, our own guess did not.
+      // Here we only make the copy easy for it: grids become plain stacked blocks (so no stray grid cell appears when it adds space),
+      // and each heading is tied to the line or comment that follows it, so a heading is never left alone at the bottom of a page.
+      root.querySelectorAll(".rgrid").forEach(function (g) {
+        g.style.display = "block";
+        Array.prototype.forEach.call(g.children, function (c) { c.style.marginBottom = "14px"; });
+      });
+      function tie(parts) {
+        var w = document.createElement("div"); w.className = "kw";
+        parts[0].parentNode.insertBefore(w, parts[0]);
+        parts.forEach(function (n) { w.appendChild(n); });
       }
+      root.querySelectorAll(".rq h3").forEach(function (hd) {                 // a small heading + its first comment
+        if (hd.nextElementSibling && hd.nextElementSibling.classList.contains("rc")) tie([hd, hd.nextElementSibling]);
+      });
+      root.querySelectorAll(".rsec h2").forEach(function (hd) {               // a section heading + its caption + the first chart under it
+        var parts = [hd], n = hd.nextElementSibling;
+        if (n && n.classList.contains("cap")) { parts.push(n); n = n.nextElementSibling; }
+        if (n && n.classList.contains("rgrid") && n.firstElementChild) parts.push(n.firstElementChild);
+        if (parts.length > 1) tie(parts);
+      });
     } finally { root.style.width = "100%"; document.body.removeChild(host); host.removeChild(root); }
     return root;
   }
@@ -881,7 +889,7 @@
         image: { type: "jpeg", quality: 0.95 },
         html2canvas: { scale: scale, useCORS: true, backgroundColor: "#ffffff", scrollX: 0, scrollY: -window.scrollY },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        pagebreak: { mode: ["css"] }
+        pagebreak: { mode: ["css"], avoid: [".rhead", ".tiles", ".chart-card", ".rc", ".kw"] }
       }).from(copy).save().then(done).catch(function () { done(); window.print(); });
     } catch (e) { done(); window.print(); }
   }
