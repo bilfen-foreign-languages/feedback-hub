@@ -224,7 +224,7 @@
           <select id="yr"><option value="">All years</option><option value="5">Year 5</option><option value="6">Year 6</option><option value="7">Year 7</option></select></div>
         <div><label for="find">Search</label><input id="find" type="search" placeholder="Name, email or words"></div>
         <div><label for="thin">Answers</label>
-          <select id="thin"><option value="">All answers</option><option value="1">Flagged as thin only</option></select></div>
+          <select id="thin"><option value="">All answers</option><option value="1">Flagged as weak only</option></select></div>
       </div>
 
       <div class="stats" id="stats"></div>
@@ -392,7 +392,7 @@
     if (p === "custom") return [$("from").value || "0000-01-01", $("to").value || "9999-12-31"];
     return ["0000-01-01", "9999-12-31"];
   }
-  /* ---------- thin answers: very short, placeholder or copied answers get a flag ---------- */
+  /* ---------- weak answers: very short, placeholder or copied answers get a flag ---------- */
   var THIN_WORDS = (CFG.admin && Number(CFG.admin.thinWords)) || 6;       // fewer words than this = "very short" (config.js > admin > thinWords)
   var FILLER = /^(n a|na|none|nothing|no|yes|ok|okay|good|fine|great|nil|x+|test|asd+)$/;
   var thinInPeriod = 0, dupCount = {};
@@ -436,7 +436,7 @@
     shown = filtered();
     var st = $("stats"); st.textContent = "";
     st.append(chip("Responses", shown.length), chip("Overall", f1(avg(shown, "overall"))), chip("Resources", f1(avg(shown, "resources"))), chip("Engagement", f1(avg(shown, "engagement"))), chip("Clarity", f1(avg(shown, "clarity"))));
-    if (thinInPeriod) st.append(chip("Thin answers", thinInPeriod));
+    if (thinInPeriod) st.append(chip("Weak answers", thinInPeriod));
     renderCharts();
     var tb = $("rows"); tb.textContent = ""; $("empty").hidden = shown.length > 0;
     shown.forEach(function (x) {
@@ -453,7 +453,7 @@
       var tag = document.createElement("span"); tag.className = "tag " + "y" + x.year; tag.textContent = "Year " + x.year; cell(tr, "", tag);
       cell(tr, x.school || "–"); cell(tr, x.week);
       var em = document.createElement("span"); em.textContent = x.email;
-      if (x._flags && x._flags.length) { var fl = document.createElement("span"); fl.className = "flag"; fl.textContent = "Thin"; fl.title = x._flags.join("\n"); em.append(fl); }
+      if (x._flags && x._flags.length) { var fl = document.createElement("span"); fl.className = "flag"; fl.textContent = "Weak"; fl.title = x._flags.join("\n"); em.append(fl); }
       cell(tr, "", em);
       ["overall", "resources", "engagement", "clarity"].forEach(function (k) { cell(tr, x[k] == null ? "–" : String(x[k])); });
       var dt = null;
@@ -461,7 +461,7 @@
         if (dt) { dt.remove(); dt = null; delete openIds[x.id]; return; }
         openIds[x.id] = 1;
         dt = document.createElement("tr"); dt.className = "detail"; var td = document.createElement("td"); td.colSpan = 10;
-        if (x._flags && x._flags.length) { var fn = document.createElement("div"); fn.className = "flagnote"; var fb = document.createElement("b"); fb.textContent = "Flagged as thin: "; fn.append(fb, x._flags.join(" · ")); td.append(fn); }
+        if (x._flags && x._flags.length) { var fn = document.createElement("div"); fn.className = "flagnote"; var fb = document.createElement("b"); fb.textContent = "Flagged as weak: "; fn.append(fb, x._flags.join(" · ")); td.append(fn); }
         [["What worked well?", x.worked], ["What didn't work?", x.challenge], ["Shape the next plan", x.plan], ["One more thought", x.notes]].forEach(function (p) {
           if (!p[1]) return;
           var q = document.createElement("div"); q.className = "q"; q.textContent = p[0];
