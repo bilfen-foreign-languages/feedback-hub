@@ -68,7 +68,7 @@ window.IPT_CONFIG = {
     year5Start: "2026-10-19",                         // the Monday the first Year 5 school gives feedback
     year5Skip: [],                                    // holiday Mondays to skip, e.g. ["2026-12-28", "2027-01-04"]
     year5: [
-      ["Bornova", "Bursa"],
+      ["Bursa"],
       ["Çamlıca"],
       ["Çayyolu"],
       ["Esenşehir"],
@@ -130,7 +130,7 @@ window.IPT_CONFIG = {
      lowEndMode: "off" = nothing at all on slow computers, "glow" = keep only the still soft glow. A visitor can always turn it back on from the chip.
      To test a weather without waiting for it, add ?wx=rain to the site address (rain, snow, sun, wind, cloud, fog, storm, night). */
   weather: {
-    enabled: false,
+    enabled: true,
     defaultPlace: "Istanbul",
     strength: 1,
     glowStrength: 0.65,                               // only the colour glow: 0.65 = gentle, 1 = stronger, 0.4 = barely there
@@ -177,7 +177,7 @@ window.IPT_CONFIG = {
   },
 
   /* ----- Admin page -----
-     thinWords: an answer with fewer words than this (or "n/a", "good", a copy of another answer...) is flagged "Thin" on the admin page. */
+     thinWords: an answer with fewer words than this (or "n/a", "good", a copy of another answer...) is flagged "Weak" on the admin page. */
   admin: {
     thinWords: 6
   },
