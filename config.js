@@ -68,6 +68,7 @@ window.IPT_CONFIG = {
     year5Start: "2026-10-19",                         // the Monday the first Year 5 school gives feedback
     year5Skip: [],                                    // holiday Mondays to skip, e.g. ["2026-12-28", "2027-01-04"]
     year5: [
+      ["Bornova"],
       ["Bursa"],
       ["Çamlıca"],
       ["Çayyolu"],
