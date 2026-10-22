@@ -177,7 +177,8 @@
     .rbar{display:none}
     .rpage{box-shadow:none;margin:0;max-width:none;border-radius:0}
     .rc,.chart-card,.tile,.rq h3{break-inside:avoid}
-    .rsec h2{break-after:avoid}
+    .rsec h2,.rsec .cap,.rq h3{break-after:avoid;break-inside:avoid}
+    .rq h3+.rc{break-before:avoid}
     *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   }
 </style>
@@ -292,7 +293,6 @@
 
 <script src="config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
 (function () {
   "use strict";
@@ -870,28 +870,15 @@
     return root;
   }
   function savePdf() {
-    var btn = $("rsave"), label = btn.textContent;
-    if (!window.html2pdf) { window.print(); return; }
-    btn.disabled = true; btn.textContent = "Preparing PDF…";
-    var done = function () { btn.disabled = false; btn.textContent = label; };
-    try {
-      var src = $("rpage"); inlineSvgStyles(src);
-      // A plain copy of the report that simply fills the PDF page. (Do not set a window width or an offset here:
-      // the PDF tool measures the real window itself, and a different number shifts the whole page sideways.)
-      var copy = src.cloneNode(true); copy.removeAttribute("id");
-      copy.style.cssText = "width:100%;max-width:none;margin:0;border-radius:0;box-shadow:none;overflow:visible";
-      var pageW = 733, pageH = Math.floor(279 * 96 / 25.4);      // the printable A4 area in screen pixels (194 mm wide, 279 mm tall)
-      keepBlocksWhole(copy, pageW, pageH);
-      var h = Math.max(1, src.scrollHeight * (src.offsetWidth / pageW) * 1.15);
-      var scale = Math.max(0.7, Math.min(2, 32000 / h, Math.sqrt(24e6 / (pageW * h))));   // very long reports are drawn a little smaller so the browser can cope
-      window.html2pdf().set({
-        margin: [8, 8, 10, 8], filename: pdfName(),
-        image: { type: "jpeg", quality: 0.95 },
-        html2canvas: { scale: scale, useCORS: true, backgroundColor: "#ffffff", scrollX: 0, scrollY: -window.scrollY },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        pagebreak: { mode: ["css"], avoid: [".rhead", ".tiles", ".chart-card", ".rc", ".kw"] }
-      }).from(copy).save().then(done).catch(function () { done(); window.print(); });
-    } catch (e) { done(); window.print(); }
+    // The browser's own print engine keeps every chart and comment whole across pages (the old PDF tool split them).
+    // The window that opens has "Save as PDF" as its destination; the file name is suggested from the page title.
+    var btn = $("rsave"), label = btn.textContent, oldTitle = document.title;
+    document.title = pdfName().replace(/\.pdf$/, "");
+    btn.textContent = "Choose \u201CSave as PDF\u201D";
+    var back = function () { document.title = oldTitle; btn.textContent = label; window.removeEventListener("afterprint", back); };
+    window.addEventListener("afterprint", back);
+    setTimeout(back, 60000);
+    window.print();
   }
   function closeReport() { $("report").hidden = true; document.body.classList.remove("has-report"); }
 
