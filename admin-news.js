@@ -7,17 +7,17 @@
 (function () {
   "use strict";
   var NEWS = [
-    { id: "2026-10-24-ui", date: "24 Oct 2026", title: "AI Summary: new look, and pages for the table", tag: "Admin",
+    { id: "2026-10-24-ui", date: "24 Oct 2026", title: "AI Summary: new look, and pages for the table", tag: "Ufuk",
       text: "The AI Summary window has a glass, holographic design with a loading animation. Suggested actions open from a glowing pill next to Overview and appear at the top. The response table shows 5 at a time with page numbers, and the AI Summary button now sits on the same row as the stats." },
-    { id: "2026-10-23-ai", date: "23 Oct 2026", title: "AI summary (new)", tag: "Admin",
+    { id: "2026-10-23-ai", date: "23 Oct 2026", title: "AI summary (new)", tag: "Ufuk",
       text: "The glowing AI Summary button (next to the stats, on the right) writes a short summary of the responses on screen: what worked, what didn’t, the next plan and suggested actions. You see exactly what will be sent and press “Create summary” yourself. Emails and school names are removed first, and quotes are checked against the real answers. Use admin.html?aitest=1 to try it with made-up answers only." },
-    { id: "2026-10-weak", date: "October 2026", title: "“Thin” is now “Weak”", tag: "Admin",
+    { id: "2026-10-weak", date: "October 2026", title: "“Thin” is now “Weak”", tag: "Ufuk",
       text: "Weak answers are labelled “Weak”. “What didn’t work” and “Shape the next plan” are no longer marked weak for being short; empty, one-word, filler or copied answers are still flagged." },
-    { id: "2026-10-pdf", date: "October 2026", title: "PDF reports keep charts and comments whole", tag: "Admin",
+    { id: "2026-10-pdf", date: "October 2026", title: "PDF reports keep charts and comments whole", tag: "Ufuk",
       text: "One click still downloads the PDF, and charts and comment boxes are no longer cut in half at the end of a page." },
-    { id: "2026-10-guide", date: "October 2026", title: "“Before you start” card and voice-command cheat sheet", tag: "Teachers",
+    { id: "2026-10-guide", date: "October 2026", title: "“Before you start” card and voice-command cheat sheet", tag: "Ufuk",
       text: "Teachers see a short guide the first time they open a form, and a small card lists the voice commands while hands-free is running." },
-    { id: "2026-10-images", date: "October 2026", title: "Lighter images", tag: "Site",
+    { id: "2026-10-images", date: "October 2026", title: "Lighter images", tag: "Ufuk",
       text: "Logos and images are much smaller, so the pages open faster, especially on school Wi-Fi." }
   ];
 
