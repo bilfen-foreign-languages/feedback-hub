@@ -339,9 +339,8 @@
     <p class="dim sum-scope" id="sum-scope"></p>
     <div class="sum-stats" id="sum-stats"></div>
     <div id="sum-body"></div>
-    <details class="sum-sent" id="sum-sent"><summary>See exactly what would be sent to the AI</summary>
-      <p class="dim" style="margin-top:8px">Only the answers and scores below. Teachers&rsquo; emails and school names are removed, and any email address typed inside an answer is hidden too.<span id="sum-prov"></span></p>
-      <pre id="sum-pay"></pre></details>
+    <p class="dim" style="margin-top:14px;font-size:13.5px">Only the written answers and scores are used. Teachers&rsquo; names, emails and school names are never included.<span id="sum-prov"></span></p>
+    <details class="sum-sent" id="sum-sent" hidden><pre id="sum-pay"></pre></details>
     <div class="sum-actions"><button class="btn" id="sum-copy" type="button">Copy summary</button><button class="btn ghost" id="sum-again" type="button">Regenerate</button><button class="btn ghost" id="sum-close" type="button">Close</button><span class="dim" id="sum-msg" style="align-self:center;font-size:13px"></span></div>
   </div>
 </div>
@@ -1077,7 +1076,7 @@
     if (AIS.endpoint) {      // real AI: nothing leaves this page until the button below is pressed
       var pay = sumPayload(sumList()); sumFill(pay); $("sum-sent").open = true;
       sumData = null; $("sum-copy").disabled = true; $("sum-again").disabled = true; say($("sum-msg"), "");
-      $("sum-body").innerHTML = '<div class="sum-ready"><p>' + n + (n === 1 ? " response" : " responses") + " (" + pay.words + " words) will be sent to " + esc(AIS.provider || "the AI service") + ". Emails and school names are removed. <b>Nothing has been sent yet.</b> You can read exactly what would be sent below.</p><button class=\"btn\" id=\"sum-go\" type=\"button\">Create summary</button></div>";
+      $("sum-body").innerHTML = '<div class="sum-ready"><p>' + n + (n === 1 ? " response" : " responses") + " (" + pay.words + " words) will be sent to " + esc(AIS.provider || "the AI service") + ". Emails and school names are removed. <b>Nothing has been sent yet.</b></p><button class=\"btn\" id=\"sum-go\" type=\"button\">Create summary</button></div>";
       $("sum-go").focus(); return;
     }
     runSum(); $("sum-x").focus();
