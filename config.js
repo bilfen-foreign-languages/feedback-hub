@@ -109,9 +109,9 @@ window.IPT_CONFIG = {
      Holidays that move every year need their dates added when you know them (use the full YYYY-MM-DD form). */
   occasions: [
     { date: "10-05", greet: "Happy World Teachers' Day,", banner: "Happy World Teachers' Day! Thank you for everything you do. 🍎", effect: "confetti" },
-    { date: "10-29", greet: "Happy Republic Day,", banner: "Happy Republic Day! Cumhuriyet Bayramımız kutlu olsun! 🎉", effect: "confetti", colors: ["#e30a17", "#ffffff", "#f5c542"] },
+    { date: "10-29", greet: "Happy Republic Day,", banner: "Happy Republic Day! 🎉", effect: "confetti", colors: ["#e30a17", "#ffffff", "#f5c542"] },
     { date: "11-10", greet: "In remembrance,", banner: "Today we remember Mustafa Kemal Atatürk with respect and gratitude.", solemn: true, noName: true },
-    { date: "11-24", greet: "Happy Teachers' Day,", banner: "Happy Teachers' Day! Thank you for inspiring our students every day. 🍎", effect: "confetti" },
+    { date: "11-24", greet: "Happy Teachers' Day,", banner: "Happy Teachers' Day! Thank you for inspiring every day. 🍎", effect: "confetti" },
     { date: "12-31", to: "01-01", greet: "Happy New Year,", banner: "Happy New Year! Wishing you a wonderful year ahead. 🎆", effect: "confetti" },
     { date: "12-20", to: "01-03", effect: "snow" },
     { date: "03-08", greet: "Happy Women's Day,", banner: "Happy International Women's Day! 💐", effect: "confetti", colors: ["#a183ee", "#ff9ec7", "#ffffff", "#52d9ca"], noName: true },
@@ -191,7 +191,14 @@ window.IPT_CONFIG = {
   /* ----- Admin page -----
      thinWords: an answer with fewer words than this (or "n/a", "good", a copy of another answer...) is flagged "Weak" on the admin page. */
   admin: {
-    thinWords: 6
+    thinWords: 6,
+    /* First names for the "Welcome back, ..." line on the admin page (email -> name). An email like ayse.yilmaz@... works without an entry. */
+    names: {
+      "ufukkorkmaz@bilfen.k12.tr": "Ufuk",
+      "medihanarin@bilfen.k12.tr": "Mediha",
+      "aylinergun@bilfen.k12.tr": "Aylin",
+      "sevalbagdelen@bilfen.k12.tr": "Seval"
+    }
   },
 
   /* ----- Help & FAQ window (the "Help" button). Add, remove or reword any question. ----- */
