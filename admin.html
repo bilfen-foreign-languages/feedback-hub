@@ -394,6 +394,7 @@
   }
   /* ---------- weak answers: very short, placeholder or copied answers get a flag ---------- */
   var THIN_WORDS = (CFG.admin && Number(CFG.admin.thinWords)) || 6;       // fewer words than this = "very short" (config.js > admin > thinWords)
+  var NO_WORD_COUNT = { challenge: 1, plan: 1 };      // these two boxes are never flagged for being short (a short answer there can be a complete one)
   var FILLER = /^(n a|na|none|nothing|no|yes|ok|okay|good|fine|great|nil|x+|test|asd+)$/;
   var thinInPeriod = 0, dupCount = {};
   function norm(t) { return String(t || "").toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim(); }
@@ -407,7 +408,7 @@
       var n = norm(x[p[0]]), w = n ? n.split(" ").length : 0;
       if (!w) out.push(p[1] + " is empty");
       else if (FILLER.test(n)) out.push(p[1] + " is just \u201c" + String(x[p[0]]).trim() + "\u201d");
-      else if (w < THIN_WORDS) out.push(p[1] + " is very short (" + w + (w === 1 ? " word)" : " words)"));
+      else if (w < THIN_WORDS && !NO_WORD_COUNT[p[0]]) out.push(p[1] + " is very short (" + w + (w === 1 ? " word)" : " words)"));
       else if (dupCount[n] > 1) out.push(p[1] + " has exactly the same words as another response");
       if (n && n.split(" ").length >= 3) { if (seen[n]) out.push(p[1] + " repeats another box of this response"); seen[n] = 1; }
     });
