@@ -176,6 +176,18 @@ window.IPT_CONFIG = {
     enabled: true
   },
 
+  /* ----- AI summary button on the admin page -----
+     enabled: false hides the button.
+     While "endpoint" is empty it is only a PREVIEW: it shows sample text and no AI is used.
+     With an address, the button asks first and then sends only the answers and scores (no emails, no school names) to that service.
+     The address is the "ai-summary" function in Supabase (see ai-summary-via-supabase/SETUP-STEPS.txt).
+     provider: the name shown to the person pressing the button. */
+  aiSummary: {
+    enabled: true,
+    endpoint: "https://hceltuncmajojiyhzlcl.supabase.co/functions/v1/ai-summary",
+    provider: "Cloudflare Workers AI"
+  },
+
   /* ----- Admin page -----
      thinWords: an answer with fewer words than this (or "n/a", "good", a copy of another answer...) is flagged "Weak" on the admin page. */
   admin: {
