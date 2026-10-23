@@ -7,8 +7,10 @@
 (function () {
   "use strict";
   var NEWS = [
+    { id: "2026-10-24-ui", date: "24 Oct 2026", title: "AI Summary: new look, and pages for the table", tag: "Admin",
+      text: "The AI Summary window has a glass, holographic design with a loading animation. Suggested actions open from a glowing pill next to Overview and appear at the top. The response table shows 5 at a time with page numbers, and the AI Summary button now sits on the same row as the stats." },
     { id: "2026-10-23-ai", date: "23 Oct 2026", title: "AI summary (new)", tag: "Admin",
-      text: "The glowing Summarise button writes a short summary of the responses on screen: what worked, what didn’t, the next plan and suggested actions. You see exactly what will be sent and press “Create summary” yourself. Emails and school names are removed first, and quotes are checked against the real answers. Use admin.html?aitest=1 to try it with made-up answers only." },
+      text: "The glowing AI Summary button (next to the stats, on the right) writes a short summary of the responses on screen: what worked, what didn’t, the next plan and suggested actions. You see exactly what will be sent and press “Create summary” yourself. Emails and school names are removed first, and quotes are checked against the real answers. Use admin.html?aitest=1 to try it with made-up answers only." },
     { id: "2026-10-weak", date: "October 2026", title: "“Thin” is now “Weak”", tag: "Admin",
       text: "Weak answers are labelled “Weak”. “What didn’t work” and “Shape the next plan” are no longer marked weak for being short; empty, one-word, filler or copied answers are still flagged." },
     { id: "2026-10-pdf", date: "October 2026", title: "PDF reports keep charts and comments whole", tag: "Admin",
@@ -31,7 +33,9 @@
     "#news-btn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:1200;padding:.6rem 1.05rem;box-shadow:0 10px 28px rgba(1,8,30,.5);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);background:rgba(14,34,86,.88)}" +
     "#news-btn[hidden]{display:none}" +
     "@media print{#news-btn{display:none!important}}" +
-    "#news-btn .nw-dot{position:absolute;top:-4px;right:-4px;width:12px;height:12px;border-radius:50%;background:#ff4fa3;border:2px solid #0b1f55}" +
+    "#news-btn .nw-dot{position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:50%;background:#ff2d2d;border:2px solid #fff;box-shadow:0 0 0 0 rgba(255,45,45,.7);animation:nwPulse 1.8s infinite}" +
+    "@keyframes nwPulse{0%{box-shadow:0 0 0 0 rgba(255,45,45,.7)}70%,100%{box-shadow:0 0 0 9px rgba(255,45,45,0)}}" +
+    "@media(prefers-reduced-motion:reduce){#news-btn .nw-dot{animation:none}}" +
     "#news-btn.seen .nw-dot{display:none}" +
     ".nw-ov{position:fixed;inset:0;z-index:1600;display:grid;place-items:center;padding:16px;background:rgba(2,12,39,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}" +
     ".nw-ov[hidden]{display:none}" +
