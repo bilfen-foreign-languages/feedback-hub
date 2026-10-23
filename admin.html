@@ -173,6 +173,7 @@
     @page{margin:12mm}
     html,body{background:#fff!important}
     body.has-report .wrap,.chart-tip{display:none!important}
+    .sum-ov{display:none!important}
     .report{position:static;overflow:visible;background:#fff}
     .rbar{display:none}
     .rpage{box-shadow:none;margin:0;max-width:none;border-radius:0}
@@ -181,6 +182,57 @@
     .rq h3+.rc{break-before:avoid}
     *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   }
+
+  /* ---------- AI summary window ---------- */
+  .sum-ov{position:fixed;inset:0;z-index:1500;display:grid;place-items:center;padding:16px;background:rgba(2,12,39,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  .sum-ov[hidden]{display:none}
+  .sum-card{width:min(820px,100%);max-height:calc(100vh - 32px);overflow:auto;border-radius:24px;padding:22px 24px;background:linear-gradient(160deg,rgba(14,34,86,.98),rgba(7,20,56,.98));border:1px solid var(--edge);box-shadow:0 30px 80px rgba(1,8,30,.6)}
+  .sum-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .sum-top h2{font-size:22px}
+  .sum-badge{font-size:12px;font-weight:700;letter-spacing:.04em;padding:.28rem .65rem;border-radius:999px;border:1px solid rgba(255,206,110,.6);background:rgba(255,206,110,.14);color:#ffd98a}
+  .sum-badge.live{border-color:rgba(82,217,202,.6);background:rgba(82,217,202,.14);color:var(--teal)}
+  .sum-x{margin-left:auto;width:36px;height:36px;border-radius:50%;border:1px solid var(--edge);background:rgba(255,255,255,.08);color:#fff;font-size:22px;line-height:1;cursor:pointer;padding:0}
+  .sum-scope{margin:6px 0 14px;font-size:14px}
+  .sum-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:16px}
+  .sum-stat{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid var(--edge)}
+  .sum-stat span{display:block;font-size:12px;color:var(--dim)}
+  .sum-stat b{font-size:20px}
+  .sum-stat small{color:var(--dim);font-weight:500}
+  .sum-load{display:grid;gap:10px;padding:6px 0 10px}
+  .sum-load p{font-size:14px;color:var(--dim)}
+  .sum-load i{display:block;height:14px;border-radius:8px;background:linear-gradient(90deg,rgba(255,255,255,.08),rgba(255,255,255,.22),rgba(255,255,255,.08));background-size:200% 100%;animation:sumShim 1.2s linear infinite}
+  @keyframes sumShim{to{background-position:-200% 0}}
+  .sum-sec{margin:0 0 16px}
+  .sum-sec h3{margin:0 0 8px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal)}
+  .sum-over{font-size:16px;line-height:1.6}
+  .sum-theme{padding:10px 14px;margin:0 0 8px;border-radius:14px;background:rgba(255,255,255,.06);border-left:4px solid var(--blue)}
+  .sum-theme b{display:block;font-size:15px}
+  .sum-theme span{font-size:14px;color:var(--dim)}
+  .sum-quote{margin:2px 0 0;padding:8px 14px;font-style:italic;font-size:14px;color:#dbe6ff;border-left:3px solid rgba(255,255,255,.3)}
+  .sum-quote small{display:block;font-style:normal;color:var(--dim);margin-top:2px}
+  .sum-acts{margin:0;padding-left:22px;display:grid;gap:6px;font-size:15px}
+  .sum-check{margin:14px 0 0;padding:10px 14px;border-radius:14px;font-size:13px;color:var(--dim);background:rgba(255,255,255,.05);border:1px dashed var(--edge)}
+  .sum-sent{margin:14px 0 0;font-size:14px}
+  .sum-sent summary{cursor:pointer;font-weight:600;color:var(--teal)}
+  .sum-sent pre{margin:8px 0 0;padding:12px;max-height:200px;overflow:auto;white-space:pre-wrap;word-break:break-word;border-radius:12px;background:rgba(3,14,44,.7);border:1px solid var(--edge);font:12.5px/1.5 ui-monospace,Menlo,Consolas,monospace;color:#cfe0ff}
+  .sum-ready{padding:14px 16px;margin-bottom:6px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid var(--edge)}
+  .sum-ready p{margin:0 0 12px;font-size:15px}
+  .sum-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+
+  /* ---------- holographic Summarise button ---------- */
+  #sum-btn{position:relative;isolation:isolate;color:#10214f;border:1px solid rgba(255,255,255,.7);overflow:visible;
+    background:linear-gradient(115deg,#ff9bd2,#9be7ff,#b8ffcf,#ffe69b,#c9a8ff,#ff9bd2);background-size:300% 100%;animation:holoShift 6s linear infinite}
+  #sum-btn::before{content:"";position:absolute;inset:-3px;z-index:-1;border-radius:inherit;background:linear-gradient(115deg,#ff9bd2,#9be7ff,#b8ffcf,#ffe69b,#c9a8ff,#ff9bd2);background-size:300% 100%;
+    filter:blur(13px);opacity:.65;animation:holoShift 6s linear infinite,holoPulse 2.8s ease-in-out infinite}
+  #sum-btn::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;overflow:hidden;
+    background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.75) 50%,transparent 65%);background-size:250% 100%;background-position:150% 0;animation:holoSweep 3.4s ease-in-out infinite;mix-blend-mode:overlay}
+  #sum-btn:hover{filter:brightness(1.06) saturate(1.15)}
+  .sum-new{position:absolute;top:-9px;right:-7px;padding:.12rem .45rem;border-radius:999px;font-size:10.5px;font-weight:800;letter-spacing:.08em;color:#fff;background:linear-gradient(135deg,#ff4fa3,#7b5cff);border:1px solid rgba(255,255,255,.85);box-shadow:0 2px 10px rgba(123,92,255,.6);line-height:1.2}
+  #sum-btn.seen .sum-new{display:none}
+  @keyframes holoShift{to{background-position:-300% 0}}
+  @keyframes holoPulse{0%,100%{opacity:.4}50%{opacity:.8}}
+  @keyframes holoSweep{0%{background-position:150% 0}60%,100%{background-position:-60% 0}}
+  @media (prefers-reduced-motion:reduce){#sum-btn,#sum-btn::before,#sum-btn::after{animation:none}#sum-btn::after{display:none}}
 </style>
 </head>
 <body>
@@ -260,6 +312,7 @@
       <div class="actions">
         <button class="btn" id="xlsx" type="button">Download Excel</button>
         <button class="btn" id="report-btn" type="button">Weekly report</button>
+        <button class="btn" id="sum-btn" type="button" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>Summarise<span class="sum-new">NEW</span></button>
         <button class="btn ghost" id="refresh" type="button">Refresh</button>
         <span class="dim" id="upd" style="align-self:center;font-size:13px"></span>
       </div>
@@ -278,6 +331,19 @@
     </div>
   </section>
 
+</div>
+
+<div class="sum-ov" id="sum" hidden>
+  <div class="sum-card" role="dialog" aria-modal="true" aria-labelledby="sum-h">
+    <div class="sum-top"><h2 id="sum-h">Summary of the responses</h2><span class="sum-badge" id="sum-badge"></span><button type="button" class="sum-x" id="sum-x" aria-label="Close">&times;</button></div>
+    <p class="dim sum-scope" id="sum-scope"></p>
+    <div class="sum-stats" id="sum-stats"></div>
+    <div id="sum-body"></div>
+    <details class="sum-sent" id="sum-sent"><summary>See exactly what would be sent to the AI</summary>
+      <p class="dim" style="margin-top:8px">Only the answers and scores below. Teachers&rsquo; emails and school names are removed, and any email address typed inside an answer is hidden too.<span id="sum-prov"></span></p>
+      <pre id="sum-pay"></pre></details>
+    <div class="sum-actions"><button class="btn" id="sum-copy" type="button">Copy summary</button><button class="btn ghost" id="sum-again" type="button">Regenerate</button><button class="btn ghost" id="sum-close" type="button">Close</button><span class="dim" id="sum-msg" style="align-self:center;font-size:13px"></span></div>
+  </div>
 </div>
 
 <div class="report" id="report" hidden>
@@ -900,6 +966,130 @@
   }
   function closeReport() { $("report").hidden = true; document.body.classList.remove("has-report"); }
 
+
+  /* ---------- AI summary ----------
+     Preview mode (no "endpoint" in config.js > aiSummary): shows sample text and makes no AI call at all.
+     The numbers on top and the "what would be sent" box are always real. */
+  var AIS = CFG.aiSummary || {};
+  var sumRun = 0, sumData = null, sumDemo = true;
+  var SAMPLE = {
+    overview: "Across these responses, teachers describe the week as engaging and well paced, with hands-on and game-based activities mentioned most often. The main concerns are timing, with activities running longer than planned, and projector or device set-up at the start of lessons. For the next plan, teachers ask for optional extension tasks for early finishers and a little more time for the practical parts.",
+    worked: [
+      { t: "Hands-on and game-based activities", d: "Students stayed focused and keen when they were building or playing rather than listening.", q: "The students loved the challenge and asked to continue it in the next lesson." },
+      { t: "A clear, step-by-step lesson plan", d: "The sequence was easy to follow and quick to prepare." },
+      { t: "Pair and group work", d: "Working in small groups helped quieter students take part." }
+    ],
+    challenge: [
+      { t: "Timing", d: "Several activities needed more time than planned, so the final task was rushed.", q: "We ran out of time before the last task." },
+      { t: "Devices and projector set-up", d: "A few lessons started late while technical issues were sorted out." },
+      { t: "Mixed readiness", d: "Some students finished early while others needed extra support." }
+    ],
+    plan: [
+      { t: "Optional extension activities", d: "Fillers for early finishers and for lessons with spare time." },
+      { t: "Shorter practical blocks", d: "Split the longest practical tasks into two shorter parts." },
+      { t: "A short set-up checklist", d: "Share it before the week begins so lessons start on time." }
+    ],
+    actions: [
+      "Share a one-page device and projector checklist with every school.",
+      "Add two or three optional extension tasks to the plan.",
+      "Review the timing of the two longest activities.",
+      "Thank the teachers for the detailed feedback and share the main points back."
+    ]
+  };
+  function sumClip(t) { return String(t || "").replace(/[\w.+-]+@[\w-]+(\.[\w-]+)+/g, "[email]").replace(/\s+/g, " ").trim().slice(0, 1200); }
+  /* ?aitest=1 : sends a few MADE-UP answers to the real AI, so the whole chain can be tried without any teacher data */
+  var AITEST = /[?&]aitest=1(&|$)/.test(location.search);
+  var TEST_ROWS = [
+    ["Year 6","Week 3","The short video hook got every pupil talking straight away.","Two laptops would not open the shared file, so we lost ten minutes.","Add a printed backup of the worksheet.",5,4,5,5],
+    ["Year 6","Week 3","Pair work on the sorting task was lively and pupils stayed on task.","The slides were too wordy for the younger group.","Shorten the slides and add more pictures.",4,4,5,4],
+    ["Year 5","Week 3","Pupils loved the hands-on activity and asked to repeat it.","Not enough time to finish the reflection at the end.","Move the reflection earlier or cut one task.",5,5,5,4],
+    ["Year 7","Week 3","Clear instructions made the lesson easy to run.","The extension task was too easy for the stronger pupils.","Add a harder challenge for fast finishers.",4,5,3,5],
+    ["Year 7","Week 3","The step-by-step slides helped pupils who were absent last week.","The projector in our room was dim and hard to read.","Send a device and projector checklist to each school.",4,3,4,5],
+    ["Year 5","Week 3","Good balance of talking and doing.","Some pupils needed the vocabulary explained again.","Add a short word list at the start.",4,4,4,3]
+  ].map(function (a) { return { year: a[0], week: a[1], worked: a[2], challenge: a[3], plan: a[4], notes: "", overall: a[5], resources: a[6], engagement: a[7], clarity: a[8] }; });
+  function sumList() { return AITEST ? TEST_ROWS : shown; }
+  function sumPayload(list) {
+    var rows = list.map(function (x) {
+      return { year: x.year, week: x.week, worked: sumClip(x.worked), challenge: sumClip(x.challenge), plan: sumClip(x.plan), notes: sumClip(x.notes),
+        scores: { overall: x.overall, resources: x.resources, engagement: x.engagement, clarity: x.clarity } };
+    });
+    var words = rows.reduce(function (n, r) { return n + [r.worked, r.challenge, r.plan, r.notes].join(" ").split(/\s+/).filter(Boolean).length; }, 0);
+    return { rows: rows, words: words };
+  }
+  function sumScope() {
+    if (AITEST) return "TEST DATA · made-up answers, not from teachers";
+    var yl = $("yr").value ? "Year " + $("yr").value : "All years";
+    return periodText() + " · " + yl + " · " + shown.length + (shown.length === 1 ? " response" : " responses");
+  }
+  function sumTheme(a, label) {
+    a = Array.isArray(a) ? a : [];
+    return '<div class="sum-sec"><h3>' + label + "</h3>" + a.map(function (o) {
+      return '<div class="sum-theme"><b>' + esc(o.t) + "</b><span>" + esc(o.d) + "</span></div>" + (o.q ? '<p class="sum-quote">&ldquo;' + esc(o.q) + "&rdquo;</p>" : "");
+    }).join("") + "</div>";
+  }
+  function sumHTML(d) {
+    return (d.note ? '<p class="sum-check" style="margin:0 0 14px">' + esc(d.note) + "</p>" : "") + '<div class="sum-sec"><h3>Overview</h3><p class="sum-over">' + esc(d.overview) + "</p></div>" +
+      sumTheme(d.worked, "What worked well") + sumTheme(d.challenge, "What didn’t work") + sumTheme(d.plan, "Shape the next plan") +
+      '<div class="sum-sec"><h3>Suggested actions</h3><ol class="sum-acts">' + (d.actions || []).map(function (a) { return "<li>" + esc(a) + "</li>"; }).join("") + "</ol></div>" +
+      (d.meta && d.meta.model ? '<p class="dim" style="margin:0 0 10px;font-size:12.5px">Written by ' + esc(d.meta.model) + (d.meta.provider ? " on " + esc(d.meta.provider) : "") + ".</p>" : "") + '<p class="sum-check"><b>Check before you act.</b> A summary can miss detail or lose nuance. Open the full responses behind any point (click a row in the table) before you share or act on it.</p>';
+  }
+  function sumText(d) {
+    function blk(a) { return a.map(function (o) { return "- " + o.t + ": " + o.d + (o.q ? ' "' + o.q + '"' : ""); }).join("\n"); }
+    return "IPT feedback summary\n" + sumScope() + (sumDemo ? "\n(PREVIEW: sample text, not a real summary)" : "") + "\n\nOVERVIEW\n" + d.overview +
+      "\n\nWHAT WORKED WELL\n" + blk(d.worked) + "\n\nWHAT DIDN'T WORK\n" + blk(d.challenge) + "\n\nSHAPE THE NEXT PLAN\n" + blk(d.plan) +
+      "\n\nSUGGESTED ACTIONS\n" + d.actions.map(function (a, i) { return (i + 1) + ". " + a; }).join("\n");
+  }
+  async function sumRequest(pay) {
+    if (!AIS.endpoint) { await new Promise(function (r) { setTimeout(r, 1700); }); return { demo: true, data: SAMPLE }; }
+    if (!session) throw new Error("expired");
+    if (Date.now() > session.exp - 30000) await refresh();
+    var r = await fetch(AIS.endpoint, { method: "POST", headers: { "Content-Type": "application/json", apikey: KEY, Authorization: "Bearer " + session.access }, body: JSON.stringify({ responses: pay.rows, scope: sumScope() }) });
+    if (!r.ok) { var ej = null; try { ej = await r.json(); } catch (e) {} throw new Error((ej && ej.error) || "The summary service answered with an error (" + r.status + ")."); }
+    return { demo: false, data: await r.json() };
+  }
+  function sumFill(pay) {
+    $("sum-pay").textContent = pay.rows.length ? JSON.stringify(pay.rows.slice(0, 3), null, 1) + (pay.rows.length > 3 ? "\n\n… and " + (pay.rows.length - 3) + " more response" + (pay.rows.length - 3 === 1 ? "" : "s") + " in the same form (" + pay.words + " words in total)." : "") : "Nothing to send.";
+  }
+  async function runSum() {
+    var id = ++sumRun, pay = sumPayload(sumList()); sumFill(pay);
+    sumData = null; $("sum-copy").disabled = true; $("sum-again").disabled = true; say($("sum-msg"), "");
+    $("sum-body").innerHTML = '<div class="sum-load" role="status"><p>Reading ' + pay.rows.length + (pay.rows.length === 1 ? " response" : " responses") + " (" + pay.words + ' words)…</p><i style="width:92%"></i><i style="width:78%"></i><i style="width:86%"></i><i style="width:55%"></i></div>';
+    try {
+      var res = await sumRequest(pay); if (id !== sumRun) return;
+      sumDemo = res.demo; sumData = res.data;
+      $("sum-badge").textContent = sumDemo ? "PREVIEW · sample text, no AI used" : (AITEST ? "TEST · AI on made-up answers" : "AI summary"); $("sum-badge").className = "sum-badge" + (sumDemo ? "" : " live");
+      $("sum-body").innerHTML = sumHTML(sumData); $("sum-copy").disabled = false;
+    } catch (err) { if (id !== sumRun) return; $("sum-body").innerHTML = '<p class="msg err">' + esc(err.message || "Could not make the summary.") + "</p>"; }
+    $("sum-again").disabled = false;
+  }
+  function openSum() {
+    $("sum-btn").classList.add("seen"); try { localStorage.setItem("ipt-sum-seen", "1"); } catch (e) {}
+    $("sum-scope").textContent = sumScope();
+    var n = sumList().length;
+    $("sum-stats").innerHTML = [["Responses", String(n), ""], ["Overall", avg(sumList(), "overall"), " / 5"], ["Resources", avg(sumList(), "resources"), " / 5"], ["Engagement", avg(sumList(), "engagement"), " / 5"], ["Clarity", avg(sumList(), "clarity"), " / 5"]].map(function (t) {
+      var v = typeof t[1] === "number" ? r1(t[1]).toFixed(1) : (t[1] === null ? "–" : t[1]);
+      return '<div class="sum-stat"><span>' + t[0] + "</span><b>" + v + "</b>" + (typeof t[1] === "number" ? "<small>" + t[2] + "</small>" : "") + "</div>";
+    }).join("");
+    $("sum-badge").textContent = AIS.endpoint ? (AITEST ? "TEST · AI on made-up answers" : "AI summary") : "PREVIEW · sample text, no AI used"; $("sum-badge").className = "sum-badge" + (AIS.endpoint ? " live" : "");
+    $("sum").hidden = false; document.body.style.overflow = "hidden";
+    if (!n) { sumRun++; $("sum-body").innerHTML = '<p class="dim">There are no responses in this selection. Change the period or year above and try again.</p>'; $("sum-pay").textContent = "Nothing to send."; $("sum-copy").disabled = true; $("sum-again").disabled = true; return; }
+    $("sum-prov").textContent = AIS.endpoint ? " It is processed by " + (AIS.provider || "an AI service") + "." : "";
+    if (AIS.endpoint) {      // real AI: nothing leaves this page until the button below is pressed
+      var pay = sumPayload(sumList()); sumFill(pay); $("sum-sent").open = true;
+      sumData = null; $("sum-copy").disabled = true; $("sum-again").disabled = true; say($("sum-msg"), "");
+      $("sum-body").innerHTML = '<div class="sum-ready"><p>' + n + (n === 1 ? " response" : " responses") + " (" + pay.words + " words) will be sent to " + esc(AIS.provider || "the AI service") + ". Emails and school names are removed. <b>Nothing has been sent yet.</b> You can read exactly what would be sent below.</p><button class=\"btn\" id=\"sum-go\" type=\"button\">Create summary</button></div>";
+      $("sum-go").focus(); return;
+    }
+    runSum(); $("sum-x").focus();
+  }
+  function closeSum() { sumRun++; $("sum-sent").open = false; $("sum").hidden = true; document.body.style.overflow = ""; }
+  function copySum() {
+    if (!sumData) return; var t = sumText(sumData);
+    function ok() { say($("sum-msg"), "Copied.", "ok"); }
+    function fallback() { var a = document.createElement("textarea"); a.value = t; a.style.cssText = "position:fixed;left:-9999px"; document.body.appendChild(a); a.select(); try { document.execCommand("copy"); ok(); } catch (e) { say($("sum-msg"), "Could not copy.", "err"); } a.remove(); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, fallback); else fallback();
+  }
+
   /* ---------- wiring ---------- */
   if (!URL_ || !KEY) {
     document.querySelector(".wrap").innerHTML = '<section class="card login"><h1>Not set up yet</h1><p class="dim" style="margin-top:8px">Add the Supabase address and key to config.js, then reload this page.</p></section>';
@@ -917,6 +1107,14 @@
   document.addEventListener("visibilitychange", function () { if (!document.hidden) autoTick(); });   // coming back to the tab refreshes right away
   $("xlsx").addEventListener("click", download);
   $("report-btn").addEventListener("click", openReport);
+  if (AIS.enabled !== false) $("sum-btn").hidden = false;
+  try { if (localStorage.getItem("ipt-sum-seen")) $("sum-btn").classList.add("seen"); } catch (e) {}
+  $("sum-btn").addEventListener("click", openSum);
+  $("sum-x").addEventListener("click", closeSum); $("sum-close").addEventListener("click", closeSum);
+  $("sum-body").addEventListener("click", function (e) { if (e.target && e.target.id === "sum-go") runSum(); });
+  $("sum-again").addEventListener("click", runSum); $("sum-copy").addEventListener("click", copySum);
+  $("sum").addEventListener("click", function (e) { if (e.target === $("sum")) closeSum(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("sum").hidden) closeSum(); });
   $("rclose").addEventListener("click", closeReport);
   $("rsave").addEventListener("click", savePdf);
   $("rprint").addEventListener("click", function () { window.print(); });
