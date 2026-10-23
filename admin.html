@@ -32,6 +32,10 @@
   .top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
   .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:end}
   .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+  .statsrow{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px}
+  .statsrow #sum-btn{margin-left:auto;flex:none;padding:.45rem .85rem;border-radius:999px;font-size:14px;line-height:1.5;gap:.4rem}
+  .statsrow #sum-btn svg{width:15px;height:15px}
+  .statsrow #sum-btn .sum-new{top:-8px;right:-6px;padding:.08rem .38rem;font-size:9.5px}
   .stats{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
   .chip{padding:.45rem .85rem;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid var(--edge);font-size:14px}
   .chip b{color:var(--teal)}
@@ -42,6 +46,15 @@
   .sel-col{width:36px;padding-right:0!important}
   .sel-col input{width:18px;height:18px;accent-color:#52d9ca;cursor:pointer;margin:0;vertical-align:middle}
   tr.row.picked td{background:rgba(82,217,202,.13)}
+  .pager{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:space-between;margin-top:10px}
+  .pager[hidden]{display:none}
+  .pager .pg-info{font-size:13px;color:var(--dim)}
+  .pager .pg-nav{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .pager button{min-width:36px;height:36px;padding:0 .7rem;border-radius:10px;border:1px solid var(--edge);background:rgba(255,255,255,.08);color:var(--txt);font:inherit;font-weight:600;cursor:pointer}
+  .pager button:hover:not(:disabled){background:rgba(255,255,255,.18)}
+  .pager button:disabled{opacity:.4;cursor:default}
+  .pager button.on{background:linear-gradient(135deg,var(--teal),var(--blue));color:#06214e;border-color:transparent}
+  .pager .pg-gap{color:var(--dim);padding:0 2px}
   .selbar{position:sticky;bottom:14px;z-index:5;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px;padding:.7rem 1rem;border-radius:16px;background:rgba(10,28,72,.92);border:1px solid rgba(255,255,255,.25);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 14px 40px rgba(1,10,37,.5)}
   .selbar[hidden]{display:none}
   .selbar b{font-size:15px}
@@ -76,6 +89,7 @@
   .miss-row.no .miss-dot{background:rgba(255,120,120,.18);color:var(--bad);border:1px solid rgba(255,150,150,.55)}
   .miss-row.no .st{color:var(--bad);font-weight:600}
   .miss-note{margin:14px 0 0;font-size:13px}
+  .miss-fold{display:none;align-items:center;justify-content:center;padding:.3rem .8rem;border-radius:999px;border:1px solid var(--edge);background:rgba(255,255,255,.08);color:var(--txt);font:600 12.5px inherit;font-family:inherit;cursor:pointer}
   @media(max-width:560px){.miss-pick{width:100%}.miss-pick select{flex:1;min-width:0}}
   tr.row{cursor:pointer}
   tr.row:hover td{background:rgba(255,255,255,.06)}
@@ -233,6 +247,96 @@
   @keyframes holoPulse{0%,100%{opacity:.4}50%{opacity:.8}}
   @keyframes holoSweep{0%{background-position:150% 0}60%,100%{background-position:-60% 0}}
   @media (prefers-reduced-motion:reduce){#sum-btn,#sum-btn::before,#sum-btn::after{animation:none}#sum-btn::after{display:none}}
+
+  /* (the one-screen layouts were removed on request: the page is back to the normal layout) */
+  .nl-only,#nl-back,.nl-x{display:none}
+
+  /* ===== AI Summary window: glass + holographic ===== */
+  :root{--holo:linear-gradient(115deg,#ff9bd2,#9be7ff,#b8ffcf,#ffe69b,#c9a8ff,#ff9bd2)}
+  .sum-ov{background:rgba(2,10,34,.5);-webkit-backdrop-filter:blur(14px) saturate(1.25);backdrop-filter:blur(14px) saturate(1.25)}
+  .sum-ov::before,.sum-ov::after{content:"";position:fixed;z-index:0;width:46vmax;height:46vmax;border-radius:50%;filter:blur(80px);opacity:.34;pointer-events:none;animation:aiDrift 18s ease-in-out infinite alternate}
+  .sum-ov::before{left:-12vmax;top:-14vmax;background:radial-gradient(circle,#ff7ac8,transparent 66%)}
+  .sum-ov::after{right:-14vmax;bottom:-16vmax;background:radial-gradient(circle,#4fd8ff,transparent 66%);animation-delay:-9s}
+  @keyframes aiDrift{to{transform:translate(8vmax,6vmax) scale(1.15)}}
+  .sum-card{position:relative;z-index:1;padding:0;overflow:visible;display:flex;flex-direction:column;border:0;border-radius:26px;
+    background:linear-gradient(160deg,rgba(255,255,255,.13),rgba(255,255,255,0) 46%),rgba(9,22,62,.66);
+    -webkit-backdrop-filter:blur(26px) saturate(1.4);backdrop-filter:blur(26px) saturate(1.4);
+    box-shadow:0 30px 90px rgba(1,8,30,.65),0 0 70px rgba(123,92,255,.2),inset 0 1px 0 rgba(255,255,255,.28)}
+  .sum-card::before,.sum-actbox::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;background:var(--holo);background-size:300% 100%;animation:holoShift 7s linear infinite;
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);mask-composite:exclude}
+  .sum-card::before{opacity:.85}
+  .sum-scroll{overflow:auto;max-height:calc(100vh - 32px);padding:22px 26px 24px;border-radius:inherit;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.35) transparent}
+  .sum-top h2{font-size:24px;background:var(--holo);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:holoShift 8s linear infinite}
+  .sum-x{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3)}
+  .sum-stat{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.24);box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+  .sum-sec h3{color:#bfe9ff}
+  .sum-over{padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16)}
+  .sum-theme{background:rgba(255,255,255,.07);border-left-width:4px;border-left-style:solid}
+  .t-worked .sum-theme{border-left-color:#7ee7b4}.t-worked h3{color:#9cf0c8}
+  .t-challenge .sum-theme{border-left-color:#ff9a9a}.t-challenge h3{color:#ffb4b4}
+  .t-plan .sum-theme{border-left-color:#9aa8ff}.t-plan h3{color:#bcc6ff}
+  /* highlighted suggested actions */
+  .sum-actbox{position:relative;margin:18px 0 22px;padding:16px 18px 16px;border-radius:20px;
+    background:linear-gradient(135deg,rgba(255,155,210,.2),rgba(155,231,255,.17) 55%,rgba(184,255,207,.15));
+    box-shadow:0 0 38px rgba(155,231,255,.25),0 0 80px rgba(255,155,210,.12),inset 0 1px 0 rgba(255,255,255,.34)}
+  .sum-actbox::before{padding:2px;animation-duration:5s}
+  .sum-actbox h3{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:14px;color:#fff}
+  .sum-actbox h3 svg{color:#ffe69b;filter:drop-shadow(0 0 6px #ffe69b)}
+  .sum-actn{margin-left:auto;min-width:24px;height:24px;padding:0 .5rem;border-radius:999px;display:grid;place-items:center;font-size:12px;letter-spacing:0;color:#10214f;background:var(--holo);background-size:300% 100%;animation:holoShift 6s linear infinite}
+  .sum-acts{list-style:none;padding:0;margin:0;counter-reset:act;display:grid;gap:10px}
+  .sum-acts li{counter-increment:act;display:flex;gap:12px;align-items:flex-start;padding:11px 13px;border-radius:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.26);color:#fff;font-size:16px;font-weight:600;line-height:1.45;box-shadow:0 6px 18px rgba(1,8,30,.18)}
+  .sum-acts li::before{content:counter(act);flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13.5px;color:#10214f;background:var(--holo);background-size:300% 100%;animation:holoShift 6s linear infinite;box-shadow:0 0 14px rgba(155,231,255,.7)}
+  .sum-acts li span{padding-top:3px}
+  .sum-ready{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.26)}
+  #sum-go{background:var(--holo);background-size:300% 100%;animation:holoShift 6s linear infinite;color:#10214f}
+  /* loading animation */
+  .ai-load{display:grid;justify-items:center;gap:18px;padding:22px 0 10px}
+  .ai-orb{position:relative;width:128px;height:128px;display:grid;place-items:center}
+  .ai-glow{position:absolute;inset:-6px;border-radius:50%;background:conic-gradient(#ff9bd2,#9be7ff,#b8ffcf,#ffe69b,#c9a8ff,#ff9bd2);filter:blur(24px);opacity:.55;animation:aiSpin 5s linear infinite}
+  .ai-ring{position:absolute;inset:0;border-radius:50%;padding:3px;background:conic-gradient(#ff9bd2,#9be7ff,#b8ffcf,#ffe69b,#c9a8ff,#ff9bd2);animation:aiSpin 2.4s linear infinite;
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);mask-composite:exclude}
+  .ai-ring.r2{inset:16px;opacity:.7;animation-duration:3.8s;animation-direction:reverse}
+  .ai-core{position:relative;width:60px;height:60px;border-radius:50%;display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.55);box-shadow:inset 0 0 20px rgba(255,255,255,.35),0 0 24px rgba(155,231,255,.5);animation:aiBreath 2.2s ease-in-out infinite}
+  .ai-core svg{filter:drop-shadow(0 0 6px #fff)}
+  .ai-dot{position:absolute;left:50%;top:50%;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:#fff;box-shadow:0 0 10px #fff,0 0 22px #9be7ff;animation:aiOrbit 3.2s linear infinite}
+  .ai-dot.d2{animation-delay:-1.07s;background:#ffd0ec}.ai-dot.d3{animation-delay:-2.13s;background:#d6ffe6}
+  .ai-steps{display:grid;min-height:1.7em;text-align:center}
+  .ai-steps span{grid-area:1/1;opacity:0;font-size:16px;font-weight:600;color:#eaf3ff;animation:aiStep 12s infinite}
+  .ai-steps span:nth-child(2){animation-delay:3s}.ai-steps span:nth-child(3){animation-delay:6s}.ai-steps span:nth-child(4){animation-delay:9s}
+  .ai-bar{width:min(340px,80%);height:6px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden}
+  .ai-bar i{display:block;width:40%;height:100%;border-radius:inherit;background:var(--holo);background-size:300% 100%;animation:aiSlide 1.5s ease-in-out infinite,holoShift 4s linear infinite}
+  .ai-skel{width:100%;display:grid;gap:10px;margin-top:4px}
+  .ai-skel em{display:block;height:14px;border-radius:8px;background:linear-gradient(90deg,rgba(255,255,255,.06),rgba(255,255,255,.28),rgba(255,255,255,.06));background-size:200% 100%;animation:sumShim 1.3s linear infinite}
+  @keyframes aiSpin{to{transform:rotate(360deg)}}
+  @keyframes aiBreath{50%{transform:scale(1.09)}}
+  @keyframes aiOrbit{from{transform:rotate(0) translateX(64px)}to{transform:rotate(360deg) translateX(64px)}}
+  @keyframes aiStep{0%{opacity:0;transform:translateY(8px)}4%,21%{opacity:1;transform:none}25%,100%{opacity:0;transform:translateY(-8px)}}
+  @keyframes aiSlide{0%{transform:translateX(-110%)}100%{transform:translateX(280%)}}
+  @media (prefers-reduced-motion:reduce){
+    .sum-ov::before,.sum-ov::after,.sum-card::before,.sum-actbox::before,.sum-top h2,.sum-actn,.sum-actt,.sum-acts li::before,#sum-go,.ai-glow,.ai-ring,.ai-core,.ai-dot,.ai-bar i,.ai-skel em{animation:none}
+    .ai-steps span{animation:none}.ai-steps span:first-child{opacity:1}.ai-dot{display:none}
+  }
+  @media(max-width:560px){.sum-scroll{padding:18px 16px 20px}.sum-top h2{font-size:21px}}
+
+  /* suggested actions as a pill next to "Overview" */
+  .sum-ovh{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 8px}
+  .sum-ovh h3{margin:0}
+  .sum-actpill{position:relative;display:inline-flex;align-items:center;gap:.45rem;padding:.4rem .5rem .4rem .85rem;border-radius:999px;border:1px solid rgba(255,255,255,.7);cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:800;line-height:1.2;letter-spacing:.01em;color:#10214f;
+    background:var(--holo);background-size:300% 100%;animation:holoShift 6s linear infinite;box-shadow:0 0 18px rgba(155,231,255,.55),0 0 36px rgba(255,155,210,.28)}
+  .sum-actpill:hover{filter:brightness(1.07) saturate(1.15)}
+  .sum-actpill b{display:grid;place-items:center;min-width:22px;height:22px;padding:0 .4rem;border-radius:999px;font-size:12px;color:#fff;background:#10214f}
+  .sum-actpill::after{content:"";width:7px;height:7px;margin:0 .25rem 0 .1rem;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translate(-2px,-2px);transition:transform .25s}
+  .sum-actpill.open::after{transform:rotate(-135deg) translate(-2px,-2px)}
+  .sum-over + .sum-actbox{margin:12px 0 0;animation:aiPop .28s cubic-bezier(.2,.8,.2,1)}
+  @keyframes aiPop{from{opacity:0;transform:translateY(-8px) scale(.98)}}
+  @media (prefers-reduced-motion:reduce){.sum-actpill{animation:none}.sum-over + .sum-actbox{animation:none}}
+
+  .sum-actbox{margin:2px 0 20px!important}
+  .sum-over + .sum-actbox{margin:0!important;animation:none}
+  .sum-actbox{animation:aiPop .3s cubic-bezier(.2,.8,.2,1)}
+  .sum-actbox h3{display:flex;align-items:center;gap:9px;margin:0 0 12px;font-size:16px;letter-spacing:.12em;text-transform:uppercase}
+  .sum-actbox h3 svg{width:20px;height:20px;color:#ffe69b;filter:drop-shadow(0 0 7px #ffe69b)}
+  .sum-actt{font-weight:800;background:var(--holo);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:holoShift 6s linear infinite;filter:drop-shadow(0 0 8px rgba(155,231,255,.35))}
 </style>
 </head>
 <body>
@@ -279,7 +383,8 @@
           <select id="thin"><option value="">All answers</option><option value="1">Flagged as weak only</option></select></div>
       </div>
 
-      <div class="stats" id="stats"></div>
+      <div class="statsrow"><div class="stats" id="stats"></div>
+        <button class="btn" id="sum-btn" type="button" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>AI Summary<span class="sum-new">NEW</span></button></div>
 
       <section class="miss" id="missing" aria-labelledby="miss-h">
         <div class="miss-head">
@@ -296,11 +401,12 @@
 
       <div class="tablebox">
         <table>
-          <thead><tr><th class="sel-col"><input type="checkbox" id="selall" aria-label="Select all shown responses" title="Select all shown"></th><th>Date</th><th>Year</th><th>School</th><th>Week</th><th>Email</th><th>Overall</th><th>Resources</th><th>Engage.</th><th>Clarity</th></tr></thead>
+          <thead><tr><th class="sel-col"><input type="checkbox" id="selall" aria-label="Select all responses on this page" title="Select all on this page"></th><th>Date</th><th>Year</th><th>School</th><th>Week</th><th>Email</th><th>Overall</th><th>Resources</th><th>Engage.</th><th>Clarity</th></tr></thead>
           <tbody id="rows"></tbody>
         </table>
         <div class="empty" id="empty" hidden>No feedback for this selection.</div>
       </div>
+      <nav class="pager" id="pager" aria-label="Pages of responses" hidden></nav>
       <div class="selbar" id="selbar" role="region" aria-label="Selected responses" hidden>
         <b id="selcount"></b>
         <button type="button" class="btn danger" id="seldel">Delete selected</button>
@@ -312,14 +418,13 @@
       <div class="actions">
         <button class="btn" id="xlsx" type="button">Download Excel</button>
         <button class="btn" id="report-btn" type="button">Weekly report</button>
-        <button class="btn" id="sum-btn" type="button" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>AI Summary<span class="sum-new">NEW</span></button>
         <button class="btn ghost" id="refresh" type="button">Refresh</button>
         <span class="dim" id="upd" style="align-self:center;font-size:13px"></span>
       </div>
       <p class="msg" id="msg" role="status"></p>
     </div>
 
-    <div class="card" style="margin-top:16px">
+    <div class="card" id="charts-card" style="margin-top:16px">
       <div class="top" style="margin:0"><h2>Charts</h2><span class="dim" style="font-size:13px">They follow the period and year you chose above.</span></div>
       <div class="chart-grid viz">
         <div class="chart-card"><h3>Scores by category</h3><p class="cap">Average score out of 5</p><div id="ch-cats"></div></div>
@@ -334,14 +439,14 @@
 </div>
 
 <div class="sum-ov" id="sum" hidden>
-  <div class="sum-card" role="dialog" aria-modal="true" aria-labelledby="sum-h">
-    <div class="sum-top"><h2 id="sum-h">Summary of the responses</h2><span class="sum-badge" id="sum-badge"></span><button type="button" class="sum-x" id="sum-x" aria-label="Close">&times;</button></div>
+  <div class="sum-card" role="dialog" aria-modal="true" aria-labelledby="sum-h"><div class="sum-scroll">
+    <div class="sum-top"><h2 id="sum-h">AI Summary</h2><span class="sum-badge" id="sum-badge"></span><button type="button" class="sum-x" id="sum-x" aria-label="Close">&times;</button></div>
     <p class="dim sum-scope" id="sum-scope"></p>
     <div class="sum-stats" id="sum-stats"></div>
     <div id="sum-body"></div>
     <p class="dim" style="margin-top:14px;font-size:13.5px">Only the written answers and scores are used. Teachers&rsquo; names, emails and school names are never included.<span id="sum-prov"></span></p>
     <details class="sum-sent" id="sum-sent" hidden><pre id="sum-pay"></pre></details>
-    <div class="sum-actions"><button class="btn" id="sum-copy" type="button">Copy summary</button><button class="btn ghost" id="sum-again" type="button">Regenerate</button><button class="btn ghost" id="sum-close" type="button">Close</button><span class="dim" id="sum-msg" style="align-self:center;font-size:13px"></span></div>
+    <div class="sum-actions"><button class="btn" id="sum-copy" type="button">Copy summary</button><button class="btn ghost" id="sum-again" type="button">Regenerate</button><button class="btn ghost" id="sum-close" type="button">Close</button><span class="dim" id="sum-msg" style="align-self:center;font-size:13px"></span></div></div>
   </div>
 </div>
 
@@ -369,7 +474,9 @@
   var $ = function (id) { return document.getElementById(id); };
   var SKEY = "ipt-admin-session";
   var TEST_EMAIL = String(CFG.testEmail || "keepalive.test@bilfen.k12.tr").toLowerCase();   // the automatic keep-alive entries; hidden everywhere on this page
+  var PAGE = 5, page = 0;        // the table shows 5 responses at a time; everything else (Excel, charts, summary, report) still uses the whole selection
   var session = null, all = [], shown = [];
+  function pageRows() { return shown.slice(page * PAGE, page * PAGE + PAGE); }
 
   /* ---------- small helpers ---------- */
   function say(el, text, kind) { el.textContent = text || ""; el.className = "msg" + (kind ? " " + kind : ""); }
@@ -498,14 +605,41 @@
   function chip(label, value) { var s = document.createElement("span"); s.className = "chip"; s.append(label + " "); var b = document.createElement("b"); b.textContent = value; s.append(b); return s; }
   function cell(tr, text, node) { var td = document.createElement("td"); if (node) td.append(node); else td.textContent = text; tr.append(td); return td; }
 
+  function renderPager() {
+    var nav = $("pager"), pages = Math.ceil(shown.length / PAGE);
+    nav.textContent = ""; nav.hidden = pages < 2; if (pages < 2) return;
+    var a = page * PAGE + 1, z = Math.min(shown.length, a + PAGE - 1);
+    var info = document.createElement("span"); info.className = "pg-info"; info.textContent = "Showing " + a + "–" + z + " of " + shown.length + " (newest first)";
+    var box = document.createElement("div"); box.className = "pg-nav";
+    function btn(label, to, opts) {
+      var b = document.createElement("button"); b.type = "button"; b.textContent = label; opts = opts || {};
+      if (opts.aria) b.setAttribute("aria-label", opts.aria);
+      if (opts.on) { b.classList.add("on"); b.setAttribute("aria-current", "page"); }
+      if (opts.off) b.disabled = true; else b.addEventListener("click", function () { go(to); });
+      box.append(b);
+    }
+    btn("‹", page - 1, { aria: "Previous page", off: page === 0 });
+    var last = -1;
+    for (var i = 0; i < pages; i++) {
+      if (i === 0 || i === pages - 1 || Math.abs(i - page) <= 1) {
+        if (last > -1 && i - last > 1) { var g = document.createElement("span"); g.className = "pg-gap"; g.textContent = "…"; box.append(g); }
+        btn(String(i + 1), i, { on: i === page, aria: "Page " + (i + 1) }); last = i;
+      }
+    }
+    btn("›", page + 1, { aria: "Next page", off: page >= pages - 1 });
+    nav.append(info, box);
+  }
+  function go(n) { page = Math.max(0, n); sel = {}; lastPicked = null; render(); var tbx = document.querySelector(".tablebox"); if (tbx) tbx.scrollTop = 0; }
+
   function render() {
     shown = filtered();
+    page = Math.min(page, Math.max(0, Math.ceil(shown.length / PAGE) - 1));
     var st = $("stats"); st.textContent = "";
     st.append(chip("Responses", shown.length), chip("Overall", f1(avg(shown, "overall"))), chip("Resources", f1(avg(shown, "resources"))), chip("Engagement", f1(avg(shown, "engagement"))), chip("Clarity", f1(avg(shown, "clarity"))));
     if (thinInPeriod) st.append(chip("Weak answers", thinInPeriod));
     renderCharts();
     var tb = $("rows"); tb.textContent = ""; $("empty").hidden = shown.length > 0;
-    shown.forEach(function (x) {
+    pageRows().forEach(function (x) {
       var tr = document.createElement("tr"); tr.className = "row"; tr.tabIndex = 0;
       var pc = document.createElement("td"); pc.className = "sel-col";
       var pk = document.createElement("input"); pk.type = "checkbox"; pk.checked = !!sel[x.id]; pk.setAttribute("aria-label", "Select response from " + x.email);
@@ -559,6 +693,7 @@
       if (openIds[x.id]) toggle();
     });
     updateSel();
+    renderPager();
     renderMissing();
   }
 
@@ -614,7 +749,7 @@
 
   /* ---------- picking several rows and deleting them in one go ---------- */
   var sel = {}, lastPicked = null, delArmed = 0, delTimer = 0, delBusy = false;
-  function selIds() { return shown.map(function (x) { return x.id; }).filter(function (id) { return sel[id]; }); }   // only rows that are visible can be deleted
+  function selIds() { return pageRows().map(function (x) { return x.id; }).filter(function (id) { return sel[id]; }); }   // only rows that are visible can be deleted
   function paintRows() {
     Array.prototype.forEach.call($("rows").querySelectorAll("tr.row"), function (tr) {
       var on = !!sel[tr.dataset.id] || !!sel[Number(tr.dataset.id)];
@@ -622,25 +757,26 @@
     });
   }
   function updateSel() {
-    var keep = {}; shown.forEach(function (x) { if (sel[x.id]) keep[x.id] = 1; }); sel = keep;   // forget rows that are no longer shown
+    var keep = {}; pageRows().forEach(function (x) { if (sel[x.id]) keep[x.id] = 1; }); sel = keep;   // forget rows that are not on this page
     var n = selIds().length, bar = $("selbar"), all_ = $("selall");
     bar.hidden = n === 0;
     $("selcount").textContent = n + (n === 1 ? " response selected" : " responses selected");
-    all_.checked = n > 0 && n === shown.length; all_.indeterminate = n > 0 && n < shown.length;
+    var pn = pageRows().length; all_.checked = n > 0 && n === pn; all_.indeterminate = n > 0 && n < pn;
     if (!n) disarm();
     paintRows();
   }
   function pick(id, on, range) {
-    var ids = shown.map(function (x) { return x.id; }), i = ids.indexOf(id), j = lastPicked === null ? -1 : ids.indexOf(lastPicked);
+    var ids = pageRows().map(function (x) { return x.id; }), i = ids.indexOf(id), j = lastPicked === null ? -1 : ids.indexOf(lastPicked);
     if (range && j > -1 && i > -1) { for (var k = Math.min(i, j); k <= Math.max(i, j); k++) { if (on) sel[ids[k]] = 1; else delete sel[ids[k]]; } }
     else if (on) sel[id] = 1; else delete sel[id];
     lastPicked = id; disarm(); updateSel();
   }
   function disarm() { delArmed = 0; clearTimeout(delTimer); var b = $("seldel"); if (b && !delBusy) { b.textContent = "Delete selected"; $("selinfo").textContent = ""; } }
   $("selall").addEventListener("change", function () {
-    if (this.checked) shown.forEach(function (x) { sel[x.id] = 1; }); else sel = {};
+    if (this.checked) pageRows().forEach(function (x) { sel[x.id] = 1; }); else sel = {};
     lastPicked = null; disarm(); updateSel();
   });
+  (function () { var c = document.querySelector("#dash .controls"); if (c) { var back = function () { page = 0; }; c.addEventListener("input", back, true); c.addEventListener("change", back, true); } })();
   $("selclear").addEventListener("click", function () { sel = {}; lastPicked = null; updateSel(); });
   $("seldel").addEventListener("click", async function () {
     var ids = selIds(); if (!ids.length || delBusy) return;
@@ -1020,16 +1156,22 @@
     var yl = $("yr").value ? "Year " + $("yr").value : "All years";
     return periodText() + " · " + yl + " · " + shown.length + (shown.length === 1 ? " response" : " responses");
   }
-  function sumTheme(a, label) {
+  function sumTheme(a, label, cls) {
     a = Array.isArray(a) ? a : [];
-    return '<div class="sum-sec"><h3>' + label + "</h3>" + a.map(function (o) {
+    return '<div class="sum-sec ' + (cls || "") + '"><h3>' + label + "</h3>" + a.map(function (o) {
       return '<div class="sum-theme"><b>' + esc(o.t) + "</b><span>" + esc(o.d) + "</span></div>" + (o.q ? '<p class="sum-quote">&ldquo;' + esc(o.q) + "&rdquo;</p>" : "");
     }).join("") + "</div>";
   }
+  var SPARK = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>';
   function sumHTML(d) {
-    return (d.note ? '<p class="sum-check" style="margin:0 0 14px">' + esc(d.note) + "</p>" : "") + '<div class="sum-sec"><h3>Overview</h3><p class="sum-over">' + esc(d.overview) + "</p></div>" +
-      sumTheme(d.worked, "What worked well") + sumTheme(d.challenge, "What didn’t work") + sumTheme(d.plan, "Shape the next plan") +
-      '<div class="sum-sec"><h3>Suggested actions</h3><ol class="sum-acts">' + (d.actions || []).map(function (a) { return "<li>" + esc(a) + "</li>"; }).join("") + "</ol></div>" +
+    var acts = Array.isArray(d.actions) ? d.actions : [];
+    return (d.note ? '<p class="sum-check" style="margin:0 0 14px">' + esc(d.note) + "</p>" : "") +
+      (acts.length ? '<div class="sum-actbox" id="sum-actbox" hidden><h3>' + SPARK + '<span class="sum-actt">Suggested actions</span><span class="sum-actn">' + acts.length + '</span></h3><ol class="sum-acts">' + acts.map(function (a) { return "<li><span>" + esc(a) + "</span></li>"; }).join("") + "</ol></div>" : "") +
+      '<div class="sum-sec"><div class="sum-ovh"><h3>Overview</h3>' +
+      (acts.length ? '<button type="button" class="sum-actpill" id="sum-actpill" aria-expanded="false" aria-controls="sum-actbox">' + SPARK + 'Suggested actions<b>' + acts.length + "</b></button>" : "") +
+      '</div><p class="sum-over">' + esc(d.overview) + "</p>" +
+      "</div>" +
+      sumTheme(d.worked, "What worked well", "t-worked") + sumTheme(d.challenge, "What didn’t work", "t-challenge") + sumTheme(d.plan, "Shape the next plan", "t-plan") +
       (d.meta && d.meta.model ? '<p class="dim" style="margin:0 0 10px;font-size:12.5px">Written by ' + esc(d.meta.model) + (d.meta.provider ? " on " + esc(d.meta.provider) : "") + ".</p>" : "") + '<p class="sum-check"><b>Check before you act.</b> A summary can miss detail or lose nuance. Open the full responses behind any point (click a row in the table) before you share or act on it.</p>';
   }
   function sumText(d) {
@@ -1039,7 +1181,7 @@
       "\n\nSUGGESTED ACTIONS\n" + d.actions.map(function (a, i) { return (i + 1) + ". " + a; }).join("\n");
   }
   async function sumRequest(pay) {
-    if (!AIS.endpoint) { await new Promise(function (r) { setTimeout(r, 1700); }); return { demo: true, data: SAMPLE }; }
+    if (!AIS.endpoint) { await new Promise(function (r) { setTimeout(r, 4200); }); return { demo: true, data: SAMPLE }; }
     if (!session) throw new Error("expired");
     if (Date.now() > session.exp - 30000) await refresh();
     var r = await fetch(AIS.endpoint, { method: "POST", headers: { "Content-Type": "application/json", apikey: KEY, Authorization: "Bearer " + session.access }, body: JSON.stringify({ responses: pay.rows, scope: sumScope() }) });
@@ -1052,7 +1194,7 @@
   async function runSum() {
     var id = ++sumRun, pay = sumPayload(sumList()); sumFill(pay);
     sumData = null; $("sum-copy").disabled = true; $("sum-again").disabled = true; say($("sum-msg"), "");
-    $("sum-body").innerHTML = '<div class="sum-load" role="status"><p>Reading ' + pay.rows.length + (pay.rows.length === 1 ? " response" : " responses") + " (" + pay.words + ' words)…</p><i style="width:92%"></i><i style="width:78%"></i><i style="width:86%"></i><i style="width:55%"></i></div>';
+    $("sum-body").innerHTML = '<div class="ai-load" role="status" aria-live="polite"><div class="ai-orb"><span class="ai-glow"></span><span class="ai-ring"></span><span class="ai-ring r2"></span><b class="ai-core"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></b><u class="ai-dot"></u><u class="ai-dot d2"></u><u class="ai-dot d3"></u></div><div class="ai-steps"><span>Reading ' + pay.rows.length + (pay.rows.length === 1 ? " response" : " responses") + " (" + pay.words + ' words)…</span><span>Finding what teachers agree on…</span><span>Checking that every quote is real…</span><span>Writing your suggested actions…</span></div><div class="ai-bar"><i></i></div><div class="ai-skel"><em style="width:94%"></em><em style="width:80%"></em><em style="width:88%"></em><em style="width:58%"></em></div></div>';
     try {
       var res = await sumRequest(pay); if (id !== sumRun) return;
       sumDemo = res.demo; sumData = res.data;
@@ -1109,6 +1251,11 @@
   if (AIS.enabled !== false) $("sum-btn").hidden = false;
   try { if (localStorage.getItem("ipt-sum-seen")) $("sum-btn").classList.add("seen"); } catch (e) {}
   $("sum-btn").addEventListener("click", openSum);
+  $("sum-body").addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("#sum-actpill") : null; if (!b) return;
+    var box = $("sum-actbox"); if (!box) return;
+    var open = box.hidden; box.hidden = !open; b.setAttribute("aria-expanded", String(open)); b.classList.toggle("open", open);
+  });
   $("sum-x").addEventListener("click", closeSum); $("sum-close").addEventListener("click", closeSum);
   $("sum-body").addEventListener("click", function (e) { if (e.target && e.target.id === "sum-go") runSum(); });
   $("sum-again").addEventListener("click", runSum); $("sum-copy").addEventListener("click", copySum);
