@@ -337,6 +337,12 @@
   .sum-actbox h3{display:flex;align-items:center;gap:9px;margin:0 0 12px;font-size:16px;letter-spacing:.12em;text-transform:uppercase}
   .sum-actbox h3 svg{width:20px;height:20px;color:#ffe69b;filter:drop-shadow(0 0 7px #ffe69b)}
   .sum-actt{font-weight:800;background:var(--holo);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:holoShift 6s linear infinite;filter:drop-shadow(0 0 8px rgba(155,231,255,.35))}
+
+  #who{transition:opacity .38s ease}
+  #who.fade{opacity:0}
+  #who.welcome{font-size:17px}
+  .who-name{font-weight:800;background:var(--holo);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:holoShift 6s linear infinite;filter:drop-shadow(0 0 8px rgba(155,231,255,.35))}
+  @media (prefers-reduced-motion:reduce){.who-name{animation:none}#who{transition:none}}
 </style>
 </head>
 <body>
@@ -530,7 +536,32 @@
 
   /* ---------- screens ---------- */
   function showLogin(note) { $("dash").hidden = true; $("login").hidden = false; say($("login-msg"), note || "", note ? "err" : ""); setTimeout(function () { $("em").focus(); }, 50); }
-  function showDash() { $("login").hidden = true; $("dash").hidden = false; $("who").textContent = "Signed in as " + (session.email || "admin"); }
+  /* "Signed in as ..." for 3 seconds, then "Welcome back, <name>!" with the name in holographic letters.
+     Names come from config.js > admin > names (email -> first name); with an email like ayse.yilmaz@... the first part is used. */
+  var whoTimer = 0;
+  function firstName(email) {
+    var e = String(email || "").toLowerCase(), map = (CFG.admin && CFG.admin.names) || {};
+    for (var k in map) { if (Object.prototype.hasOwnProperty.call(map, k) && k.toLowerCase() === e) return String(map[k]); }
+    var parts = e.split("@")[0].split(/[._-]+/).filter(Boolean);
+    if (parts.length > 1 && /^\p{L}+$/u.test(parts[0])) return parts[0].charAt(0).toLocaleUpperCase("tr-TR") + parts[0].slice(1);
+    return "";
+  }
+  function showWho() {
+    var w = $("who"), email = session.email || "admin"; clearTimeout(whoTimer);
+    w.classList.remove("fade", "welcome"); w.textContent = "Signed in as " + email;
+    var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    whoTimer = setTimeout(function () {
+      function swap() {
+        var nm = firstName(email); w.textContent = "";
+        w.append("Welcome back" + (nm ? ", " : ""));
+        if (nm) { var sp = document.createElement("span"); sp.className = "who-name"; sp.textContent = nm; w.append(sp); }
+        w.append("!"); w.classList.add("welcome"); w.classList.remove("fade");
+      }
+      if (still) { swap(); return; }
+      w.classList.add("fade"); setTimeout(swap, 380);
+    }, 3000);
+  }
+  function showDash() { $("login").hidden = true; $("dash").hidden = false; showWho(); }
 
   var AUTO_MS = 2 * 60 * 1000, openIds = {}, busy = false;     // the list refreshes itself every 2 minutes while this tab is visible
   function stamp(ok) { $("upd").textContent = ok ? "Updated " + fmtTime(new Date()) : "Could not update at " + fmtTime(new Date()) + ", will try again"; }
