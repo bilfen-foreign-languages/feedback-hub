@@ -28,7 +28,9 @@
 
   var st = document.createElement("style");
   st.textContent =
-    "#news-btn{position:relative}" +
+    "#news-btn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:1200;padding:.6rem 1.05rem;box-shadow:0 10px 28px rgba(1,8,30,.5);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);background:rgba(14,34,86,.88)}" +
+    "#news-btn[hidden]{display:none}" +
+    "@media print{#news-btn{display:none!important}}" +
     "#news-btn .nw-dot{position:absolute;top:-4px;right:-4px;width:12px;height:12px;border-radius:50%;background:#ff4fa3;border:2px solid #0b1f55}" +
     "#news-btn.seen .nw-dot{display:none}" +
     ".nw-ov{position:fixed;inset:0;z-index:1600;display:grid;place-items:center;padding:16px;background:rgba(2,12,39,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}" +
@@ -51,7 +53,14 @@
   btn.type = "button"; btn.id = "news-btn"; btn.className = "btn ghost";
   btn.innerHTML = 'What’s new?<i class="nw-dot" aria-hidden="true"></i>';
   var ref = document.getElementById("refresh");
-  if (ref && ref.parentNode) ref.parentNode.insertBefore(btn, ref); else return;
+  if (!ref) return;
+  document.body.appendChild(btn);      // floats in the corner, so the page layout is untouched
+  btn.hidden = true;
+  var q = false;
+  function sync() { q = false; btn.hidden = !ref.offsetParent; }     // only while the dashboard (not the sign-in page) is showing
+  function queue() { if (!q) { q = true; requestAnimationFrame(sync); } }
+  new MutationObserver(queue).observe(document.body, { subtree: true, attributes: true, attributeFilter: ["hidden", "class", "style"] });
+  sync();
 
   function open() {
     var last = seen(), fresh = true;
