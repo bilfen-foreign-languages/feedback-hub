@@ -7,6 +7,10 @@
 (function () {
   "use strict";
   var NEWS = [
+    { id: "2026-10-24-secure", date: "24 Oct 2026", title: "AI Summary is live and locked to this site", tag: "Ufuk",
+      text: "AI Summary now runs through our own secure service. It only answers requests that come from this admin page, and only for signed-in admins. Emails and school names are removed before anything is sent, and quotes are checked against the real answers." },
+    { id: "2026-10-24-welcome", date: "24 Oct 2026", title: "A personal welcome", tag: "Ufuk",
+      text: "After signing in, the page says \u201CSigned in as \u2026\u201D for 3 seconds and then greets you by first name with a shimmering \u201CWelcome back\u201D. The What\u2019s new? button now floats in the bottom-right corner, with a red dot when there is something new." },
     { id: "2026-10-24-ui", date: "24 Oct 2026", title: "AI Summary: new look, and pages for the table", tag: "Ufuk",
       text: "The AI Summary window has a glass, holographic design with a loading animation. Suggested actions open from a glowing pill next to Overview and appear at the top. The response table shows 5 at a time with page numbers, and the AI Summary button now sits on the same row as the stats." },
     { id: "2026-10-23-ai", date: "23 Oct 2026", title: "AI summary (new)", tag: "Ufuk",
