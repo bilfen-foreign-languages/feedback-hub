@@ -7,6 +7,8 @@
 (function () {
   "use strict";
   var NEWS = [
+    { id: "2026-10-24-autosave", date: "24 Oct 2026", title: "Autosave Flexibility Update", tag: "Ufuk",
+      text: "Autosave keeps the data on the local server for 14 days to prevent any data loss and sends automatically whenever the Internet is back only when 'Submit' button is pressed." },
     { id: "2026-10-24-secure", date: "24 Oct 2026", title: "AI Summary is live and locked to this site", tag: "Ufuk",
       text: "AI Summary now runs through our own secure service. It only answers requests that come from this admin page, and only for signed-in admins. Emails and school names are removed before anything is sent, and quotes are checked against the real answers." },
     { id: "2026-10-24-welcome", date: "24 Oct 2026", title: "A personal welcome", tag: "Ufuk",
