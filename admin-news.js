@@ -7,6 +7,8 @@
 (function () {
   "use strict";
   var NEWS = [
+    { id: "2026-10-24-security", date: "24 Oct 2026", title: "Major Security Update", tag: "Ufuk",
+      text: "A major security update has been made. The website and admin page now back up every 3 days to prevent any data loss. All feedback data is protected in pre-determined categories." },
     { id: "2026-10-24-autosave", date: "24 Oct 2026", title: "Autosave Flexibility Update", tag: "Ufuk",
       text: "Autosave keeps the data on the local server for 14 days to prevent any data loss and sends automatically whenever the Internet is back only when 'Submit' button is pressed." },
     { id: "2026-10-24-secure", date: "24 Oct 2026", title: "AI Summary is live and locked to this site", tag: "Ufuk",
