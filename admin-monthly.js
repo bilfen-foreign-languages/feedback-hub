@@ -9,10 +9,11 @@
      and the report shows the AI's overview and suggested actions. It starts by itself
      when the welcome window appears. When OFF (the default) nothing is sent anywhere.
      Open admin.html?aitest=1 to try it on made-up answers instead of teacher answers.
-   * Periods are fixed blocks of 28 days counted from a Monday (config below), so
-     every admin sees the same report. A report is ready once its 28 days are over.
+   * The first report covers the dates set in config.js (start and firstEnd); after that a
+     new report follows every 4 weeks (28 days). Every admin sees the same reports.
+     A report is ready the day after its last day.
    * The welcome window shows once per report for each admin (until they open it).
-   Settings (config.js > admin > monthly):  { start: "2026-09-07" }   first Monday
+   Settings (config.js > admin > monthly):  { start: "2026-10-19", firstEnd: "2026-11-09" }
    Turn it off:                            admin: { monthly: false }
    ========================================================================== */
 (function () {
@@ -31,10 +32,13 @@
   function nice(ymd, year) { return new Date(ymd + "T00:00:00Z").toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "short", year: year ? "numeric" : undefined }); }
   function esc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
-  var START = mondayOf(/^\d{4}-\d{2}-\d{2}$/.test(M.start || "") ? M.start : "2026-09-07");
-  function pStart(k) { return addDays(START, k * LEN); }
-  function pEnd(k) { return addDays(START, k * LEN + LEN - 1); }
-  function lastDone() { return Math.floor((dayNo(today()) - dayNo(START)) / LEN) - 1; }   // -1 = the first report is not ready yet
+  var YMD = /^\d{4}-\d{2}-\d{2}$/;
+  var START = YMD.test(M.start || "") ? M.start : "2026-10-19", FIRST_END = YMD.test(M.firstEnd || "") ? M.firstEnd : "2026-11-09";
+  if (FIRST_END < START) FIRST_END = addDays(START, LEN - 1);
+  function pStart(k) { return k <= 0 ? START : addDays(FIRST_END, 1 + (k - 1) * LEN); }
+  function pEnd(k) { return k <= 0 ? FIRST_END : addDays(FIRST_END, k * LEN); }
+  function lastDone() { var t = dayNo(today()), e = dayNo(FIRST_END); return t <= e ? -1 : Math.ceil((t - e) / LEN) - 1; }   // -1 = the first report is not ready yet
+  function span(k) { var d = dayNo(pEnd(k)) - dayNo(pStart(k)) + 1; return d % 7 === 0 ? d / 7 + " weeks" : d + " days"; }
 
   /* ---------- numbers ---------- */
   var KEYS = ["overall", "resources", "engagement", "clarity"];
@@ -61,7 +65,7 @@
     var out = [];
     var yrs = [5, 6, 7].filter(function (y) { return s.years[y]; }).map(function (y) { return "Year " + y + ": " + s.years[y]; }).join(", ");
     var t = "Between " + nice(pStart(k)) + " and " + nice(pEnd(k)) + ", " + s.n + (s.n === 1 ? " reflection" : " reflections") + " came in" + (s.schools ? " from " + s.schools + (s.schools === 1 ? " school" : " schools") : "") + (yrs ? " (" + yrs + ")" : "") + ".";
-    if (p && p.n) { var d = s.n - p.n; t += d === 0 ? " That is the same as the previous four weeks." : " That is " + Math.abs(d) + (d > 0 ? " more" : " fewer") + " than the previous four weeks (" + p.n + ")."; }
+    if (p && p.n) { var d = s.n - p.n; t += d === 0 ? " That is the same as the previous report." : " That is " + Math.abs(d) + (d > 0 ? " more" : " fewer") + " than the previous report (" + p.n + ")."; }
     out.push(t);
     var cats = ["resources", "engagement", "clarity"].filter(function (c) { return s.avg[c] !== null; });
     if (cats.length >= 2) {
@@ -153,7 +157,7 @@
     var list = inPeriod(rows, n), key = aiKey(n, list.length);
     if (aiMem[key]) return aiMem[key];
     try { var c = localStorage.getItem(key); if (c) { var o = JSON.parse(c); return (aiMem[key] = Promise.resolve({ demo: false, data: o })); } } catch (e) {}
-    var pr = window.IPT_AI.run(list, "Monthly report for " + nice(pStart(n)) + " to " + nice(pEnd(n), true) + " (4 weeks)").then(function (res) {
+    var pr = window.IPT_AI.run(list, "Monthly report for " + nice(pStart(n)) + " to " + nice(pEnd(n), true)).then(function (res) {
       if (!res.demo) { try { localStorage.setItem(key, JSON.stringify(res.data)); } catch (e) {} }
       return res;
     });
@@ -197,8 +201,8 @@
   function delta(a, b, isCount) {
     if (a === null || b === null || b === undefined) return "";
     var d = a - b, tiny = isCount ? d === 0 : Math.abs(d) < 0.05;
-    if (tiny) return '<span class="mr-d" title="Compared with the previous four weeks">= same</span>';
-    return '<span class="mr-d ' + (d > 0 ? "up" : "dn") + '" title="Compared with the previous four weeks">' + (d > 0 ? "▲ " : "▼ ") + (isCount ? Math.abs(d) : f1(Math.abs(d))) + "</span>";
+    if (tiny) return '<span class="mr-d" title="Compared with the previous report">= same</span>';
+    return '<span class="mr-d ' + (d > 0 ? "up" : "dn") + '" title="Compared with the previous report">' + (d > 0 ? "▲ " : "▼ ") + (isCount ? Math.abs(d) : f1(Math.abs(d))) + "</span>";
   }
 
   function show(n) {
@@ -212,7 +216,7 @@
       body =
         '<div class="mr-hero"><div class="mr-ring"><svg viewBox="0 0 170 170" aria-hidden="true"><defs><linearGradient id="mr-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9bd2"/><stop offset=".5" stop-color="#9be7ff"/><stop offset="1" stop-color="#b8ffcf"/></linearGradient></defs><circle class="bg" cx="85" cy="85" r="70" fill="none" stroke-width="13"/><circle class="fg" cx="85" cy="85" r="70" fill="none" stroke="url(#mr-g)" stroke-width="13" style="--circ:' + circ + ";--off:" + off + ";stroke-dasharray:" + circ + ";stroke-dashoffset:" + off + '"/></svg>' +
         '<div class="mr-ringtxt"><span class="mr-big" data-to="' + (s.avg.overall === null ? "" : s.avg.overall) + '" data-dec="1">' + f1(s.avg.overall) + "</span><small>Overall<br>out of 5</small></div></div>" +
-        '<div class="mr-tiles"><div class="mr-tile" style="animation-delay:.3s"><div class="l">Responses</div><div class="n"><span data-to="' + s.n + '" data-dec="0">' + s.n + "</span></div><div class=\"s\">" + (p ? delta(s.n, p.n, true) + " vs previous 4 weeks" : "first report") + "</div></div>" +
+        '<div class="mr-tiles"><div class="mr-tile" style="animation-delay:.3s"><div class="l">Responses</div><div class="n"><span data-to="' + s.n + '" data-dec="0">' + s.n + "</span></div><div class=\"s\">" + (p ? delta(s.n, p.n, true) + " vs previous report" : "first report") + "</div></div>" +
         '<div class="mr-tile" style="animation-delay:.4s"><div class="l">Schools</div><div class="n"><span data-to="' + s.schools + '" data-dec="0">' + s.schools + '</span></div><div class="s">that took part</div></div>' +
         [5, 6, 7].map(function (y, i) { return '<div class="mr-tile" style="animation-delay:' + (0.5 + i * 0.1) + 's"><div class="l">Year ' + y + '</div><div class="n"><span data-to="' + s.years[y] + '" data-dec="0">' + s.years[y] + '</span></div><div class="s">' + (s.yearOverall[y] === null ? "reflections" : "reflections · " + f1(s.yearOverall[y]) + " overall") + "</div></div>"; }).join("") + "</div></div>" +
         '<div class="mr-cats">' + ["resources", "engagement", "clarity"].map(function (c, i) {
@@ -225,7 +229,7 @@
     }
     ov.innerHTML = '<div class="mr-card" role="dialog" aria-modal="true" aria-labelledby="mr-t"><div class="mr-frame"></div><div class="mr-wrap"><div class="mr-orb"></div>' +
       '<div class="mr-top"><h2 id="mr-t">Monthly report</h2><button type="button" class="mr-x" aria-label="Close">&times;</button></div>' +
-      '<div class="mr-nav"><button type="button" class="mr-arrow" id="mr-prev" aria-label="Earlier report"' + (k <= 0 ? " disabled" : "") + '>‹</button><span><b>' + esc(nice(pStart(k))) + " – " + esc(nice(pEnd(k), true)) + '</b> · 4 weeks</span><button type="button" class="mr-arrow" id="mr-next" aria-label="Later report"' + (k >= done ? " disabled" : "") + '>›</button></div>' +
+      '<div class="mr-nav"><button type="button" class="mr-arrow" id="mr-prev" aria-label="Earlier report"' + (k <= 0 ? " disabled" : "") + '>‹</button><span><b>' + esc(nice(pStart(k))) + " – " + esc(nice(pEnd(k), true)) + '</b> · ' + span(k) + '</span><button type="button" class="mr-arrow" id="mr-next" aria-label="Later report"' + (k >= done ? " disabled" : "") + '>›</button></div>' +
       body + "</div></div>";
     ov.hidden = false; document.body.style.overflow = "hidden";
     ov.querySelectorAll("[data-to]").forEach(function (el) { var to = parseFloat(el.getAttribute("data-to")); if (!isNaN(to)) countUp(el, to, Number(el.getAttribute("data-dec")), 1400); });
@@ -238,7 +242,7 @@
   function openLatest() {
     var d = lastDone();
     if (d < 0) {
-      ov.innerHTML = '<div class="mr-card" role="dialog" aria-modal="true"><div class="mr-frame"></div><div class="mr-wrap"><div class="mr-top"><h2>Monthly report</h2><button type="button" class="mr-x" aria-label="Close">&times;</button></div><div class="mr-empty">The first monthly report will be ready on <b>' + esc(nice(addDays(pEnd(0), 1), true)) + "</b>, when the first four weeks are over.</div></div></div>";
+      ov.innerHTML = '<div class="mr-card" role="dialog" aria-modal="true"><div class="mr-frame"></div><div class="mr-wrap"><div class="mr-top"><h2>Monthly report</h2><button type="button" class="mr-x" aria-label="Close">&times;</button></div><div class="mr-empty">The first monthly report will be ready on <b>' + esc(nice(addDays(pEnd(0), 1), true)) + "</b>, when the first period is over.</div></div></div>";
       ov.hidden = false; document.body.style.overflow = "hidden"; ov.querySelector(".mr-x").focus(); return;
     }
     show(d);
@@ -251,7 +255,7 @@
     try { if (sessionStorage.getItem("ipt-monthly-later:" + String(email).toLowerCase()) === String(d)) return; } catch (e) {}
     popped = true;
     if (aiOn()) { try { aiGet(d).catch(function () {}); } catch (e) {} }      // the AI starts reading while the welcome window is open
-    ov.innerHTML = '<div class="mr-pop" role="dialog" aria-modal="true" aria-labelledby="mr-pt"><div class="mr-frame"></div><div class="mr-orb"></div><span class="mr-ico" aria-hidden="true">📊</span><h2 id="mr-pt">Your monthly report is ready</h2><p>The four weeks from <b>' + esc(nice(pStart(d))) + "</b> to <b>" + esc(nice(pEnd(d))) + '</b> are done. Click below to view it.</p><div class="mr-acts"><button type="button" class="mr-go" id="mr-view">Click here to view it</button><button type="button" class="mr-later" id="mr-later">Later</button></div></div>';
+    ov.innerHTML = '<div class="mr-pop" role="dialog" aria-modal="true" aria-labelledby="mr-pt"><div class="mr-frame"></div><div class="mr-orb"></div><span class="mr-ico" aria-hidden="true">📊</span><h2 id="mr-pt">Your monthly report is ready</h2><p>The period from <b>' + esc(nice(pStart(d))) + "</b> to <b>" + esc(nice(pEnd(d))) + '</b> is done. Click below to view it.</p><div class="mr-acts"><button type="button" class="mr-go" id="mr-view">Click here to view it</button><button type="button" class="mr-later" id="mr-later">Later</button></div></div>';
     ov.hidden = false; document.body.style.overflow = "hidden";
     ov.querySelector("#mr-view").focus();
   }
