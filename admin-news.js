@@ -8,7 +8,7 @@
   "use strict";
   var NEWS = [
     { id: "2026-10-25-monthly", date: "25 Oct 2026", title: "Monthly report (new)", tag: "Ufuk",
-      text: "Every 4 weeks, a window greets each admin with \u201CYour monthly report is ready\u201D. It shows the responses, the overall score, resources, engagement and clarity, how they changed since the previous 4 weeks, and a short overview. The new Monthly report button in the bottom-left corner opens it any time, and the arrows go back to earlier reports. It also has an AI overview with suggested actions that starts by itself (switched on in config.js once approved; open admin.html?aitest=1 to try it on made-up answers). The numbers are worked out automatically and no teacher comments are shown." },
+      text: "Every 4 weeks, a window greets each admin with \u201CYour monthly report is ready\u201D. It shows the responses, the overall score, resources, engagement and clarity, how they changed since the previous 4 weeks, and a short overview. The new Monthly report button in the bottom-left corner opens it any time, and the arrows go back to earlier reports. It also has an AI overview with suggested actions that starts by itself. The numbers are worked out automatically and no teacher comments are shown." },
     { id: "2026-10-24-secure", date: "24 Oct 2026", title: "AI Summary is live and locked to this site", tag: "Ufuk",
       text: "AI Summary now runs through our own secure service. It only answers requests that come from this admin page, and only for signed-in admins. Emails and school names are removed before anything is sent, and quotes are checked against the real answers." },
     { id: "2026-10-24-welcome", date: "24 Oct 2026", title: "A personal welcome", tag: "Ufuk",
