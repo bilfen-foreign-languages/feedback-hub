@@ -68,7 +68,7 @@ window.IPT_CONFIG = {
     year5Start: "2026-10-19",                         // the Monday the first Year 5 school gives feedback
     year5Skip: [],                                    // holiday Mondays to skip, e.g. ["2026-12-28", "2027-01-04"]
     year5: [
-      ["Bursa", "Bornova"],
+      ["Bursa"],
       ["Çamlıca"],
       ["Çayyolu"],
       ["Esenşehir"],
@@ -109,9 +109,9 @@ window.IPT_CONFIG = {
      Holidays that move every year need their dates added when you know them (use the full YYYY-MM-DD form). */
   occasions: [
     { date: "10-05", greet: "Happy World Teachers' Day,", banner: "Happy World Teachers' Day! Thank you for everything you do. 🍎", effect: "confetti" },
-    { date: "10-29", greet: "Happy Republic Day,", banner: "Happy Republic Day! 🎉", effect: "confetti", colors: ["#e30a17", "#ffffff", "#f5c542"] },
+    { date: "10-29", greet: "Happy Republic Day,", banner: "Happy Republic Day! Cumhuriyet Bayramımız kutlu olsun! 🎉", effect: "confetti", colors: ["#e30a17", "#ffffff", "#f5c542"] },
     { date: "11-10", greet: "In remembrance,", banner: "Today we remember Mustafa Kemal Atatürk with respect and gratitude.", solemn: true, noName: true },
-    { date: "11-24", greet: "Happy Teachers' Day,", banner: "Happy Teachers' Day! Thank you for inspiring every day. 🍎", effect: "confetti" },
+    { date: "11-24", greet: "Happy Teachers' Day,", banner: "Happy Teachers' Day! Thank you for inspiring our students every day. 🍎", effect: "confetti" },
     { date: "12-31", to: "01-01", greet: "Happy New Year,", banner: "Happy New Year! Wishing you a wonderful year ahead. 🎆", effect: "confetti" },
     { date: "12-20", to: "01-03", effect: "snow" },
     { date: "03-08", greet: "Happy Women's Day,", banner: "Happy International Women's Day! 💐", effect: "confetti", colors: ["#a183ee", "#ff9ec7", "#ffffff", "#52d9ca"], noName: true },
@@ -130,7 +130,7 @@ window.IPT_CONFIG = {
      lowEndMode: "off" = nothing at all on slow computers, "glow" = keep only the still soft glow. A visitor can always turn it back on from the chip.
      To test a weather without waiting for it, add ?wx=rain to the site address (rain, snow, sun, wind, cloud, fog, storm, night). */
   weather: {
-    enabled: false,
+    enabled: true,
     defaultPlace: "Istanbul",
     strength: 1,
     glowStrength: 0.65,                               // only the colour glow: 0.65 = gentle, 1 = stronger, 0.4 = barely there
@@ -192,6 +192,10 @@ window.IPT_CONFIG = {
      thinWords: an answer with fewer words than this (or "n/a", "good", a copy of another answer...) is flagged "Weak" on the admin page. */
   admin: {
     thinWords: 6,
+    /* Monthly report: a new report every 4 weeks, counted from this Monday. Set  monthly: false  to turn it off.
+       ai: true  adds an AI-written overview (sends the month's answers to the AI Summary service, e-mails and school names removed).
+       Keep it false until your HoD has approved it and the KVKK check is done. To try it on made-up answers first, open admin.html?aitest=1 */
+    monthly: { start: "2026-09-07", ai: false },
     /* First names for the "Welcome back, ..." line on the admin page (email -> name). An email like ayse.yilmaz@... works without an entry. */
     names: {
       "ufukkorkmaz@bilfen.k12.tr": "Ufuk",
