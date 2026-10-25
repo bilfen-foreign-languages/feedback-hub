@@ -68,7 +68,7 @@ window.IPT_CONFIG = {
     year5Start: "2026-10-19",                         // the Monday the first Year 5 school gives feedback
     year5Skip: [],                                    // holiday Mondays to skip, e.g. ["2026-12-28", "2027-01-04"]
     year5: [
-      ["Bursa"],
+      ["Bursa", "Bornova"],
       ["Çamlıca"],
       ["Çayyolu"],
       ["Esenşehir"],
@@ -130,7 +130,7 @@ window.IPT_CONFIG = {
      lowEndMode: "off" = nothing at all on slow computers, "glow" = keep only the still soft glow. A visitor can always turn it back on from the chip.
      To test a weather without waiting for it, add ?wx=rain to the site address (rain, snow, sun, wind, cloud, fog, storm, night). */
   weather: {
-    enabled: true,
+    enabled: false,
     defaultPlace: "Istanbul",
     strength: 1,
     glowStrength: 0.65,                               // only the colour glow: 0.65 = gentle, 1 = stronger, 0.4 = barely there
@@ -195,7 +195,7 @@ window.IPT_CONFIG = {
     /* Monthly report: a new report every 4 weeks, counted from this Monday. Set  monthly: false  to turn it off.
        ai: true  adds an AI-written overview (sends the month's answers to the AI Summary service, e-mails and school names removed).
        Keep it false until your HoD has approved it and the KVKK check is done. To try it on made-up answers first, open admin.html?aitest=1 */
-    monthly: { start: "2026-09-07", ai: false },
+    monthly: { start: "2026-09-07", ai: true },
     /* First names for the "Welcome back, ..." line on the admin page (email -> name). An email like ayse.yilmaz@... works without an entry. */
     names: {
       "ufukkorkmaz@bilfen.k12.tr": "Ufuk",
