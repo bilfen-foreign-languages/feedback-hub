@@ -513,7 +513,7 @@
     saveSession(toSession(j));
   }
   async function signOut() {
-    var s = session; saveSession(null);
+    var s = session; saveSession(null); try { window.dispatchEvent(new Event("ipt:signout")); } catch (x) {}
     try { if (s) await fetch(URL_ + "/auth/v1/logout", { method: "POST", headers: { apikey: KEY, Authorization: "Bearer " + s.access } }); } catch (e) {}
   }
   async function api(path, method) {
@@ -573,6 +573,7 @@
       var same = silent === true && fresh.length === all.length && fresh.every(function (r, i) { return r.id === all[i].id; });
       if (!same) { all = fresh; render(); }
       if (silent !== true) say($("msg"), ""); stamp(true);
+      try { window.IPT_ROWS = { rows: all.slice(), email: session && session.email }; window.dispatchEvent(new CustomEvent("ipt:rows", { detail: window.IPT_ROWS })); } catch (x) {}
     }
     catch (e) {
       if (e.message === "expired") { saveSession(null); showLogin("Your session ended. Please sign in again."); }
@@ -1211,14 +1212,25 @@
       "\n\nWHAT WORKED WELL\n" + blk(d.worked) + "\n\nWHAT DIDN'T WORK\n" + blk(d.challenge) + "\n\nSHAPE THE NEXT PLAN\n" + blk(d.plan) +
       "\n\nSUGGESTED ACTIONS\n" + d.actions.map(function (a, i) { return (i + 1) + ". " + a; }).join("\n");
   }
-  async function sumRequest(pay) {
+  async function sumRequest(pay, scopeText) {
     if (!AIS.endpoint) { await new Promise(function (r) { setTimeout(r, 4200); }); return { demo: true, data: SAMPLE }; }
     if (!session) throw new Error("expired");
     if (Date.now() > session.exp - 30000) await refresh();
-    var r = await fetch(AIS.endpoint, { method: "POST", headers: { "Content-Type": "application/json", apikey: KEY, Authorization: "Bearer " + session.access }, body: JSON.stringify({ responses: pay.rows, scope: sumScope() }) });
+    var r;
+    try { r = await fetch(AIS.endpoint, { method: "POST", headers: { "Content-Type": "application/json", apikey: KEY, Authorization: "Bearer " + session.access }, body: JSON.stringify({ responses: pay.rows, scope: scopeText || sumScope() }) }); }
+    catch (e) {      // the browser gives no detail here: the function is not deployed, the internet dropped, or the ALLOWED_ORIGIN secret does not match this page's address
+      try { console.warn("AI summary: the request was blocked or failed. This page's address (what ALLOWED_ORIGIN must be exactly):", location.origin); } catch (e2) {}
+      throw new Error("Could not reach the summary service. Check your connection and try again. If it keeps happening, tell Ufuk.");
+    }
     if (!r.ok) { var ej = null; try { ej = await r.json(); } catch (e) {} throw new Error((ej && ej.error) || "The summary service answered with an error (" + r.status + ")."); }
     return { demo: false, data: await r.json() };
   }
+  /* used by the Monthly report window (admin-monthly.js): same safe path as AI Summary, same anonymising, same server checks */
+  window.IPT_AI = {
+    ready: function () { return AIS.enabled !== false; },
+    test: AITEST,
+    run: function (list, scopeText) { return sumRequest(sumPayload(AITEST ? TEST_ROWS : list), AITEST ? "TEST DATA \u00B7 made-up answers, not from teachers. " + scopeText : scopeText); }
+  };
   function sumFill(pay) {
     $("sum-pay").textContent = pay.rows.length ? JSON.stringify(pay.rows.slice(0, 3), null, 1) + (pay.rows.length > 3 ? "\n\n… and " + (pay.rows.length - 3) + " more response" + (pay.rows.length - 3 === 1 ? "" : "s") + " in the same form (" + pay.words + " words in total)." : "") : "Nothing to send.";
   }
@@ -1308,5 +1320,6 @@
 })();
 </script>
 <script src="admin-news.js"></script>
+<script src="admin-monthly.js"></script>
 </body>
 </html>
