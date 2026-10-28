@@ -59,7 +59,7 @@ const SCHOOLS_BY_YEAR = (() => {
 
 const YEARS = {
   year5: {
-    label: "Year 5", logo: "assets/logo-year5.png", logoAlt: "Year 5 IPT school badge logo", kicker: "YEAR 5 IPT",
+    label: "Year 5", logo: "assets/logo-menu.png", logoAlt: "Year 5 IPT school badge logo", kicker: "YEAR 5 IPT",
     title: "Teaching feedback, gently collected.",
     intro: "Dear colleagues, please complete this form after teaching Year 5 IPT. Your reflections, ideas, and suggestions help us improve together.",
     emailHelp: "Your designated school email will be included with this Year 5 response. Please enter your email to proceed.",
@@ -415,7 +415,7 @@ function setupForm(y) {
       draftOff = true; clearTimeout(draftTimer);
       form.reset(); slider.value = "3"; clarity(); gate(); showWarn(); draftClear(); draftOff = false;
       say("Thank you — your feedback has been saved successfully.", true);
-      try { celebrate(y); } catch (err) { console.error("Celebration failed:", err); }   // never affects the saved result
+      try { celebrate(y, pretty["School"]); } catch (err) { console.error("Celebration failed:", err); }   // never affects the saved result
     } catch (err) { say("We could not confirm your submission. Please refresh before trying again."); }
     finally { button.disabled = false; }
   });
@@ -960,8 +960,19 @@ function fireConfetti(colors) {
   setTimeout(() => canvas.remove(), 5000);                   // safety net
 }
 
+// "Your school's next feedback Monday" line for the thank-you box (empty when the school or its schedule is not known)
+function nextFeedbackHTML(y, school) {
+  try {
+    const n = window.IPTNextFeedback && window.IPTNextFeedback(y, school);
+    if (!n) return "";
+    const day = n.date.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+    const away = n.days <= 1 ? "tomorrow" : n.days === 7 ? "in 1 week" : "in " + n.days + " days";
+    return `<div class="thanks-next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg><span><b>Your school's next feedback Monday</b><span>${day} \u00B7 ${away}</span></span></div>`;
+  } catch (err) { return ""; }
+}
+
 // Glass thank-you box. The page behind is blurred slightly until the box is closed.
-function showThanks(y, returnTo) {
+function showThanks(y, returnTo, school) {
   if (document.querySelector(".thanks-overlay")) return;
   const c = YEARS[y];
   const overlay = document.createElement("div");
@@ -972,6 +983,7 @@ function showThanks(y, returnTo) {
       <p class="t-kicker mb-2 uppercase" style="font-size:14px;">${c.kicker}</p>
       <h2 id="thanks-title" class="t-title" style="font-size:28px;line-height:1.2;">Thank you for your feedback</h2>
       <p id="thanks-text" class="t-intro mt-3" style="font-size:16px;">Your ${c.label} reflections have been saved. They help us improve together.</p>
+      ${nextFeedbackHTML(y, school)}
       ${window.IPTBoost && window.IPTBoost.supported() && (CFG.boost || {}).enabled !== false ? `<button type="button" class="thanks-boost mt-5 inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-2.5 font-semibold" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#eef5ff;">Need a boost? ✨</button><br>` : ""}
       <button type="button" class="thanks-close mt-4 inline-flex items-center justify-center gap-2 rounded-2xl px-8 py-3 font-bold shadow-lg" style="${c.submitBtn}"><span style="color:${c.submitTxt};">Back to main page</span></button>
     </div>`;
@@ -1002,9 +1014,9 @@ function showThanks(y, returnTo) {
   requestAnimationFrame(() => requestAnimationFrame(() => { overlay.classList.add("show"); closeBtn.focus({ preventScroll: true }); }));
 }
 
-function celebrate(y) {
+function celebrate(y, school) {
   const submit = document.querySelector(`#${y}-form button[type="submit"]`);
-  try { showThanks(y, submit); } catch (err) { console.error("Thank-you box failed:", err); }
+  try { showThanks(y, submit, school); } catch (err) { console.error("Thank-you box failed:", err); }
   try { fireConfetti(CONFETTI_COLORS[y]); } catch (err) { console.error("Confetti failed:", err); }
 }
 
