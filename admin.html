@@ -1,1333 +1,285 @@
-<!doctype html>
-<!-- IPT Feedback · Created by Ufuk Korkmaz, 2026. -->
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="robots" content="noindex, nofollow">
-<title>IPT Feedback · Admin</title>
-<style>
-  :root{--bg1:#020c27;--bg2:#173067;--glass:rgba(255,255,255,.08);--edge:rgba(255,255,255,.2);--txt:#eef5ff;--dim:#b7c7e6;--teal:#52d9ca;--blue:#658ff1;--bad:#ff9a9a;--good:#9cf0c8}
-  *{box-sizing:border-box}
-  html,body{margin:0;min-height:100%}
-  body{font-family:"Work Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--txt);background:linear-gradient(135deg,var(--bg1),var(--bg2)) fixed;line-height:1.5}
-  .wrap{max-width:1100px;margin:0 auto;padding:24px 16px 60px}
-  .card{background:var(--glass);border:1px solid var(--edge);border-radius:22px;padding:22px;box-shadow:0 22px 60px rgba(1,10,37,.32),inset 0 1px 0 rgba(255,255,255,.14);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-  h1{font-size:26px;margin:0 0 4px;line-height:1.2}
-  h2{font-size:18px;margin:0}
-  p{margin:0}
-  .dim{color:var(--dim)}
-  label{display:block;font-size:13px;font-weight:600;color:var(--dim);margin:0 0 6px}
-  input,select{width:100%;padding:.7rem .85rem;border-radius:12px;border:1px solid var(--edge);background:rgba(3,14,44,.55);color:var(--txt);font:inherit}
-  input:focus,select:focus,button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
-  select option{color:#06214e;background:#fff}
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.7rem 1.2rem;border-radius:14px;border:0;font:inherit;font-weight:700;cursor:pointer;color:#06214e;background:linear-gradient(135deg,var(--teal),var(--blue))}
-  .btn:disabled{opacity:.55;cursor:default}
-  .btn.danger{background:rgba(255,120,120,.16);color:#ffd2d2;border:1px solid rgba(255,150,150,.5);font-weight:600;padding:.5rem 1rem}
-  .btn.ghost{background:rgba(255,255,255,.1);color:var(--txt);border:1px solid var(--edge);font-weight:600}
-  .login{max-width:420px;margin:12vh auto 0}
-  .login form{display:grid;gap:14px;margin-top:18px}
-  .msg{min-height:1.4em;font-size:14px;font-weight:600}
-  .msg.err{color:var(--bad)} .msg.ok{color:var(--good)}
-  .top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
-  .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:end}
-  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
-  .statsrow{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px}
-  .statsrow #sum-btn{margin-left:auto;flex:none;padding:.45rem .85rem;border-radius:999px;font-size:14px;line-height:1.5;gap:.4rem}
-  .statsrow #sum-btn svg{width:15px;height:15px}
-  .statsrow #sum-btn .sum-new{top:-8px;right:-6px;padding:.08rem .38rem;font-size:9.5px}
-  .stats{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
-  .chip{padding:.45rem .85rem;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid var(--edge);font-size:14px}
-  .chip b{color:var(--teal)}
-  .tablebox{overflow:auto;border-radius:16px;border:1px solid var(--edge);margin-top:6px;max-height:62vh}
-  table{border-collapse:collapse;width:100%;min-width:760px;font-size:14px}
-  th,td{padding:.6rem .75rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.1);vertical-align:top}
-  th{position:sticky;top:0;background:#0d2252;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);z-index:1}
-  .sel-col{width:36px;padding-right:0!important}
-  .sel-col input{width:18px;height:18px;accent-color:#52d9ca;cursor:pointer;margin:0;vertical-align:middle}
-  tr.row.picked td{background:rgba(82,217,202,.13)}
-  .pager{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:space-between;margin-top:10px}
-  .pager[hidden]{display:none}
-  .pager .pg-info{font-size:13px;color:var(--dim)}
-  .pager .pg-nav{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-  .pager button{min-width:36px;height:36px;padding:0 .7rem;border-radius:10px;border:1px solid var(--edge);background:rgba(255,255,255,.08);color:var(--txt);font:inherit;font-weight:600;cursor:pointer}
-  .pager button:hover:not(:disabled){background:rgba(255,255,255,.18)}
-  .pager button:disabled{opacity:.4;cursor:default}
-  .pager button.on{background:linear-gradient(135deg,var(--teal),var(--blue));color:#06214e;border-color:transparent}
-  .pager .pg-gap{color:var(--dim);padding:0 2px}
-  .selbar{position:sticky;bottom:14px;z-index:5;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px;padding:.7rem 1rem;border-radius:16px;background:rgba(10,28,72,.92);border:1px solid rgba(255,255,255,.25);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 14px 40px rgba(1,10,37,.5)}
-  .selbar[hidden]{display:none}
-  .selbar b{font-size:15px}
-  .selbar .linkbtn{background:none;border:0;color:var(--dim);font:inherit;text-decoration:underline;cursor:pointer;padding:.3rem .2rem}
-  .miss{margin:16px 0;padding:18px 20px;border-radius:18px;background:rgba(255,255,255,.045);border:1px solid var(--edge)}
-  .miss-head{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
-  .miss-title{display:flex;align-items:center;gap:12px;min-width:0}
-  .miss-ico{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--teal),var(--blue));color:#06214e}
-  .miss-ico svg{width:20px;height:20px}
-  .miss-title h2{font-size:18px;line-height:1.2}
-  .miss-title p{font-size:13px;margin-top:2px}
-  .miss-pick{display:flex;align-items:center;gap:8px}
-  .miss-pick label{margin:0;white-space:nowrap}
-  .miss-pick select{width:auto;min-width:200px;padding:.5rem .8rem}
-  .miss-sum{display:flex;align-items:center;gap:14px;margin:16px 0 4px}
-  .miss-sum b{font-size:15px;white-space:nowrap}
-  .miss-sum b em{font-style:normal;color:var(--teal)}
-  .miss-bar{flex:1;height:10px;border-radius:999px;background:rgba(255,255,255,.14);overflow:hidden}
-  .miss-bar i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--teal),var(--blue));transition:width .45s cubic-bezier(.2,.8,.2,1)}
-  .miss-bar.full i{box-shadow:0 0 14px var(--blue)}
-  .miss-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:14px}
-  .miss-col{border:1px solid var(--edge);border-radius:14px;overflow:hidden;background:rgba(3,14,44,.28)}
-  .miss-col h3{margin:0;padding:.6rem .85rem;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;font-weight:600;color:var(--dim);background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.1)}
-  .miss-row{display:flex;align-items:center;gap:10px;padding:.55rem .85rem;font-size:14px;border-bottom:1px solid rgba(255,255,255,.07)}
-  .miss-row:last-child{border-bottom:0}
-  .miss-dot{flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;line-height:1}
-  .miss-row .nm{flex:1;min-width:0;font-weight:600}
-  .miss-row .st{font-size:12.5px;white-space:nowrap}
-  .miss-row.ok .miss-dot{background:rgba(120,230,170,.2);color:var(--good);border:1px solid rgba(120,230,170,.55)}
-  .miss-row.ok .st{color:var(--good)}
-  .miss-row.no{background:rgba(255,120,120,.07)}
-  .miss-row.no .miss-dot{background:rgba(255,120,120,.18);color:var(--bad);border:1px solid rgba(255,150,150,.55)}
-  .miss-row.no .st{color:var(--bad);font-weight:600}
-  .miss-note{margin:14px 0 0;font-size:13px}
-  .miss-fold{display:none;align-items:center;justify-content:center;padding:.3rem .8rem;border-radius:999px;border:1px solid var(--edge);background:rgba(255,255,255,.08);color:var(--txt);font:600 12.5px inherit;font-family:inherit;cursor:pointer}
-  @media(max-width:560px){.miss-pick{width:100%}.miss-pick select{flex:1;min-width:0}}
-  tr.row{cursor:pointer}
-  tr.row:hover td{background:rgba(255,255,255,.06)}
-  tr.detail td{background:rgba(3,14,44,.5);padding:1rem 1.2rem}
-  .q{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--teal);margin-top:10px}
-  .q:first-child{margin-top:0}
-  .ans{white-space:pre-wrap;word-break:break-word}
-  .tag{display:inline-block;padding:.1rem .6rem;border-radius:999px;font-weight:700;font-size:12px;color:#06214e;background:linear-gradient(135deg,var(--teal),var(--blue))}
-  .tag.y5{background:linear-gradient(135deg,#c4b5fd,#7c3aed);color:#fff}
-  .tag.y6{background:linear-gradient(135deg,#fff15d,#35c9f4)}
-  .flag{display:inline-block;margin-left:.5rem;padding:.04rem .55rem;border-radius:999px;font-size:11.5px;font-weight:700;color:#4a2a00;background:linear-gradient(135deg,#ffe08a,#ffb347);vertical-align:middle;cursor:help}
-  .flagnote{margin:0 0 12px;padding:.55rem .8rem;border-radius:12px;background:rgba(255,196,87,.14);border:1px solid rgba(255,196,87,.5);font-size:14px;line-height:1.45}
-  .flagnote b{color:#ffd68a}
-  .empty{padding:2rem;text-align:center;color:var(--dim)}
-  [hidden]{display:none!important}
-  @media(max-width:560px){.wrap{padding:16px 12px 50px}.card{padding:16px;border-radius:18px}}
-  /* ===== charts ===== */
-  .viz{--surface:#14285a;--tx:#f0efec;--tx2:#c3c2b7;--grid:rgba(255,255,255,.14);--y5:#a78bfa;--y6:#d95926;--y7:#3987e5;--o1:#256abf;--o2:#3987e5;--o3:#6da7ec;--o4:#9ec5f4;--o5:#cde2fb;--hov:rgba(255,255,255,.08)}
-  .viz.light{--surface:#ffffff;--tx:#0b0b0b;--tx2:#52514e;--grid:rgba(0,0,0,.1);--y5:#7c4dff;--y6:#eb6834;--y7:#2a78d6;--o1:#86b6ef;--o2:#5598e7;--o3:#2a78d6;--o4:#1c5cab;--o5:#104281;--hov:rgba(0,0,0,.05)}
-  .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;margin-top:14px}
-  .chart-card{background:rgba(3,14,44,.34);border:1px solid var(--edge);border-radius:18px;padding:14px 16px;min-width:0}
-  .chart-card h3{margin:0;font-size:15px}
-  .chart-card .cap,.cap{margin:2px 0 8px;font-size:13px;color:var(--dim)}
-  .chart-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
-  .seg{display:inline-flex;border:1px solid var(--edge);border-radius:999px;overflow:hidden}
-  .seg button{border:0;background:transparent;color:var(--dim);font:inherit;font-size:13px;font-weight:600;padding:.3rem .8rem;cursor:pointer}
-  .seg button[aria-pressed="true"]{background:linear-gradient(135deg,var(--teal),var(--blue));color:#06214e}
-  .viz svg{width:100%;height:auto;display:block}
-  .viz .grid{stroke:var(--grid);stroke-width:1}
-  .viz .ax{fill:var(--tx2);font-size:11px}
-  .viz .val{fill:var(--tx);font-size:11px;font-weight:600}
-  .viz .lab{fill:var(--tx);font-size:12px}
-  .viz .big{fill:var(--tx);font-size:26px;font-weight:700}
-  .viz path.m5,.viz circle.m5,.viz path.m6,.viz path.m7,.viz circle.m6,.viz circle.m7{stroke:none}
-  .viz .m5{fill:var(--y5)} .viz .m6{fill:var(--y6)} .viz .m7{fill:var(--y7)}
-  .viz .ln{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-  .viz .l5{stroke:var(--y5)} .viz .l6{stroke:var(--y6)} .viz .l7{stroke:var(--y7)}
-  .viz .dot{stroke:var(--surface);stroke-width:2}
-  .viz .o1{fill:var(--o1)} .viz .o2{fill:var(--o2)} .viz .o3{fill:var(--o3)} .viz .o4{fill:var(--o4)} .viz .o5{fill:var(--o5)}
-  .viz .slice{stroke:var(--surface);stroke-width:2}
-  .viz .hit{fill:transparent}
-  .viz .hit:hover{fill:var(--hov)}
-  .viz .slice:hover{opacity:.85}
-  .lg-row{display:flex;gap:16px;margin:0 0 4px;font-size:13px;color:var(--tx2)}
-  .lg{display:inline-flex;align-items:center;gap:6px}
-  .lg .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
-  .lg .m5{background:var(--y5)} .lg .m6{background:var(--y6)} .lg .m7{background:var(--y7)}
-  .chart-empty{padding:1.6rem 1rem;text-align:center;color:var(--dim);font-size:14px}
-  .tv{margin-top:6px;font-size:13px;color:var(--tx2)}
-  .tv summary{cursor:pointer;width:max-content}
-  table.mini{min-width:0;width:100%;margin-top:6px;font-size:13px}
-  table.mini th{position:static;background:transparent;padding:.3rem .5rem}
-  table.mini td{padding:.3rem .5rem}
-  .chart-tip{position:fixed;z-index:9999;padding:.4rem .65rem;border-radius:10px;background:rgba(3,14,44,.97);border:1px solid var(--edge);color:#eef5ff;font-size:13px;pointer-events:none;max-width:300px}
-  /* ===== report page ===== */
-  .report{position:fixed;inset:0;z-index:2000;background:#e6ebf4;overflow:auto;color:#14213d}
-  .rbar{position:sticky;top:0;z-index:5;display:flex;gap:10px 18px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:10px 16px;background:#0d2252;color:#eef5ff}
-  .rbar .chk{display:flex;align-items:center;gap:8px;margin:0;font-size:14px;color:#eef5ff;font-weight:500}
-  .rbar .chk input{width:auto}
-  .rpage{max-width:920px;margin:18px auto 40px;background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(13,34,82,.25);overflow:hidden}
-  .rhead{background:linear-gradient(135deg,#020c27,#173067);color:#fff;padding:30px 38px;display:flex;gap:20px;align-items:center;justify-content:space-between}
-  .rkick{margin:0 0 6px;font-size:12px;letter-spacing:.16em;color:#79ebdd;font-weight:700}
-  .rhead h1{font-family:Georgia,"Times New Roman",serif;font-size:32px;line-height:1.15;margin:0;color:#fff}
-  .rsub{margin:8px 0 0;color:#c9d6f2;font-size:14px}
-  .rlogo{height:46px;width:auto;flex:none}
-  .rbody{padding:26px 38px 30px}
-  .rsec{margin-top:26px}
-  .rsec:first-child{margin-top:0}
-  .rsec h2{font-family:Georgia,"Times New Roman",serif;font-size:22px;margin:0 0 10px;color:#0d2252;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .rbody .cap{color:#52514e}
-  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px}
-  .tile{border:1px solid #dfe5f1;border-radius:14px;padding:12px 14px;background:#fbfcfe}
-  .tile span{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#52514e;font-weight:600}
-  .tile b{display:block;font-family:Georgia,"Times New Roman",serif;font-size:30px;line-height:1.15;color:#0d2252}
-  .tile b small{font-size:14px;color:#52514e;font-weight:400}
-  .tile .sub6{font-size:12px;color:#52514e;margin-top:6px}
-  .meter{height:6px;border-radius:99px;background:#e6ecf7;overflow:hidden;margin-top:8px}
-  .meter i{display:block;height:100%;background:linear-gradient(90deg,#52d9ca,#2a78d6);border-radius:99px}
-  .rgrid{display:grid;grid-template-columns:1fr;gap:14px}
-  .rgrid .chart-card svg{max-width:640px;margin:0 auto}
-  .rgrid .wide{grid-column:1/-1}
-  .rbody .chart-card{background:#fbfcfe;border:1px solid #dfe5f1}
-  .rbody .chart-card h3{color:#0d2252}
-  .ypill{display:inline-block;font-family:system-ui,sans-serif;font-size:13px;font-weight:700;padding:.15rem .7rem;border-radius:999px;color:#fff;background:var(--yc)}
-  .ry5{--yc:#7c4dff} .ry6{--yc:#eb6834} .ry7{--yc:#2a78d6}
-  .rq h3{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#52514e;margin:16px 0 6px}
-  .rc{margin:8px 0;padding:10px 14px;border-left:4px solid var(--yc);background:#f4f7fc;border-radius:0 10px 10px 0}
-  .rc p{margin:0;white-space:pre-wrap;word-break:break-word;color:#14213d}
-  .rc footer{margin-top:6px;font-size:12px;color:#52514e}
-  .rfoot{margin-top:28px;padding-top:12px;border-top:1px solid #dfe5f1;font-size:12px;color:#52514e}
-  @media (max-width:640px){.rhead{padding:22px 20px}.rbody{padding:20px}.rhead h1{font-size:25px}}
-  .pdf-stage{position:absolute;left:0;top:0;width:794px;z-index:-1;background:#fff}
-  .pdf-stage .pdf-page{margin:0!important;max-width:none!important;width:794px!important;border-radius:0!important;box-shadow:none!important}
-  @media print{
-    @page{margin:12mm}
-    html,body{background:#fff!important}
-    body.has-report .wrap,.chart-tip{display:none!important}
-    .sum-ov{display:none!important}
-    .report{position:static;overflow:visible;background:#fff}
-    .rbar{display:none}
-    .rpage{box-shadow:none;margin:0;max-width:none;border-radius:0}
-    .rc,.chart-card,.tile,.rq h3{break-inside:avoid}
-    .rsec h2,.rsec .cap,.rq h3{break-after:avoid;break-inside:avoid}
-    .rq h3+.rc{break-before:avoid}
-    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  }
+/* ============================================================================
+   MONTHLY REPORT  -  every 4 weeks the admin page greets each admin with
+   "Your monthly report is ready", and a button in the bottom-left corner
+   (across from "What's new?") opens it any time.
 
-  /* ---------- AI summary window ---------- */
-  .sum-ov{position:fixed;inset:0;z-index:1500;display:grid;place-items:center;padding:16px;background:rgba(2,12,39,.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-  .sum-ov[hidden]{display:none}
-  .sum-card{width:min(820px,100%);max-height:calc(100vh - 32px);overflow:auto;border-radius:24px;padding:22px 24px;background:linear-gradient(160deg,rgba(14,34,86,.98),rgba(7,20,56,.98));border:1px solid var(--edge);box-shadow:0 30px 80px rgba(1,8,30,.6)}
-  .sum-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .sum-top h2{font-size:22px}
-  .sum-badge{font-size:12px;font-weight:700;letter-spacing:.04em;padding:.28rem .65rem;border-radius:999px;border:1px solid rgba(255,206,110,.6);background:rgba(255,206,110,.14);color:#ffd98a}
-  .sum-badge.live{border-color:rgba(82,217,202,.6);background:rgba(82,217,202,.14);color:var(--teal)}
-  .sum-x{margin-left:auto;width:36px;height:36px;border-radius:50%;border:1px solid var(--edge);background:rgba(255,255,255,.08);color:#fff;font-size:22px;line-height:1;cursor:pointer;padding:0}
-  .sum-scope{margin:6px 0 14px;font-size:14px}
-  .sum-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:16px}
-  .sum-stat{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid var(--edge)}
-  .sum-stat span{display:block;font-size:12px;color:var(--dim)}
-  .sum-stat b{font-size:20px}
-  .sum-stat small{color:var(--dim);font-weight:500}
-  .sum-load{display:grid;gap:10px;padding:6px 0 10px}
-  .sum-load p{font-size:14px;color:var(--dim)}
-  .sum-load i{display:block;height:14px;border-radius:8px;background:linear-gradient(90deg,rgba(255,255,255,.08),rgba(255,255,255,.22),rgba(255,255,255,.08));background-size:200% 100%;animation:sumShim 1.2s linear infinite}
-  @keyframes sumShim{to{background-position:-200% 0}}
-  .sum-sec{margin:0 0 16px}
-  .sum-sec h3{margin:0 0 8px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal)}
-  .sum-over{font-size:16px;line-height:1.6}
-  .sum-theme{padding:10px 14px;margin:0 0 8px;border-radius:14px;background:rgba(255,255,255,.06);border-left:4px solid var(--blue)}
-  .sum-theme b{display:block;font-size:15px}
-  .sum-theme span{font-size:14px;color:var(--dim)}
-  .sum-quote{margin:2px 0 0;padding:8px 14px;font-style:italic;font-size:14px;color:#dbe6ff;border-left:3px solid rgba(255,255,255,.3)}
-  .sum-quote small{display:block;font-style:normal;color:var(--dim);margin-top:2px}
-  .sum-acts{margin:0;padding-left:22px;display:grid;gap:6px;font-size:15px}
-  .sum-check{margin:14px 0 0;padding:10px 14px;border-radius:14px;font-size:13px;color:var(--dim);background:rgba(255,255,255,.05);border:1px dashed var(--edge)}
-  .sum-sent{margin:14px 0 0;font-size:14px}
-  .sum-sent summary{cursor:pointer;font-weight:600;color:var(--teal)}
-  .sum-sent pre{margin:8px 0 0;padding:12px;max-height:200px;overflow:auto;white-space:pre-wrap;word-break:break-word;border-radius:12px;background:rgba(3,14,44,.7);border:1px solid var(--edge);font:12.5px/1.5 ui-monospace,Menlo,Consolas,monospace;color:#cfe0ff}
-  .sum-ready{padding:14px 16px;margin-bottom:6px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid var(--edge)}
-  .sum-ready p{margin:0 0 12px;font-size:15px}
-  .sum-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
-
-  /* ---------- holographic Summarise button ---------- */
-  #sum-btn{position:relative;isolation:isolate;color:#10214f;border:1px solid rgba(255,255,255,.7);overflow:visible;
-    background:linear-gradient(115deg,#ff9bd2,#9be7ff,#b8ffcf,#ffe69b,#c9a8ff,#ff9bd2);background-size:300% 100%;animation:holoShift 6s linear infinite}
-  #sum-btn::before{content:"";position:absolute;inset:-3px;z-index:-1;border-radius:inherit;background:linear-gradient(115deg,#ff9bd2,#9be7ff,#b8ffcf,#ffe69b,#c9a8ff,#ff9bd2);background-size:300% 100%;
-    filter:blur(13px);opacity:.65;animation:holoShift 6s linear infinite,holoPulse 2.8s ease-in-out infinite}
-  #sum-btn::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;overflow:hidden;
-    background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.75) 50%,transparent 65%);background-size:250% 100%;background-position:150% 0;animation:holoSweep 3.4s ease-in-out infinite;mix-blend-mode:overlay}
-  #sum-btn:hover{filter:brightness(1.06) saturate(1.15)}
-  .sum-new{position:absolute;top:-9px;right:-7px;padding:.12rem .45rem;border-radius:999px;font-size:10.5px;font-weight:800;letter-spacing:.08em;color:#fff;background:linear-gradient(135deg,#ff4fa3,#7b5cff);border:1px solid rgba(255,255,255,.85);box-shadow:0 2px 10px rgba(123,92,255,.6);line-height:1.2}
-  #sum-btn.seen .sum-new{display:none}
-  @keyframes holoShift{to{background-position:-300% 0}}
-  @keyframes holoPulse{0%,100%{opacity:.4}50%{opacity:.8}}
-  @keyframes holoSweep{0%{background-position:150% 0}60%,100%{background-position:-60% 0}}
-  @media (prefers-reduced-motion:reduce){#sum-btn,#sum-btn::before,#sum-btn::after{animation:none}#sum-btn::after{display:none}}
-
-  /* (the one-screen layouts were removed on request: the page is back to the normal layout) */
-  .nl-only,#nl-back,.nl-x{display:none}
-
-  /* ===== AI Summary window: glass + holographic ===== */
-  :root{--holo:linear-gradient(115deg,#ff9bd2,#9be7ff,#b8ffcf,#ffe69b,#c9a8ff,#ff9bd2)}
-  .sum-ov{background:rgba(2,10,34,.5);-webkit-backdrop-filter:blur(14px) saturate(1.25);backdrop-filter:blur(14px) saturate(1.25)}
-  .sum-ov::before,.sum-ov::after{content:"";position:fixed;z-index:0;width:46vmax;height:46vmax;border-radius:50%;filter:blur(80px);opacity:.34;pointer-events:none;animation:aiDrift 18s ease-in-out infinite alternate}
-  .sum-ov::before{left:-12vmax;top:-14vmax;background:radial-gradient(circle,#ff7ac8,transparent 66%)}
-  .sum-ov::after{right:-14vmax;bottom:-16vmax;background:radial-gradient(circle,#4fd8ff,transparent 66%);animation-delay:-9s}
-  @keyframes aiDrift{to{transform:translate(8vmax,6vmax) scale(1.15)}}
-  .sum-card{position:relative;z-index:1;padding:0;overflow:visible;display:flex;flex-direction:column;border:0;border-radius:26px;
-    background:linear-gradient(160deg,rgba(255,255,255,.13),rgba(255,255,255,0) 46%),rgba(9,22,62,.66);
-    -webkit-backdrop-filter:blur(26px) saturate(1.4);backdrop-filter:blur(26px) saturate(1.4);
-    box-shadow:0 30px 90px rgba(1,8,30,.65),0 0 70px rgba(123,92,255,.2),inset 0 1px 0 rgba(255,255,255,.28)}
-  .sum-card::before,.sum-actbox::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;background:var(--holo);background-size:300% 100%;animation:holoShift 7s linear infinite;
-    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);mask-composite:exclude}
-  .sum-card::before{opacity:.85}
-  .sum-scroll{overflow:auto;max-height:calc(100vh - 32px);padding:22px 26px 24px;border-radius:inherit}
-  .sum-top h2{font-size:24px;background:var(--holo);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:holoShift 8s linear infinite}
-  .sum-x{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3)}
-  .sum-stat{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.24);box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
-  .sum-sec h3{color:#bfe9ff}
-  .sum-over{padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16)}
-  .sum-theme{background:rgba(255,255,255,.07);border-left-width:4px;border-left-style:solid}
-  .t-worked .sum-theme{border-left-color:#7ee7b4}.t-worked h3{color:#9cf0c8}
-  .t-challenge .sum-theme{border-left-color:#ff9a9a}.t-challenge h3{color:#ffb4b4}
-  .t-plan .sum-theme{border-left-color:#9aa8ff}.t-plan h3{color:#bcc6ff}
-  /* highlighted suggested actions */
-  .sum-actbox{position:relative;margin:18px 0 22px;padding:16px 18px 16px;border-radius:20px;
-    background:linear-gradient(135deg,rgba(255,155,210,.2),rgba(155,231,255,.17) 55%,rgba(184,255,207,.15));
-    box-shadow:0 0 38px rgba(155,231,255,.25),0 0 80px rgba(255,155,210,.12),inset 0 1px 0 rgba(255,255,255,.34)}
-  .sum-actbox::before{padding:2px;animation-duration:5s}
-  .sum-actbox h3{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:14px;color:#fff}
-  .sum-actbox h3 svg{color:#ffe69b;filter:drop-shadow(0 0 6px #ffe69b)}
-  .sum-actn{margin-left:auto;min-width:24px;height:24px;padding:0 .5rem;border-radius:999px;display:grid;place-items:center;font-size:12px;letter-spacing:0;color:#10214f;background:var(--holo);background-size:300% 100%;animation:holoShift 6s linear infinite}
-  .sum-acts{list-style:none;padding:0;margin:0;counter-reset:act;display:grid;gap:10px}
-  .sum-acts li{counter-increment:act;display:flex;gap:12px;align-items:flex-start;padding:11px 13px;border-radius:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.26);color:#fff;font-size:16px;font-weight:600;line-height:1.45;box-shadow:0 6px 18px rgba(1,8,30,.18)}
-  .sum-acts li::before{content:counter(act);flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13.5px;color:#10214f;background:var(--holo);background-size:300% 100%;animation:holoShift 6s linear infinite;box-shadow:0 0 14px rgba(155,231,255,.7)}
-  .sum-acts li span{padding-top:3px}
-  .sum-ready{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.26)}
-  #sum-go{background:var(--holo);background-size:300% 100%;animation:holoShift 6s linear infinite;color:#10214f}
-  /* loading animation */
-  .ai-load{display:grid;justify-items:center;gap:18px;padding:22px 0 10px}
-  .ai-orb{position:relative;width:128px;height:128px;display:grid;place-items:center}
-  .ai-glow{position:absolute;inset:-6px;border-radius:50%;background:conic-gradient(#ff9bd2,#9be7ff,#b8ffcf,#ffe69b,#c9a8ff,#ff9bd2);filter:blur(24px);opacity:.55;animation:aiSpin 5s linear infinite}
-  .ai-ring{position:absolute;inset:0;border-radius:50%;padding:3px;background:conic-gradient(#ff9bd2,#9be7ff,#b8ffcf,#ffe69b,#c9a8ff,#ff9bd2);animation:aiSpin 2.4s linear infinite;
-    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);mask-composite:exclude}
-  .ai-ring.r2{inset:16px;opacity:.7;animation-duration:3.8s;animation-direction:reverse}
-  .ai-core{position:relative;width:60px;height:60px;border-radius:50%;display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.55);box-shadow:inset 0 0 20px rgba(255,255,255,.35),0 0 24px rgba(155,231,255,.5);animation:aiBreath 2.2s ease-in-out infinite}
-  .ai-core svg{filter:drop-shadow(0 0 6px #fff)}
-  .ai-dot{position:absolute;left:50%;top:50%;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:#fff;box-shadow:0 0 10px #fff,0 0 22px #9be7ff;animation:aiOrbit 3.2s linear infinite}
-  .ai-dot.d2{animation-delay:-1.07s;background:#ffd0ec}.ai-dot.d3{animation-delay:-2.13s;background:#d6ffe6}
-  .ai-steps{display:grid;min-height:1.7em;text-align:center}
-  .ai-steps span{grid-area:1/1;opacity:0;font-size:16px;font-weight:600;color:#eaf3ff;animation:aiStep 12s infinite}
-  .ai-steps span:nth-child(2){animation-delay:3s}.ai-steps span:nth-child(3){animation-delay:6s}.ai-steps span:nth-child(4){animation-delay:9s}
-  .ai-bar{width:min(340px,80%);height:6px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden}
-  .ai-bar i{display:block;width:40%;height:100%;border-radius:inherit;background:var(--holo);background-size:300% 100%;animation:aiSlide 1.5s ease-in-out infinite,holoShift 4s linear infinite}
-  .ai-skel{width:100%;display:grid;gap:10px;margin-top:4px}
-  .ai-skel em{display:block;height:14px;border-radius:8px;background:linear-gradient(90deg,rgba(255,255,255,.06),rgba(255,255,255,.28),rgba(255,255,255,.06));background-size:200% 100%;animation:sumShim 1.3s linear infinite}
-  @keyframes aiSpin{to{transform:rotate(360deg)}}
-  @keyframes aiBreath{50%{transform:scale(1.09)}}
-  @keyframes aiOrbit{from{transform:rotate(0) translateX(64px)}to{transform:rotate(360deg) translateX(64px)}}
-  @keyframes aiStep{0%{opacity:0;transform:translateY(8px)}4%,21%{opacity:1;transform:none}25%,100%{opacity:0;transform:translateY(-8px)}}
-  @keyframes aiSlide{0%{transform:translateX(-110%)}100%{transform:translateX(280%)}}
-  @media (prefers-reduced-motion:reduce){
-    .sum-ov::before,.sum-ov::after,.sum-card::before,.sum-actbox::before,.sum-top h2,.sum-actn,.sum-actt,.sum-acts li::before,#sum-go,.ai-glow,.ai-ring,.ai-core,.ai-dot,.ai-bar i,.ai-skel em{animation:none}
-    .ai-steps span{animation:none}.ai-steps span:first-child{opacity:1}.ai-dot{display:none}
-  }
-  @media(max-width:560px){.sum-scroll{padding:18px 16px 20px}.sum-top h2{font-size:21px}}
-
-  /* suggested actions as a pill next to "Overview" */
-  .sum-ovh{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 8px}
-  .sum-ovh h3{margin:0}
-  .sum-actpill{position:relative;display:inline-flex;align-items:center;gap:.45rem;padding:.4rem .5rem .4rem .85rem;border-radius:999px;border:1px solid rgba(255,255,255,.7);cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:800;line-height:1.2;letter-spacing:.01em;color:#10214f;
-    background:var(--holo);background-size:300% 100%;animation:holoShift 6s linear infinite;box-shadow:0 0 18px rgba(155,231,255,.55),0 0 36px rgba(255,155,210,.28)}
-  .sum-actpill:hover{filter:brightness(1.07) saturate(1.15)}
-  .sum-actpill b{display:grid;place-items:center;min-width:22px;height:22px;padding:0 .4rem;border-radius:999px;font-size:12px;color:#fff;background:#10214f}
-  .sum-actpill::after{content:"";width:7px;height:7px;margin:0 .25rem 0 .1rem;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translate(-2px,-2px);transition:transform .25s}
-  .sum-actpill.open::after{transform:rotate(-135deg) translate(-2px,-2px)}
-  .sum-over + .sum-actbox{margin:12px 0 0;animation:aiPop .28s cubic-bezier(.2,.8,.2,1)}
-  @keyframes aiPop{from{opacity:0;transform:translateY(-8px) scale(.98)}}
-  @media (prefers-reduced-motion:reduce){.sum-actpill{animation:none}.sum-over + .sum-actbox{animation:none}}
-
-  .sum-actbox{margin:2px 0 20px!important}
-  .sum-over + .sum-actbox{margin:0!important;animation:none}
-  .sum-actbox{animation:aiPop .3s cubic-bezier(.2,.8,.2,1)}
-  .sum-actbox h3{display:flex;align-items:center;gap:9px;margin:0 0 12px;font-size:16px;letter-spacing:.12em;text-transform:uppercase}
-  .sum-actbox h3 svg{width:20px;height:20px;color:#ffe69b;filter:drop-shadow(0 0 7px #ffe69b)}
-  .sum-actt{font-weight:800;background:var(--holo);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:holoShift 6s linear infinite;filter:drop-shadow(0 0 8px rgba(155,231,255,.35))}
-
-  #who{transition:opacity .38s ease}
-  #who.fade{opacity:0}
-  #who.welcome{font-size:17px}
-  .who-name{font-weight:800;background:var(--holo);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:holoShift 6s linear infinite;filter:drop-shadow(0 0 8px rgba(155,231,255,.35))}
-  @media (prefers-reduced-motion:reduce){.who-name{animation:none}#who{transition:none}}
-/* ===== Glass teal scroll bar (every scrolling area). Chrome, Edge and Safari get the gradient; Firefox gets the same colours in a plain style. ===== */
-::-webkit-scrollbar{width:14px;height:14px}
-::-webkit-scrollbar-track{background:linear-gradient(90deg,#0a1d4d,#061236);box-shadow:inset 1px 0 0 rgba(255,255,255,.08)}
-::-webkit-scrollbar-thumb{min-height:44px;border-radius:999px;border:3px solid transparent;background:linear-gradient(180deg,rgba(176,248,238,.95),rgba(82,217,202,.82) 48%,rgba(101,143,241,.85));background-clip:padding-box;box-shadow:inset 0 0 0 1px rgba(255,255,255,.55),inset 0 7px 9px rgba(255,255,255,.28),inset 0 -5px 8px rgba(3,40,90,.25)}
-::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,rgba(206,252,246,1),rgba(110,232,218,.95) 48%,rgba(130,170,255,.95));background-clip:padding-box}
-::-webkit-scrollbar-thumb:active{background:linear-gradient(180deg,rgba(150,236,225,1),rgba(60,200,186,1) 48%,rgba(80,120,230,1));background-clip:padding-box}
-::-webkit-scrollbar-corner{background:transparent}
-@supports (-moz-appearance:none){*{scrollbar-width:thin;scrollbar-color:rgba(82,217,202,.85) #061236}}
-</style>
-</head>
-<body>
-<div class="wrap">
-
-  <!-- ===== Login ===== -->
-  <section id="login" class="card login" hidden>
-    <h1>IPT Feedback</h1>
-    <p class="dim">Admin sign-in</p>
-    <form id="login-form" autocomplete="on">
-      <div><label for="em">Email</label><input id="em" type="email" autocomplete="username" required></div>
-      <div><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
-      <button class="btn" id="login-btn" type="submit">Sign in</button>
-      <p class="msg" id="login-msg" role="alert"></p>
-    </form>
-  </section>
-
-  <!-- ===== Dashboard ===== -->
-  <section id="dash" hidden>
-    <div class="top">
-      <div><h1>IPT Feedback</h1><p class="dim" id="who"></p></div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <a class="btn ghost" href="index.html" style="text-decoration:none">Back to site</a>
-        <button class="btn ghost" id="logout" type="button">Sign out</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="controls">
-        <div><label for="period">Period</label>
-          <select id="period">
-            <option value="this">This week (Mon–Sun)</option>
-            <option value="last">Last week</option>
-            <option value="4w">Last 4 weeks</option>
-            <option value="all">All time</option>
-            <option value="custom">Choose dates…</option>
-          </select></div>
-        <div id="from-box" hidden><label for="from">From</label><input id="from" type="date"></div>
-        <div id="to-box" hidden><label for="to">To</label><input id="to" type="date"></div>
-        <div><label for="yr">Year level</label>
-          <select id="yr"><option value="">All years</option><option value="5">Year 5</option><option value="6">Year 6</option><option value="7">Year 7</option></select></div>
-        <div><label for="find">Search</label><input id="find" type="search" placeholder="Name, email or words"></div>
-        <div><label for="thin">Answers</label>
-          <select id="thin"><option value="">All answers</option><option value="1">Flagged as weak only</option></select></div>
-      </div>
-
-      <div class="statsrow"><div class="stats" id="stats"></div>
-        <button class="btn" id="sum-btn" type="button" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>AI Summary<span class="sum-new">NEW</span></button></div>
-
-      <section class="miss" id="missing" aria-labelledby="miss-h">
-        <div class="miss-head">
-          <div class="miss-title">
-            <span class="miss-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V10l7-5 7 5v11"/><path d="M9 21v-6h6v6"/></svg></span>
-            <div><h2 id="miss-h">Schools yet to respond</h2><p class="dim">Scheduled schools checked against the School chosen on each response (Mon–Sun).</p></div>
-          </div>
-          <div class="miss-pick"><label for="miss-week">Week of</label><select id="miss-week"></select></div>
-        </div>
-        <div class="miss-sum" id="miss-sum"><b id="miss-count"></b><span class="miss-bar" id="miss-bar"><i></i></span></div>
-        <div class="miss-grid" id="miss-body"></div>
-        <p class="dim miss-note" id="miss-note"></p>
-      </section>
-
-      <div class="tablebox">
-        <table>
-          <thead><tr><th class="sel-col"><input type="checkbox" id="selall" aria-label="Select all responses on this page" title="Select all on this page"></th><th>Date</th><th>Year</th><th>School</th><th>Week</th><th>Email</th><th>Overall</th><th>Resources</th><th>Engage.</th><th>Clarity</th></tr></thead>
-          <tbody id="rows"></tbody>
-        </table>
-        <div class="empty" id="empty" hidden>No feedback for this selection.</div>
-      </div>
-      <nav class="pager" id="pager" aria-label="Pages of responses" hidden></nav>
-      <div class="selbar" id="selbar" role="region" aria-label="Selected responses" hidden>
-        <b id="selcount"></b>
-        <button type="button" class="btn danger" id="seldel">Delete selected</button>
-        <button type="button" class="linkbtn" id="selclear">Clear selection</button>
-        <span class="dim" id="selinfo" style="font-size:13px"></span>
-      </div>
-      <p class="dim" style="font-size:13px;margin-top:8px">Click a row to read the full answers. Tick the boxes (hold Shift to pick a range) to delete several at once.</p>
-
-      <div class="actions">
-        <button class="btn" id="xlsx" type="button">Download Excel</button>
-        <button class="btn" id="report-btn" type="button">Weekly report</button>
-        <button class="btn ghost" id="refresh" type="button">Refresh</button>
-        <span class="dim" id="upd" style="align-self:center;font-size:13px"></span>
-      </div>
-      <p class="msg" id="msg" role="status"></p>
-    </div>
-
-    <div class="card" id="charts-card" style="margin-top:16px">
-      <div class="top" style="margin:0"><h2>Charts</h2><span class="dim" style="font-size:13px">They follow the period and year you chose above.</span></div>
-      <div class="chart-grid viz">
-        <div class="chart-card"><h3>Scores by category</h3><p class="cap">Average score out of 5</p><div id="ch-cats"></div></div>
-        <div class="chart-card"><h3>Week by week</h3><p class="cap">Average overall rating</p><div id="ch-trend"></div></div>
-        <div class="chart-card"><div class="chart-head"><div><h3>How the week was rated</h3><p class="cap">Share of each overall rating</p></div>
-          <div class="seg" role="group" aria-label="Chart type"><button id="dist-pie" type="button" aria-pressed="true">Pie</button><button id="dist-bar" type="button" aria-pressed="false">Bars</button></div></div>
-          <div id="ch-dist"></div></div>
-      </div>
-    </div>
-  </section>
-
-</div>
-
-<div class="sum-ov" id="sum" hidden>
-  <div class="sum-card" role="dialog" aria-modal="true" aria-labelledby="sum-h"><div class="sum-scroll">
-    <div class="sum-top"><h2 id="sum-h">AI Summary</h2><span class="sum-badge" id="sum-badge"></span><button type="button" class="sum-x" id="sum-x" aria-label="Close">&times;</button></div>
-    <p class="dim sum-scope" id="sum-scope"></p>
-    <div class="sum-stats" id="sum-stats"></div>
-    <div id="sum-body"></div>
-    <p class="dim" style="margin-top:14px;font-size:13.5px">Only the written answers and scores are used. Teachers&rsquo; names, emails and school names are never included.<span id="sum-prov"></span></p>
-    <details class="sum-sent" id="sum-sent" hidden><pre id="sum-pay"></pre></details>
-    <div class="sum-actions"><button class="btn" id="sum-copy" type="button">Copy summary</button><button class="btn ghost" id="sum-again" type="button">Regenerate</button><button class="btn ghost" id="sum-close" type="button">Close</button><span class="dim" id="sum-msg" style="align-self:center;font-size:13px"></span></div></div>
-  </div>
-</div>
-
-<div class="report" id="report" hidden>
-  <div class="rbar"><strong>Report preview</strong>
-    <span style="display:flex;gap:10px 16px;align-items:center;flex-wrap:wrap">
-      <label class="chk"><input type="checkbox" id="rnames"> Show the sender’s email on each comment</label>
-      <button class="btn" id="rsave" type="button">Save as PDF</button>
-      <button class="btn ghost" id="rprint" type="button">Print</button>
-      <button class="btn ghost" id="rclose" type="button">Close</button>
-    </span></div>
-  <div class="rpage viz light" id="rpage"></div>
-</div>
-
-<script src="config.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<script>
+   * The numbers and the "At a glance" lines are worked out here by simple rules.
+   * AI overview (optional, config.js > admin > monthly > ai): when ON, the month's answers
+     go to the same secure AI Summary service (e-mails and school names removed first)
+     and the report shows the AI's overview and suggested actions. It starts by itself
+     when the welcome window appears. When OFF (the default) nothing is sent anywhere.
+     Open admin.html?aitest=1 to try it on made-up answers instead of teacher answers.
+   * The first report covers the dates set in config.js (start and firstEnd); after that a
+     new report follows every 4 weeks (28 days). Every admin sees the same reports.
+     A report is ready the day after its last day.
+   * The welcome window shows once per report for each admin (until they open it).
+   Settings (config.js > admin > monthly):  { start: "2026-10-19", firstEnd: "2026-11-09" }
+   Turn it off:                            admin: { monthly: false }
+   ========================================================================== */
 (function () {
   "use strict";
-  var CFG = window.IPT_CONFIG || {};
-  var URL_ = (function (u) { u = String(u || "").trim(); try { return u ? new URL(u).origin : ""; } catch (e) { return u.replace(/\/+$/, ""); } })(CFG.supabaseUrl);   // only the address itself, whatever was pasted after it
-  var KEY = String(CFG.supabaseKey || "").trim();
-  var TZ = CFG.timezone || "Europe/Istanbul";
-  var $ = function (id) { return document.getElementById(id); };
-  var SKEY = "ipt-admin-session";
-  var TEST_EMAIL = String(CFG.testEmail || "keepalive.test@bilfen.k12.tr").toLowerCase();   // the automatic keep-alive entries; hidden everywhere on this page
-  var PAGE = 5, page = 0;        // the table shows 5 responses at a time; everything else (Excel, charts, summary, report) still uses the whole selection
-  var session = null, all = [], shown = [];
-  function pageRows() { return shown.slice(page * PAGE, page * PAGE + PAGE); }
+  var A = (window.IPT_CONFIG && window.IPT_CONFIG.admin) || {};
+  if (A.monthly === false) return;
+  var M = A.monthly || {};
+  var TZ = (window.IPT_CONFIG && window.IPT_CONFIG.timezone) || "Europe/Istanbul";
+  var LEN = 28;
 
-  /* ---------- small helpers ---------- */
-  function say(el, text, kind) { el.textContent = text || ""; el.className = "msg" + (kind ? " " + kind : ""); }
-  function fmtDay(d) { return new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(d); }   // YYYY-MM-DD
-  function fmtTime(d) { return new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(d); }
+  /* ---------- tiny date helpers (same rules as the admin page) ---------- */
   function addDays(ymd, n) { var t = new Date(ymd + "T00:00:00Z"); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); }
+  function dayNo(ymd) { return Math.round(Date.parse(ymd + "T00:00:00Z") / 864e5); }
   function mondayOf(ymd) { var t = new Date(ymd + "T00:00:00Z"); return addDays(ymd, -((t.getUTCDay() + 6) % 7)); }
-  function nice(ymd) { return new Date(ymd + "T00:00:00Z").toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "short", year: "numeric" }); }
+  function today() { return new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
+  function nice(ymd, year) { return new Date(ymd + "T00:00:00Z").toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "short", year: year ? "numeric" : undefined }); }
+  function esc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
-  /* ---------- talking to Supabase (plain web requests, no extra library) ---------- */
-  function saveSession(s) {
-    session = s;
-    try { s ? sessionStorage.setItem(SKEY, JSON.stringify(s)) : sessionStorage.removeItem(SKEY); } catch (e) {}
-  }
-  function loadSession() { try { return JSON.parse(sessionStorage.getItem(SKEY) || "null"); } catch (e) { return null; } }
-  function toSession(j) { return { access: j.access_token, refresh: j.refresh_token, exp: Date.now() + (j.expires_in || 3600) * 1000, email: (j.user && j.user.email) || "" }; }
+  var YMD = /^\d{4}-\d{2}-\d{2}$/;
+  var START = YMD.test(M.start || "") ? M.start : "2026-10-19", FIRST_END = YMD.test(M.firstEnd || "") ? M.firstEnd : "2026-11-09";
+  if (FIRST_END < START) FIRST_END = addDays(START, LEN - 1);
+  function pStart(k) { return k <= 0 ? START : addDays(FIRST_END, 1 + (k - 1) * LEN); }
+  function pEnd(k) { return k <= 0 ? FIRST_END : addDays(FIRST_END, k * LEN); }
+  function lastDone() { var t = dayNo(today()), e = dayNo(FIRST_END); return t <= e ? -1 : Math.ceil((t - e) / LEN) - 1; }   // -1 = the first report is not ready yet
+  function span(k) { var d = dayNo(pEnd(k)) - dayNo(pStart(k)) + 1; return d % 7 === 0 ? d / 7 + " weeks" : d + " days"; }
 
-  async function signIn(email, pass) {
-    var r = await fetch(URL_ + "/auth/v1/token?grant_type=password", { method: "POST", headers: { "Content-Type": "application/json", apikey: KEY }, body: JSON.stringify({ email: email, password: pass }) });
-    if (!r.ok) throw new Error(r.status === 400 || r.status === 401 ? "Wrong email or password." : "Could not sign in (" + r.status + ").");
-    saveSession(toSession(await r.json()));
-  }
-  async function refresh() {
-    if (!session || !session.refresh) throw new Error("expired");
-    var r = await fetch(URL_ + "/auth/v1/token?grant_type=refresh_token", { method: "POST", headers: { "Content-Type": "application/json", apikey: KEY }, body: JSON.stringify({ refresh_token: session.refresh }) });
-    if (!r.ok) throw new Error("expired");
-    var j = await r.json(); if (!j.user) j.user = { email: session.email };
-    saveSession(toSession(j));
-  }
-  async function signOut() {
-    var s = session; saveSession(null); try { window.dispatchEvent(new Event("ipt:signout")); } catch (x) {}
-    try { if (s) await fetch(URL_ + "/auth/v1/logout", { method: "POST", headers: { apikey: KEY, Authorization: "Bearer " + s.access } }); } catch (e) {}
-  }
-  async function api(path, method) {
-    if (!session) throw new Error("expired");
-    if (Date.now() > session.exp - 30000) await refresh();
-    function go() { return fetch(URL_ + path, { method: method || "GET", headers: { apikey: KEY, Authorization: "Bearer " + session.access, Prefer: "return=representation" } }); }
-    var r = await go();
-    if (r.status === 401) { await refresh(); r = await go(); }
-    if (!r.ok) throw new Error("Request failed (" + r.status + ").");
-    return r.json();
-  }
-  async function loadAll() {
-    var out = [], step = 1000, from = 0;
-    for (;;) {
-      var part = await api("/rest/v1/feedback?select=*&order=created_at.desc&limit=" + step + "&offset=" + from);
-      out = out.concat(part); if (part.length < step) break; from += step;
-    }
-    return out;
-  }
-
-  /* ---------- screens ---------- */
-  function showLogin(note) { $("dash").hidden = true; $("login").hidden = false; say($("login-msg"), note || "", note ? "err" : ""); setTimeout(function () { $("em").focus(); }, 50); }
-  /* "Signed in as ..." for 3 seconds, then "Welcome back, <name>!" with the name in holographic letters.
-     Names come from config.js > admin > names (email -> first name); with an email like ayse.yilmaz@... the first part is used. */
-  var whoTimer = 0;
-  function firstName(email) {
-    var e = String(email || "").toLowerCase(), map = (CFG.admin && CFG.admin.names) || {};
-    for (var k in map) { if (Object.prototype.hasOwnProperty.call(map, k) && k.toLowerCase() === e) return String(map[k]); }
-    var parts = e.split("@")[0].split(/[._-]+/).filter(Boolean);
-    if (parts.length > 1 && /^\p{L}+$/u.test(parts[0])) return parts[0].charAt(0).toLocaleUpperCase("tr-TR") + parts[0].slice(1);
-    return "";
-  }
-  function showWho() {
-    var w = $("who"), email = session.email || "admin"; clearTimeout(whoTimer);
-    w.classList.remove("fade", "welcome"); w.textContent = "Signed in as " + email;
-    var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-    whoTimer = setTimeout(function () {
-      function swap() {
-        var nm = firstName(email); w.textContent = "";
-        w.append("Welcome back" + (nm ? ", " : ""));
-        if (nm) { var sp = document.createElement("span"); sp.className = "who-name"; sp.textContent = nm; w.append(sp); }
-        w.append("!"); w.classList.add("welcome"); w.classList.remove("fade");
-      }
-      if (still) { swap(); return; }
-      w.classList.add("fade"); setTimeout(swap, 380);
-    }, 3000);
-  }
-  function showDash() { $("login").hidden = true; $("dash").hidden = false; showWho(); }
-
-  var AUTO_MS = 2 * 60 * 1000, openIds = {}, busy = false;     // the list refreshes itself every 2 minutes while this tab is visible
-  function stamp(ok) { $("upd").textContent = ok ? "Updated " + fmtTime(new Date()) : "Could not update at " + fmtTime(new Date()) + ", will try again"; }
-  async function reload(silent) {
-    if (busy) return; busy = true;
-    if (silent !== true) say($("msg"), "Loading…");
-    try {
-      var fresh = (await loadAll()).filter(function (r) { return String(r.email).toLowerCase() !== TEST_EMAIL; }).map(prep);
-      var same = silent === true && fresh.length === all.length && fresh.every(function (r, i) { return r.id === all[i].id; });
-      if (!same) { all = fresh; render(); }
-      if (silent !== true) say($("msg"), ""); stamp(true);
-      try { window.IPT_ROWS = { rows: all.slice(), email: session && session.email }; window.dispatchEvent(new CustomEvent("ipt:rows", { detail: window.IPT_ROWS })); } catch (x) {}
-    }
-    catch (e) {
-      if (e.message === "expired") { saveSession(null); showLogin("Your session ended. Please sign in again."); }
-      else if (silent === true) stamp(false); else say($("msg"), e.message, "err");
-    }
-    busy = false;
-  }
-  function autoTick() { if (session && !document.hidden && !$("dash").hidden) reload(true); }
-  function prep(r) {
-    var d = new Date(r.created_at), day = fmtDay(d);
-    r._d = d; r._day = day; r._time = fmtTime(d); r._mon = mondayOf(day); return r;
-  }
-
-  /* ---------- filters ---------- */
-  function range() {
-    var p = $("period").value, today = fmtDay(new Date()), mon = mondayOf(today);
-    if (p === "this") return [mon, addDays(mon, 6)];
-    if (p === "last") return [addDays(mon, -7), addDays(mon, -1)];
-    if (p === "4w") return [addDays(mon, -21), addDays(mon, 6)];
-    if (p === "custom") return [$("from").value || "0000-01-01", $("to").value || "9999-12-31"];
-    return ["0000-01-01", "9999-12-31"];
-  }
-  /* ---------- weak answers: very short, placeholder or copied answers get a flag ---------- */
-  var THIN_WORDS = (CFG.admin && Number(CFG.admin.thinWords)) || 6;       // fewer words than this = "very short" (config.js > admin > thinWords)
-  var NO_WORD_COUNT = { challenge: 1, plan: 1 };      // these two boxes are never flagged for being short (a short answer there can be a complete one)
-  var FILLER = /^(n a|na|none|nothing|no|yes|ok|okay|good|fine|great|nil|x+|test|asd+)$/;
-  var thinInPeriod = 0, dupCount = {};
-  function norm(t) { return String(t || "").toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim(); }
-  function buildDup() {
-    dupCount = {};
-    all.forEach(function (x) { ["worked", "challenge", "plan"].forEach(function (k) { var n = norm(x[k]); if (n.split(" ").length >= 3) dupCount[n] = (dupCount[n] || 0) + 1; }); });
-  }
-  function flagsOf(x) {
-    var out = [], seen = {};
-    [["worked", "What worked well?"], ["challenge", "What didn't work?"], ["plan", "Shape the next plan"]].forEach(function (p) {
-      var n = norm(x[p[0]]), w = n ? n.split(" ").length : 0;
-      if (!w) out.push(p[1] + " is empty");
-      else if (FILLER.test(n)) out.push(p[1] + " is just \u201c" + String(x[p[0]]).trim() + "\u201d");
-      else if (w < THIN_WORDS && !NO_WORD_COUNT[p[0]]) out.push(p[1] + " is very short (" + w + (w === 1 ? " word)" : " words)"));
-      else if (dupCount[n] > 1) out.push(p[1] + " has exactly the same words as another response");
-      if (n && n.split(" ").length >= 3) { if (seen[n]) out.push(p[1] + " repeats another box of this response"); seen[n] = 1; }
-    });
-    return out;
-  }
-  function filtered() {
-    var r = range(), y = $("yr").value, q = $("find").value.trim().toLowerCase();
-    buildDup();
-    var list = all.filter(function (x) {
-      if (x._day < r[0] || x._day > r[1]) return false;
-      if (y && String(x.year) !== y) return false;
-      if (q && ![x.email, x.school, x.week, x.worked, x.challenge, x.plan, x.notes].join(" ").toLowerCase().includes(q)) return false;
-      return true;
-    });
-    list.forEach(function (x) { x._flags = flagsOf(x); });
-    thinInPeriod = list.filter(function (x) { return x._flags.length; }).length;
-    return $("thin").value === "1" ? list.filter(function (x) { return x._flags.length; }) : list;
-  }
+  /* ---------- numbers ---------- */
+  var KEYS = ["overall", "resources", "engagement", "clarity"];
+  var LABEL = { overall: "Overall", resources: "Resources", engagement: "Engagement", clarity: "Clarity" };
   function avg(list, k) { var v = list.map(function (x) { return x[k]; }).filter(function (n) { return typeof n === "number"; }); return v.length ? v.reduce(function (a, b) { return a + b; }, 0) / v.length : null; }
   function f1(n) { return n === null ? "–" : (Math.round(n * 10) / 10).toFixed(1); }
+  function inPeriod(rows, k) { var s = pStart(k), e = pEnd(k); return rows.filter(function (x) { return x._day && x._day >= s && x._day <= e; }); }
+  function stats(list) {
+    var o = { n: list.length, years: { 5: 0, 6: 0, 7: 0 }, schools: 0, avg: {}, yearOverall: {} }, sc = {};
+    list.forEach(function (x) { if (o.years[x.year] !== undefined) o.years[x.year]++; if (x.school) sc[x.school] = 1; });
+    o.schools = Object.keys(sc).length;
+    KEYS.forEach(function (k) { o.avg[k] = avg(list, k); });
+    [5, 6, 7].forEach(function (y) { var s = list.filter(function (x) { return x.year === y; }); o.yearOverall[y] = s.length >= 3 ? avg(s, "overall") : null; });
+    return o;
+  }
+  function busiestWeek(list) {
+    var w = {}; list.forEach(function (x) { if (x._mon) w[x._mon] = (w[x._mon] || 0) + 1; });
+    var best = null; Object.keys(w).sort().forEach(function (m) { if (!best || w[m] > best.n) best = { mon: m, n: w[m] }; });
+    return best;
+  }
 
-  function chip(label, value) { var s = document.createElement("span"); s.className = "chip"; s.append(label + " "); var b = document.createElement("b"); b.textContent = value; s.append(b); return s; }
-  function cell(tr, text, node) { var td = document.createElement("td"); if (node) td.append(node); else td.textContent = text; tr.append(td); return td; }
-
-  function renderPager() {
-    var nav = $("pager"), pages = Math.ceil(shown.length / PAGE);
-    nav.textContent = ""; nav.hidden = pages < 2; if (pages < 2) return;
-    var a = page * PAGE + 1, z = Math.min(shown.length, a + PAGE - 1);
-    var info = document.createElement("span"); info.className = "pg-info"; info.textContent = "Showing " + a + "–" + z + " of " + shown.length + " (newest first)";
-    var box = document.createElement("div"); box.className = "pg-nav";
-    function btn(label, to, opts) {
-      var b = document.createElement("button"); b.type = "button"; b.textContent = label; opts = opts || {};
-      if (opts.aria) b.setAttribute("aria-label", opts.aria);
-      if (opts.on) { b.classList.add("on"); b.setAttribute("aria-current", "page"); }
-      if (opts.off) b.disabled = true; else b.addEventListener("click", function () { go(to); });
-      box.append(b);
+  /* ---------- the overview: plain sentences written from the numbers ---------- */
+  function overview(s, p, list, k) {
+    var out = [];
+    var yrs = [5, 6, 7].filter(function (y) { return s.years[y]; }).map(function (y) { return "Year " + y + ": " + s.years[y]; }).join(", ");
+    var t = "Between " + nice(pStart(k)) + " and " + nice(pEnd(k)) + ", " + s.n + (s.n === 1 ? " reflection" : " reflections") + " came in" + (s.schools ? " from " + s.schools + (s.schools === 1 ? " school" : " schools") : "") + (yrs ? " (" + yrs + ")" : "") + ".";
+    if (p && p.n) { var d = s.n - p.n; t += d === 0 ? " That is the same as the previous report." : " That is " + Math.abs(d) + (d > 0 ? " more" : " fewer") + " than the previous report (" + p.n + ")."; }
+    out.push(t);
+    var cats = ["resources", "engagement", "clarity"].filter(function (c) { return s.avg[c] !== null; });
+    if (cats.length >= 2) {
+      var hi = cats.slice().sort(function (a, b) { return s.avg[b] - s.avg[a]; }), top = hi[0], low = hi[hi.length - 1];
+      out.push(s.avg[top] - s.avg[low] < 0.15 ? "The three scores were very even, all close to " + f1(s.avg[top]) + "." : LABEL[top] + " scored highest (" + f1(s.avg[top]) + ") and " + LABEL[low] + " lowest (" + f1(s.avg[low]) + ").");
     }
-    btn("‹", page - 1, { aria: "Previous page", off: page === 0 });
-    var last = -1;
-    for (var i = 0; i < pages; i++) {
-      if (i === 0 || i === pages - 1 || Math.abs(i - page) <= 1) {
-        if (last > -1 && i - last > 1) { var g = document.createElement("span"); g.className = "pg-gap"; g.textContent = "…"; box.append(g); }
-        btn(String(i + 1), i, { on: i === page, aria: "Page " + (i + 1) }); last = i;
-      }
+    if (s.avg.overall !== null && p && p.avg.overall !== null) {
+      var dv = s.avg.overall - p.avg.overall;
+      out.push(Math.abs(dv) < 0.1 ? "The overall score held steady at " + f1(s.avg.overall) + " out of 5." : "The overall score " + (dv > 0 ? "rose" : "fell") + " by " + f1(Math.abs(dv)) + " to " + f1(s.avg.overall) + " out of 5.");
+    } else if (s.avg.overall !== null) out.push("The overall score was " + f1(s.avg.overall) + " out of 5.");
+    var ys = [5, 6, 7].filter(function (y) { return s.yearOverall[y] !== null; });
+    if (ys.length >= 2) {
+      ys.sort(function (a, b) { return s.yearOverall[b] - s.yearOverall[a]; });
+      if (s.yearOverall[ys[0]] - s.yearOverall[ys[ys.length - 1]] >= 0.3) out.push("Year " + ys[0] + " rated the programme highest overall (" + f1(s.yearOverall[ys[0]]) + ") and Year " + ys[ys.length - 1] + " lowest (" + f1(s.yearOverall[ys[ys.length - 1]]) + ").");
     }
-    btn("›", page + 1, { aria: "Next page", off: page >= pages - 1 });
-    nav.append(info, box);
-  }
-  function go(n) { page = Math.max(0, n); sel = {}; lastPicked = null; render(); var tbx = document.querySelector(".tablebox"); if (tbx) tbx.scrollTop = 0; }
-
-  function render() {
-    shown = filtered();
-    page = Math.min(page, Math.max(0, Math.ceil(shown.length / PAGE) - 1));
-    var st = $("stats"); st.textContent = "";
-    st.append(chip("Responses", shown.length), chip("Overall", f1(avg(shown, "overall"))), chip("Resources", f1(avg(shown, "resources"))), chip("Engagement", f1(avg(shown, "engagement"))), chip("Clarity", f1(avg(shown, "clarity"))));
-    if (thinInPeriod) st.append(chip("Weak answers", thinInPeriod));
-    renderCharts();
-    var tb = $("rows"); tb.textContent = ""; $("empty").hidden = shown.length > 0;
-    pageRows().forEach(function (x) {
-      var tr = document.createElement("tr"); tr.className = "row"; tr.tabIndex = 0;
-      var pc = document.createElement("td"); pc.className = "sel-col";
-      var pk = document.createElement("input"); pk.type = "checkbox"; pk.checked = !!sel[x.id]; pk.setAttribute("aria-label", "Select response from " + x.email);
-      pc.append(pk); tr.append(pc);
-      pc.addEventListener("click", function (e) { e.stopPropagation(); });
-      pk.addEventListener("keydown", function (e) { e.stopPropagation(); });
-      pk.addEventListener("click", function (e) { pick(x.id, pk.checked, e.shiftKey); });
-      if (pk.checked) tr.classList.add("picked");
-      tr.dataset.id = x.id;
-      cell(tr, nice(x._day) + ", " + x._time);
-      var tag = document.createElement("span"); tag.className = "tag " + "y" + x.year; tag.textContent = "Year " + x.year; cell(tr, "", tag);
-      cell(tr, x.school || "–"); cell(tr, x.week);
-      var em = document.createElement("span"); em.textContent = x.email;
-      if (x._flags && x._flags.length) { var fl = document.createElement("span"); fl.className = "flag"; fl.textContent = "Weak"; fl.title = x._flags.join("\n"); em.append(fl); }
-      cell(tr, "", em);
-      ["overall", "resources", "engagement", "clarity"].forEach(function (k) { cell(tr, x[k] == null ? "–" : String(x[k])); });
-      var dt = null;
-      function toggle() {
-        if (dt) { dt.remove(); dt = null; delete openIds[x.id]; return; }
-        openIds[x.id] = 1;
-        dt = document.createElement("tr"); dt.className = "detail"; var td = document.createElement("td"); td.colSpan = 10;
-        if (x._flags && x._flags.length) { var fn = document.createElement("div"); fn.className = "flagnote"; var fb = document.createElement("b"); fb.textContent = "Flagged as weak: "; fn.append(fb, x._flags.join(" · ")); td.append(fn); }
-        [["What worked well?", x.worked], ["What didn't work?", x.challenge], ["Shape the next plan", x.plan], ["One more thought", x.notes]].forEach(function (p) {
-          if (!p[1]) return;
-          var q = document.createElement("div"); q.className = "q"; q.textContent = p[0];
-          var a = document.createElement("div"); a.className = "ans"; a.textContent = p[1]; td.append(q, a);
-        });
-        var bar = document.createElement("div"); bar.style.cssText = "margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap";
-        var del = document.createElement("button"); del.type = "button"; del.className = "btn danger"; del.textContent = "Delete this feedback";
-        var info = document.createElement("span"); info.className = "dim"; info.style.fontSize = "13px";
-        var armed = 0;
-        del.addEventListener("click", async function (e) {
-          e.stopPropagation();
-          if (!armed) { armed = 1; del.textContent = "Click again to delete for good"; info.textContent = "This cannot be undone."; setTimeout(function () { if (armed === 1) { armed = 0; del.textContent = "Delete this feedback"; info.textContent = ""; } }, 5000); return; }
-          if (armed === 2) return; armed = 2; del.disabled = true; del.textContent = "Deleting…";
-          try {
-            var gone = await api("/rest/v1/feedback?id=eq." + encodeURIComponent(x.id), "DELETE");
-            if (!gone.length) throw new Error("Nothing was deleted. Check that you are signed in as the admin.");
-            all = all.filter(function (z) { return z.id !== x.id; }); render(); say($("msg"), "Feedback deleted.", "ok");
-          } catch (err) {
-            if (err.message === "expired") { saveSession(null); showLogin("Your session ended. Please sign in again."); return; }
-            armed = 0; del.disabled = false; del.textContent = "Delete this feedback"; info.textContent = ""; say($("msg"), err.message, "err");
-          }
-        });
-        bar.append(del, info); td.append(bar);
-        dt.append(td); tr.after(dt);
-      }
-      tr.addEventListener("click", toggle);
-      tr.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
-      tb.append(tr);
-      if (openIds[x.id]) toggle();
-    });
-    updateSel();
-    renderPager();
-    renderMissing();
+    var bw = busiestWeek(list);
+    if (bw && s.n >= 4) out.push("The busiest week started on " + nice(bw.mon) + " with " + bw.n + " reflections.");
+    return out;
   }
 
-  /* ---------- which scheduled schools have not responded yet ---------- */
-  var ROTA = CFG.rotation || {};
-  var ROT6 = (Array.isArray(ROTA.year6) && ROTA.year6.length) ? ROTA.year6 : [["Antalya", "Ataşehir"], ["Bahçeşehir", "Bornova"], ["Bursa", "Çamlıca"], ["Çayyolu", "Çukurambar"], ["Esenşehir", "İncek"], ["Maslak", "Sancaktepe", "Kurtköy"]];
-  var ROT7 = ROT6.slice().reverse(), CYCLE0 = ROTA.cycleStart || "2026-10-05";
-  var ROT5 = (Array.isArray(ROTA.year5) && ROTA.year5.length) ? ROTA.year5 : null;     // Year 5 only appears here once config.js has a year5 schedule (own start date, one school per Monday)
-  function dayNo(ymd) { return Math.round(Date.parse(ymd + "T00:00:00Z") / 864e5); }
-  function scheduleFor(mon) {      // schools scheduled for a Monday, or null before the rotation starts
-    var w = dayNo(mon) - dayNo(CYCLE0); if (w < 0 || w % 7) return null;
-    var i = (w / 7) % ROT6.length, r = { 6: ROT6[i], 7: ROT7[i] }; var s5 = ROT5 && window.IPT_year5For ? window.IPT_year5For(mon) : null; if (s5) r[5] = s5; return r;
-  }
-  var missBuilt = false;
-  function buildMissWeeks() {
-    var sel_ = $("miss-week"), today = mondayOf(fmtDay(new Date())), opts = [];
-    for (var m = addDays(today, 7); m >= CYCLE0 && opts.length < 16; m = addDays(m, -7)) opts.push(m);
-    sel_.innerHTML = ""; opts.forEach(function (m) {
-      var o = document.createElement("option"); o.value = m; o.textContent = nice(m) + (m === today ? " (this week)" : m > today ? " (next week)" : ""); sel_.append(o);
+  /* ---------- look ---------- */
+  var st = document.createElement("style");
+  st.textContent =
+    ":root{--mr-holo:linear-gradient(115deg,#ff9bd2,#9be7ff,#b8ffcf,#ffe69b,#c9a8ff,#ff9bd2)}" +
+    "#mr-btn{position:fixed;left:max(16px,env(safe-area-inset-left,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:1200;padding:.6rem 1.05rem;box-shadow:0 10px 28px rgba(1,8,30,.5);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);background:rgba(14,34,86,.88)}" +
+    "#mr-btn[hidden]{display:none}@media print{#mr-btn,.mr-ov{display:none!important}}" +
+    "#mr-btn .mr-dot{position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:50%;background:#ff2d2d;border:2px solid #fff;animation:mrPulse 1.8s infinite}" +
+    "#mr-btn.seen .mr-dot{display:none}" +
+    "@keyframes mrPulse{0%{box-shadow:0 0 0 0 rgba(255,45,45,.7)}70%,100%{box-shadow:0 0 0 9px rgba(255,45,45,0)}}" +
+    "@keyframes mrHolo{to{background-position:300% 0}}@keyframes mrIn{from{opacity:0;transform:translateY(14px) scale(.97);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}" +
+    "@keyframes mrRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}@keyframes mrFill{from{transform:scaleX(0)}to{transform:scaleX(1)}}@keyframes mrRing{from{stroke-dashoffset:var(--circ)}to{stroke-dashoffset:var(--off)}}" +
+    "@keyframes mrOrb{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(18px,-12px) scale(1.15)}}" +
+    ".mr-ov{position:fixed;inset:0;z-index:1700;display:grid;place-items:center;padding:16px;background:rgba(2,12,39,.62);-webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px)}.mr-ov[hidden]{display:none}" +
+    ".mr-card{position:relative;width:min(760px,100%);overflow:hidden;border-radius:26px;color:#eef5ff;background:linear-gradient(160deg,rgba(18,42,104,.9),rgba(7,20,56,.94));box-shadow:0 30px 90px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.18);animation:mrIn .55s cubic-bezier(.2,.8,.2,1) both}" +
+    ".mr-frame{position:absolute;inset:0;border-radius:26px;padding:1.5px;pointer-events:none;background:var(--mr-holo);background-size:300% 100%;animation:mrHolo 7s linear infinite;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}" +
+    ".mr-wrap{position:relative;max-width:100%;max-height:calc(100vh - 32px);overflow-y:auto;overflow-x:hidden;padding:24px 26px 22px}.mr-orb{position:absolute;top:-70px;right:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(155,231,255,.28),rgba(201,168,255,.12) 55%,transparent 70%);filter:blur(6px);pointer-events:none;animation:mrOrb 9s ease-in-out infinite}" +
+    ".mr-top{position:relative;display:flex;align-items:center;gap:10px;margin-bottom:4px}.mr-top h2{margin:0;flex:1;font-size:25px;background:var(--mr-holo);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:mrHolo 8s linear infinite}" +
+    ".mr-x{width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:22px;line-height:1;cursor:pointer;padding:0}" +
+    ".mr-nav{position:relative;display:flex;align-items:center;gap:8px;margin:0 0 16px;color:#b7c7e6;font-size:14px}.mr-nav b{color:#eef5ff}" +
+    ".mr-arrow{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:16px;cursor:pointer;padding:0}.mr-arrow:disabled{opacity:.3;cursor:default}" +
+    ".mr-hero{position:relative;display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center;margin-bottom:16px}" +
+    ".mr-ring{position:relative;width:170px;height:170px;animation:mrRise .6s .15s both}.mr-ring svg{width:100%;height:100%;transform:rotate(-90deg)}.mr-ring .bg{stroke:rgba(255,255,255,.12)}" +
+    ".mr-ring .fg{stroke-linecap:round;animation:mrRing 1.5s .35s cubic-bezier(.2,.8,.2,1) both}.mr-ringtxt{position:absolute;inset:0;display:grid;place-content:center;text-align:center}" +
+    ".mr-big{font-size:46px;font-weight:800;line-height:1;background:var(--mr-holo);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:mrHolo 8s linear infinite}.mr-ringtxt small{display:block;margin-top:4px;color:#b7c7e6;font-size:12px;letter-spacing:.06em;text-transform:uppercase}" +
+    ".mr-tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.mr-tile{grid-column:span 2;min-width:0}.mr-tile:nth-child(-n+2){grid-column:span 3}.mr-tile{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);animation:mrRise .55s both}" +
+    ".mr-tile .n{font-size:30px;font-weight:800;line-height:1.1}.mr-tile .l{font-size:12px;color:#b7c7e6;text-transform:uppercase;letter-spacing:.06em}.mr-tile .s{font-size:12.5px;color:#b7c7e6;margin-top:2px}" +
+    ".mr-cats{position:relative;display:grid;gap:10px;margin-bottom:16px}.mr-cat{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);animation:mrRise .55s both}" +
+    ".mr-row{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}.mr-row b{flex:1;font-size:15px}.mr-row .v{font-size:22px;font-weight:800}.mr-bar{height:10px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden}" +
+    ".mr-bar i{display:block;height:100%;border-radius:inherit;transform-origin:left;background:var(--mr-holo);background-size:300% 100%;animation:mrFill 1.2s cubic-bezier(.2,.8,.2,1) both,mrHolo 6s linear infinite}" +
+    ".mr-d{font-size:12.5px;font-weight:700;padding:.1rem .5rem;border-radius:999px;border:1px solid rgba(255,255,255,.2);color:#b7c7e6}.mr-d.up{color:#9cf0c8;border-color:rgba(156,240,200,.5)}.mr-d.dn{color:#ff9a9a;border-color:rgba(255,154,154,.5)}" +
+    ".mr-ov-box{position:relative;padding:16px 18px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);animation:mrRise .6s .9s both}.mr-ov-box h3{margin:0 0 8px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#9be7ff}" +
+    ".mr-ov-box p{margin:0 0 8px;font-size:15px;line-height:1.6;color:#e4eeff}.mr-note{margin:10px 0 0;font-size:12px;color:#b7c7e6}.mr-empty{padding:30px 10px;text-align:center;color:#b7c7e6;font-size:15.5px;line-height:1.6}" +
+    ".mr-pop{position:relative;width:min(440px,100%);text-align:center;padding:30px 26px 24px;border-radius:26px;color:#eef5ff;background:linear-gradient(160deg,rgba(18,42,104,.92),rgba(7,20,56,.95));box-shadow:0 30px 90px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.18);animation:mrIn .6s cubic-bezier(.2,.8,.2,1) both;overflow:hidden}" +
+    ".mr-pop h2{margin:6px 0 8px;font-size:26px;line-height:1.2;background:var(--mr-holo);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:mrHolo 8s linear infinite}.mr-pop p{margin:0 0 18px;color:#cfdcf5;line-height:1.55}" +
+    ".mr-pop .mr-ico{font-size:40px;line-height:1;animation:mrOrb 4s ease-in-out infinite;display:inline-block}.mr-acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;position:relative}" +
+    ".mr-go{padding:.7rem 1.3rem;border-radius:999px;border:0;cursor:pointer;font:800 15px/1.2 inherit;font-family:inherit;color:#10214f;background:var(--mr-holo);background-size:300% 100%;animation:mrHolo 6s linear infinite;box-shadow:0 8px 24px rgba(155,231,255,.28)}" +
+    ".mr-later{padding:.7rem 1.1rem;border-radius:999px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#eef5ff;cursor:pointer;font:600 15px/1.2 inherit;font-family:inherit}" +
+    ".mr-aibox{animation-delay:.8s}.mr-aibox h3{display:flex;align-items:center;gap:6px;background:var(--mr-holo);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;animation:mrHolo 8s linear infinite}.mr-aibox h3 svg{color:#9be7ff;-webkit-text-fill-color:currentColor}" +
+    ".mr-aibox h4{margin:12px 0 6px;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:#ffe69b}.mr-alist{margin:0;padding-left:20px;display:grid;gap:6px;font-size:14.5px;line-height:1.5;color:#e4eeff}" +
+    ".mr-aibadge{display:inline-block;margin-bottom:8px;padding:.1rem .6rem;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.06em;border:1px solid rgba(255,255,255,.25);color:#b7c7e6}.mr-aibadge.live{color:#9cf0c8;border-color:rgba(156,240,200,.5)}" +
+    ".mr-aiload{display:flex;align-items:center;gap:10px;color:#cfdcf5;font-size:14.5px;margin-bottom:10px}.mr-aispin{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.2);border-top-color:#9be7ff;animation:mrSpin 1s linear infinite}@keyframes mrSpin{to{transform:rotate(360deg)}}" +
+    ".mr-sk{display:grid;gap:8px}.mr-sk i{display:block;height:12px;border-radius:6px;background:linear-gradient(90deg,rgba(255,255,255,.08),rgba(255,255,255,.22),rgba(255,255,255,.08));background-size:200% 100%;animation:mrSh 1.4s linear infinite}@keyframes mrSh{to{background-position:-200% 0}}.mr-err{color:#ff9a9a}" +
+    "@media(max-width:600px){.mr-hero{grid-template-columns:1fr;justify-items:center}.mr-wrap{padding:20px 16px}.mr-top h2{font-size:21px}.mr-ring{width:150px;height:150px}.mr-tiles{width:100%}}" +
+    "@media(prefers-reduced-motion:reduce){.mr-aispin,.mr-sk i,.mr-aibox h3,.mr-card,.mr-pop,.mr-tile,.mr-cat,.mr-ring,.mr-ov-box,.mr-ring .fg,.mr-bar i,.mr-frame,.mr-big,.mr-top h2,.mr-pop h2,.mr-go,.mr-orb,.mr-ico,#mr-btn .mr-dot{animation:none!important}}";
+  document.head.appendChild(st);
+
+  /* ---------- window ---------- */
+  var rows = [], email = "", k = -1, popped = false, popTimer = 0;
+  var ov = document.createElement("div");
+  ov.className = "mr-ov"; ov.hidden = true;
+  document.body.appendChild(ov);
+  var btn = document.createElement("button");
+  btn.type = "button"; btn.id = "mr-btn"; btn.className = "btn ghost";
+  btn.innerHTML = 'Monthly report<i class="mr-dot" aria-hidden="true"></i>'; btn.hidden = true;
+  var ref = document.getElementById("refresh");
+  if (!ref) return;
+  document.body.appendChild(btn);
+
+  var q = false;
+  function sync() { q = false; btn.hidden = !ref.offsetParent; }      // only while the dashboard (not the sign-in page) is showing
+  new MutationObserver(function () { if (!q) { q = true; requestAnimationFrame(sync); } }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ["hidden", "class", "style"] });
+  sync();
+
+  /* ---------- AI overview ---------- */
+  var aiMem = {};
+  function aiOn() { return !!(window.IPT_AI && window.IPT_AI.ready() && (M.ai === true || window.IPT_AI.test)); }
+  function aiKey(n, n2) { return "ipt-monthly-ai:" + (window.IPT_AI && window.IPT_AI.test ? "t" : "r") + ":" + n + ":" + n2; }
+  function aiGet(n) {
+    var list = inPeriod(rows, n), key = aiKey(n, list.length);
+    if (aiMem[key]) return aiMem[key];
+    try { var c = localStorage.getItem(key); if (c) { var o = JSON.parse(c); return (aiMem[key] = Promise.resolve({ demo: false, data: o })); } } catch (e) {}
+    var pr = window.IPT_AI.run(list, "Monthly report for " + nice(pStart(n)) + " to " + nice(pEnd(n), true)).then(function (res) {
+      if (!res.demo) { try { localStorage.setItem(key, JSON.stringify(res.data)); } catch (e) {} }
+      return res;
     });
-    sel_.value = today; sel_.addEventListener("change", renderMissing); missBuilt = true;
+    aiMem[key] = pr; pr.catch(function () { delete aiMem[key]; });      // a failure is not remembered, so "Try again" really tries again
+    return pr;
   }
-  function renderMissing() {
-    if (!missBuilt) buildMissWeeks();
-    var mon = $("miss-week").value, body = $("miss-body"), note = $("miss-note"), cnt = $("miss-count"), bar = $("miss-bar");
-    body.textContent = ""; note.textContent = ""; cnt.textContent = ""; bar.firstElementChild.style.width = "0"; bar.classList.remove("full");
-    var sch = scheduleFor(mon);
-    if (!sch) { note.textContent = "No schools are scheduled for this week."; return; }
-    var week = all.filter(function (x) { return x._mon === mon; }), noSchool = week.filter(function (x) { return !x.school; }).length, total = 0, done = 0;
-    [5, 6, 7].forEach(function (y) {
-      if (!sch[y]) return;
-      var rows = sch[y].map(function (name) { return { name: name, n: week.filter(function (x) { return x.year === y && x.school === name; }).length }; });
-      rows.sort(function (a, b) { return (a.n ? 1 : 0) - (b.n ? 1 : 0) || a.name.localeCompare(b.name, "tr"); });   // waiting schools first
-      var got = rows.filter(function (r) { return r.n; }).length; total += rows.length; done += got;
-      var col = document.createElement("div"); col.className = "miss-col";
-      var h = document.createElement("h3"), tag = document.createElement("span"); tag.className = "tag y" + y; tag.textContent = "Year " + y;
-      var c = document.createElement("span"); c.textContent = got + " of " + rows.length + " responded"; h.append(tag, c); col.append(h);
-      rows.forEach(function (r) {
-        var row = document.createElement("div"); row.className = "miss-row " + (r.n ? "ok" : "no");
-        var dot = document.createElement("span"); dot.className = "miss-dot"; dot.textContent = r.n ? "✓" : "!";
-        var nm = document.createElement("span"); nm.className = "nm"; nm.textContent = r.name;
-        var st = document.createElement("span"); st.className = "st"; st.textContent = r.n ? r.n + (r.n === 1 ? " response" : " responses") : "Waiting";
-        row.append(dot, nm, st); col.append(row);
-      });
-      body.append(col);
+  var SPK = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M12 2l1.8 5.4L19 9l-5.2 1.6L12 16l-1.8-5.4L5 9l5.2-1.6zM19 15l.9 2.6L22.5 18.5l-2.6.9L19 22l-.9-2.6-2.6-.9 2.6-.9z"/></svg>';
+  function aiShell(inner) { return '<h3>' + SPK + ' AI overview</h3>' + inner; }
+  function aiLoading() { return aiShell('<div class="mr-aiload" role="status" aria-live="polite"><span class="mr-aispin"></span><span>Reading the month\u2019s answers\u2026</span></div><div class="mr-sk"><i></i><i></i><i style="width:70%"></i></div>'); }
+  function aiDone(res) {
+    var d = res.data || {}, acts = Array.isArray(d.actions) ? d.actions : [];
+    return aiShell('<span class="mr-aibadge' + (res.demo ? "" : " live") + '">' + (res.demo ? "PREVIEW \u00B7 sample text, no AI used" : (window.IPT_AI.test ? "TEST \u00B7 AI on made-up answers" : "Written by AI")) + "</span>" +
+      "<p>" + esc(d.overview) + "</p>" +
+      (acts.length ? '<h4>Suggested actions</h4><ol class="mr-alist">' + acts.slice(0, 5).map(function (a) { return "<li>" + esc(a) + "</li>"; }).join("") + "</ol>" : "") +
+      '<p class="mr-note">' + (d.meta && d.meta.model ? "Written by " + esc(d.meta.model) + (d.meta.provider ? " on " + esc(d.meta.provider) : "") + ". " : "") + "AI can miss detail, so open the responses before acting on it.</p>");
+  }
+  function aiFill(n) {
+    var box = ov.querySelector("#mr-ai"); if (!box) return;
+    box.innerHTML = aiLoading();
+    aiGet(n).then(function (res) {
+      var b = ov.querySelector("#mr-ai"); if (!b || k !== n) return;
+      b.innerHTML = aiDone(res);
+    }, function (err) {
+      var b = ov.querySelector("#mr-ai"); if (!b || k !== n) return;
+      b.innerHTML = aiShell('<p class="mr-err">' + esc((err && err.message) || "The AI overview could not be made.") + '</p><button type="button" class="mr-later" id="mr-ai-again">Try again</button>');
     });
-    var left = total - done;
-    cnt.textContent = ""; var em = document.createElement("em"); em.textContent = done; cnt.append(em, " of " + total + " schools responded");
-    bar.firstElementChild.style.width = (total ? done / total * 100 : 0) + "%"; bar.classList.toggle("full", total > 0 && !left);
-    note.textContent = (left ? left + (left === 1 ? " school is" : " schools are") + " still waiting." : "Every scheduled school has responded.") +
-      (noSchool ? " " + noSchool + (noSchool === 1 ? " response this week has" : " responses this week have") + " no school (sent before the School box was added), so they cannot be matched." : "");
   }
 
-  /* ---------- picking several rows and deleting them in one go ---------- */
-  var sel = {}, lastPicked = null, delArmed = 0, delTimer = 0, delBusy = false;
-  function selIds() { return pageRows().map(function (x) { return x.id; }).filter(function (id) { return sel[id]; }); }   // only rows that are visible can be deleted
-  function paintRows() {
-    Array.prototype.forEach.call($("rows").querySelectorAll("tr.row"), function (tr) {
-      var on = !!sel[tr.dataset.id] || !!sel[Number(tr.dataset.id)];
-      tr.classList.toggle("picked", on); var c = tr.querySelector(".sel-col input"); if (c) c.checked = on;
-    });
-  }
-  function updateSel() {
-    var keep = {}; pageRows().forEach(function (x) { if (sel[x.id]) keep[x.id] = 1; }); sel = keep;   // forget rows that are not on this page
-    var n = selIds().length, bar = $("selbar"), all_ = $("selall");
-    bar.hidden = n === 0;
-    $("selcount").textContent = n + (n === 1 ? " response selected" : " responses selected");
-    var pn = pageRows().length; all_.checked = n > 0 && n === pn; all_.indeterminate = n > 0 && n < pn;
-    if (!n) disarm();
-    paintRows();
-  }
-  function pick(id, on, range) {
-    var ids = pageRows().map(function (x) { return x.id; }), i = ids.indexOf(id), j = lastPicked === null ? -1 : ids.indexOf(lastPicked);
-    if (range && j > -1 && i > -1) { for (var k = Math.min(i, j); k <= Math.max(i, j); k++) { if (on) sel[ids[k]] = 1; else delete sel[ids[k]]; } }
-    else if (on) sel[id] = 1; else delete sel[id];
-    lastPicked = id; disarm(); updateSel();
-  }
-  function disarm() { delArmed = 0; clearTimeout(delTimer); var b = $("seldel"); if (b && !delBusy) { b.textContent = "Delete selected"; $("selinfo").textContent = ""; } }
-  $("selall").addEventListener("change", function () {
-    if (this.checked) pageRows().forEach(function (x) { sel[x.id] = 1; }); else sel = {};
-    lastPicked = null; disarm(); updateSel();
-  });
-  (function () { var c = document.querySelector("#dash .controls"); if (c) { var back = function () { page = 0; }; c.addEventListener("input", back, true); c.addEventListener("change", back, true); } })();
-  $("selclear").addEventListener("click", function () { sel = {}; lastPicked = null; updateSel(); });
-  $("seldel").addEventListener("click", async function () {
-    var ids = selIds(); if (!ids.length || delBusy) return;
-    if (!delArmed) {      // first click only asks; the second click (within 6 seconds) deletes
-      delArmed = 1; this.textContent = "Click again to delete " + ids.length + " for good";
-      $("selinfo").textContent = "This cannot be undone.";
-      delTimer = setTimeout(disarm, 6000); return;
-    }
-    clearTimeout(delTimer); delBusy = true; this.disabled = true; this.textContent = "Deleting…"; $("selinfo").textContent = "";
-    var gone = [];
-    try {
-      for (var i = 0; i < ids.length; i += 50) {
-        var part = ids.slice(i, i + 50), res = await api("/rest/v1/feedback?id=in.(" + part.map(encodeURIComponent).join(",") + ")", "DELETE");
-        res.forEach(function (r) { gone.push(r.id); });
-      }
-    } catch (err) { say($("msg"), (gone.length ? gone.length + " deleted, then it stopped: " : "") + err.message, "err"); }
-    all = all.filter(function (z) { return gone.indexOf(z.id) === -1; });
-    gone.forEach(function (id) { delete sel[id]; delete openIds[id]; });
-    delBusy = false; this.disabled = false; delArmed = 0; this.textContent = "Delete selected";
-    if (gone.length === ids.length) say($("msg"), gone.length + (gone.length === 1 ? " response deleted." : " responses deleted."), "ok");
-    else if (!gone.length) say($("msg"), "Nothing was deleted. Check that you are signed in as the admin.", "err");
-    else say($("msg"), gone.length + " of " + ids.length + " deleted. The rest are still selected.", "err");
-    render();
-  });
+  var SKEY = function () { return "ipt-monthly-seen:" + String(email || "").toLowerCase(); };
+  function seenK() { try { var v = localStorage.getItem(SKEY()); return v === null ? -1 : Number(v); } catch (e) { return -1; } }
+  function markSeen(n) { try { if (n > seenK()) localStorage.setItem(SKEY(), String(n)); } catch (e) {} paintDot(); }
+  function paintDot() { var ready = lastDone() >= 0 && inPeriod(rows, lastDone()).length > 0; btn.classList.toggle("seen", !ready || seenK() >= lastDone()); }
 
-  /* ---------- Excel ---------- */
-  function sheetFrom(list) {
-    var subCol = "Submitted (" + TZ + ")";
-    var rows = list.slice().sort(function (a, b) { return a._d - b._d; }).map(function (x) {
-      return {
-        [subCol]: x._day + " " + x._time, "Week of (Monday)": x._mon, "Year level": "Year " + x.year, "School": x.school || "", "Week": x.week, "Email": x.email,
-        "What worked well?": x.worked || "", "What didn't work?": x.challenge || "", "Shape the next plan": x.plan || "",
-        "Overall rating (1-5)": x.overall, "Teaching resources (1-5)": x.resources, "Student engagement (1-5)": x.engagement, "Objectives clarity (1-5)": x.clarity,
-        "One more thought": x.notes || "", "Flag": (x._flags || flagsOf(x)).join("; ")
-      };
-    });
-    var ws = XLSX.utils.json_to_sheet(rows.length ? rows : [{ "No feedback": "" }]);
-    ws["!cols"] = [{ wch: 18 }, { wch: 14 }, { wch: 10 }, { wch: 10 }, { wch: 30 }, { wch: 60 }, { wch: 60 }, { wch: 60 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 50 }, { wch: 50 }];
-    return ws;
+  function countUp(el, to, dec, ms) {
+    if (!isFinite(to)) return;
+    var fmt = function (v) { return dec ? v.toFixed(dec) : String(Math.round(v)); };
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion:reduce)").matches) { el.textContent = fmt(to); return; }
+    var t0 = performance.now(); el.textContent = fmt(0);
+    (function step(t) { var p = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - p, 3); el.textContent = fmt(to * e); if (p < 1 && document.body.contains(el)) requestAnimationFrame(step); })(t0);
   }
-  function summarySheet(list) {
-    var groups = {};
-    list.forEach(function (x) { var k = x._mon + "|" + x.year; (groups[k] = groups[k] || []).push(x); });
-    var rows = Object.keys(groups).sort().map(function (k) {
-      var g = groups[k], p = k.split("|");
-      function a(f) { var v = avg(g, f); return v === null ? "" : Math.round(v * 100) / 100; }
-      return { "Week of (Monday)": p[0], "Year level": "Year " + p[1], "Responses": g.length, "Average overall": a("overall"), "Average resources": a("resources"), "Average engagement": a("engagement"), "Average clarity": a("clarity") };
-    });
-    var ws = XLSX.utils.json_to_sheet(rows.length ? rows : [{ "No feedback": "" }]);
-    ws["!cols"] = [{ wch: 16 }, { wch: 10 }, { wch: 11 }, { wch: 16 }, { wch: 18 }, { wch: 19 }, { wch: 15 }];
-    return ws;
-  }
-  function download() {
-    if (!window.XLSX) return say($("msg"), "The Excel tool could not load. Check your connection and refresh the page.", "err");
-    if (!shown.length) return say($("msg"), "There is no feedback in this selection to download.", "err");
-    var wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, sheetFrom(shown), "All feedback");
-    var y5 = shown.filter(function (x) { return x.year === 5; }), y6 = shown.filter(function (x) { return x.year === 6; }), y7 = shown.filter(function (x) { return x.year === 7; });
-    if (y5.length) XLSX.utils.book_append_sheet(wb, sheetFrom(y5), "Year 5");
-    if (y6.length) XLSX.utils.book_append_sheet(wb, sheetFrom(y6), "Year 6");
-    if (y7.length) XLSX.utils.book_append_sheet(wb, sheetFrom(y7), "Year 7");
-    XLSX.utils.book_append_sheet(wb, summarySheet(shown), "Summary");
-    var days = shown.map(function (x) { return x._day; }).sort();
-    XLSX.writeFile(wb, "IPT-feedback_" + days[0] + "_to_" + days[days.length - 1] + ".xlsx");
-    say($("msg"), "Downloaded " + shown.length + " response" + (shown.length === 1 ? "" : "s") + ".", "ok");
+  function delta(a, b, isCount) {
+    if (a === null || b === null || b === undefined) return "";
+    var d = a - b, tiny = isCount ? d === 0 : Math.abs(d) < 0.05;
+    if (tiny) return '<span class="mr-d" title="Compared with the previous report">= same</span>';
+    return '<span class="mr-d ' + (d > 0 ? "up" : "dn") + '" title="Compared with the previous report">' + (d > 0 ? "▲ " : "▼ ") + (isCount ? Math.abs(d) : f1(Math.abs(d))) + "</span>";
   }
 
-  /* ================= CHARTS (plain SVG, no outside library) ================= */
-  var SCORE_NAMES = ["Needs significant improvement", "Needs improvement", "Satisfactory", "Very good", "Excellent"];
-  var CATS = [["overall", "Overall"], ["resources", "Resources"], ["engagement", "Engagement"], ["clarity", "Clarity"]];
-  var distMode = "pie";
-  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
-  function r1(n) { return Math.round(n * 10) / 10; }
-  function cnt(list, k) { return list.filter(function (x) { return typeof x[k] === "number"; }).length; }
-  function barPath(x, y, w, h, r) {
-    r = Math.max(0, Math.min(r, w / 2, h));
-    return "M" + x + "," + (y + h) + "L" + x + "," + (y + r) + "Q" + x + "," + y + " " + (x + r) + "," + y + "L" + (x + w - r) + "," + y + "Q" + (x + w) + "," + y + " " + (x + w) + "," + (y + r) + "L" + (x + w) + "," + (y + h) + "Z";
-  }
-  function shortDay(ymd) { return new Date(ymd + "T00:00:00Z").toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "short" }); }
-  function tableHTML(head, rows) {
-    return '<table class="mini"><thead><tr>' + head.map(function (h) { return "<th>" + esc(h) + "</th>"; }).join("") + "</tr></thead><tbody>" +
-      rows.map(function (r) { return "<tr>" + r.map(function (c) { return "<td>" + esc(c) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table>";
-  }
-  var NONE = '<div class="chart-empty">No feedback in this selection.</div>';
-  function legend(years) {
-    return '<div class="lg-row">' + years.map(function (y) { return '<span class="lg"><i class="sw m' + y + '"></i>Year ' + y + "</span>"; }).join("") + "</div>";
-  }
-  function yearsOf(list) { return [5, 6, 7].filter(function (y) { return list.some(function (x) { return x.year === y; }); }); }
-
-  /* 1) Average score in each category, Year 6 next to Year 7 */
-  function chartCats(list) {
-    var years = yearsOf(list); if (!years.length) return { svg: NONE, table: "" };
-    var W = 520, H = 250, L = 30, R = 8, T = 20, B = 30, pw = W - L - R, ph = H - T - B, k = years.length;
-    var o = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Average score in each category">';
-    for (var t = 0; t <= 5; t++) { var gy = T + ph - ph * t / 5; o += '<line class="grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + gy + '" y2="' + gy + '"/><text class="ax" x="' + (L - 6) + '" y="' + (gy + 4) + '" text-anchor="end">' + t + "</text>"; }
-    var gw = pw / CATS.length, bw = Math.min(24, (gw * 0.72 - 2 * (k - 1)) / k), total = k * bw + 2 * (k - 1), rows = [];
-    CATS.forEach(function (c, gi) {
-      var gx = L + gi * gw + (gw - total) / 2, row = [c[1]];
-      years.forEach(function (y, si) {
-        var sub = list.filter(function (x) { return x.year === y; }), v = avg(sub, c[0]), n = cnt(sub, c[0]);
-        row.push(v === null ? "–" : r1(v).toFixed(1));
-        if (v === null) return;
-        var x = gx + si * (bw + 2), h = ph * v / 5, yy = T + ph - h, tip = "Year " + y + " · " + c[1] + ": " + r1(v).toFixed(1) + " (" + n + (n === 1 ? " response)" : " responses)");
-        o += '<path class="m' + y + '" d="' + barPath(x, yy, bw, h, 4) + '"/><text class="val" x="' + (x + bw / 2) + '" y="' + (yy - 5) + '" text-anchor="middle">' + r1(v).toFixed(1) + "</text>";
-        o += '<rect class="hit" x="' + (x - 1) + '" y="' + T + '" width="' + (bw + 2) + '" height="' + ph + '" data-tip="' + esc(tip) + '"/>';
-      });
-      o += '<text class="ax" x="' + (L + gi * gw + gw / 2) + '" y="' + (H - 10) + '" text-anchor="middle">' + c[1] + "</text>";
-      rows.push(row);
-    });
-    o += "</svg>";
-    return { svg: legend(years) + o, table: tableHTML(["Category"].concat(years.map(function (y) { return "Year " + y; })), rows) };
-  }
-
-  /* 2) Overall rating, week by week */
-  function chartTrend(list) {
-    var weeks = Object.keys(list.reduce(function (a, x) { a[x._mon] = 1; return a; }, {})).sort().slice(-12), years = yearsOf(list);
-    if (!weeks.length) return { svg: NONE, table: "" };
-    var W = 520, H = 250, L = 30, R = 14, T = 16, B = 30, pw = W - L - R, ph = H - T - B, n = weeks.length;
-    var xs = function (i) { return n === 1 ? L + pw / 2 : L + 14 + i * (pw - 28) / (n - 1); }, ys = function (v) { return T + ph - (v - 1) / 4 * ph; };
-    var o = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Overall rating week by week">';
-    for (var t = 1; t <= 5; t++) { var gy = ys(t); o += '<line class="grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + gy + '" y2="' + gy + '"/><text class="ax" x="' + (L - 6) + '" y="' + (gy + 4) + '" text-anchor="end">' + t + "</text>"; }
-    var step = Math.ceil(n / 7);
-    weeks.forEach(function (w, i) { if (i % step === 0 || i === n - 1) o += '<text class="ax" x="' + xs(i) + '" y="' + (H - 10) + '" text-anchor="middle">' + shortDay(w) + "</text>"; });
-    var rows = weeks.map(function (w) { return [shortDay(w)]; }), dots = "", hits = "";
-    years.forEach(function (y) {
-      var seg = [], path = "";
-      weeks.forEach(function (w, i) {
-        var sub = list.filter(function (x) { return x.year === y && x._mon === w; }), v = avg(sub, "overall");
-        rows[i].push(v === null ? "–" : r1(v).toFixed(1) + " (" + cnt(sub, "overall") + ")");
-        if (v === null) { if (seg.length) { path += "M" + seg.join("L"); seg = []; } return; }
-        seg.push(xs(i) + "," + ys(v));
-        var tip = "Year " + y + " · week of " + shortDay(w) + ": " + r1(v).toFixed(1) + " overall (" + cnt(sub, "overall") + " " + (cnt(sub, "overall") === 1 ? "response)" : "responses)");
-        dots += '<circle class="dot m' + y + '" cx="' + xs(i) + '" cy="' + ys(v) + '" r="4.5"/>';
-        hits += '<circle class="hit" cx="' + xs(i) + '" cy="' + ys(v) + '" r="13" data-tip="' + esc(tip) + '"/>';
-      });
-      if (seg.length) path += "M" + seg.join("L");
-      o += '<path class="ln l' + y + '" d="' + path + '"/>';
-    });
-    o += dots + hits + "</svg>";
-    return { svg: legend(years) + o, table: tableHTML(["Week of"].concat(years.map(function (y) { return "Year " + y + " (responses)"; })), rows) };
-  }
-
-  /* 3) How the week was rated: share of each rating (pie or bars) */
-  function arcPath(cx, cy, R, r, a0, a1) {
-    var p = function (rad, a) { return (cx + rad * Math.sin(a)).toFixed(2) + "," + (cy - rad * Math.cos(a)).toFixed(2); }, big = a1 - a0 > Math.PI ? 1 : 0;
-    return "M" + p(R, a0) + "A" + R + "," + R + " 0 " + big + " 1 " + p(R, a1) + "L" + p(r, a1) + "A" + r + "," + r + " 0 " + big + " 0 " + p(r, a0) + "Z";
-  }
-  function chartDist(list, mode) {
-    var counts = [0, 0, 0, 0, 0], total = 0;
-    list.forEach(function (x) { if (typeof x.overall === "number" && x.overall >= 1 && x.overall <= 5) { counts[x.overall - 1]++; total++; } });
-    if (!total) return { svg: NONE, table: "" };
-    var rows = [5, 4, 3, 2, 1].map(function (s) { return [s + " · " + SCORE_NAMES[s - 1], String(counts[s - 1]), Math.round(counts[s - 1] / total * 100) + "%"]; });
-    var table = tableHTML(["Rating", "Responses", "Share"], rows), W = 520, H = 230, o;
-    if (mode === "bar") {
-      var L = 30, R = 8, T = 20, B = 30, pw = W - L - R, ph = H - T - B, mx = Math.max.apply(null, counts), top = Math.max(4, Math.ceil(mx / 4) * 4), gw = pw / 5, bw = Math.min(24, gw * 0.5);
-      o = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Number of responses for each overall rating">';
-      for (var t = 0; t <= 4; t++) { var gy = T + ph - ph * t / 4, tv = Math.round(top * t / 4); o += '<line class="grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + gy + '" y2="' + gy + '"/><text class="ax" x="' + (L - 6) + '" y="' + (gy + 4) + '" text-anchor="end">' + tv + "</text>"; }
-      counts.forEach(function (c, i) {
-        var x = L + i * gw + (gw - bw) / 2, h = ph * c / top, y = T + ph - h, tip = (i + 1) + " · " + SCORE_NAMES[i] + ": " + c + (c === 1 ? " response" : " responses") + " (" + Math.round(c / total * 100) + "%)";
-        if (c > 0) o += '<path class="o' + (i + 1) + '" d="' + barPath(x, y, bw, h, 4) + '"/><text class="val" x="' + (x + bw / 2) + '" y="' + (y - 5) + '" text-anchor="middle">' + c + "</text>";
-        o += '<rect class="hit" x="' + (x - 6) + '" y="' + T + '" width="' + (bw + 12) + '" height="' + ph + '" data-tip="' + esc(tip) + '"/><text class="ax" x="' + (L + i * gw + gw / 2) + '" y="' + (H - 10) + '" text-anchor="middle">' + (i + 1) + "</text>";
-      });
-      o += '<text class="ax" x="' + (W - R) + '" y="' + (T - 6) + '" text-anchor="end">Rating: 1 = needs significant improvement, 5 = excellent</text></svg>';
+  function show(n) {
+    k = n;
+    var done = lastDone(), list = inPeriod(rows, k), prevList = k > 0 ? inPeriod(rows, k - 1) : [], s = stats(list), p = prevList.length ? stats(prevList) : null;
+    var body, withAI = aiOn() && list.length > 0;
+    if (!list.length) {
+      body = '<div class="mr-empty">No reflections were sent between ' + esc(nice(pStart(k))) + " and " + esc(nice(pEnd(k))) + ".<br>Once teachers send some, the report fills itself in.</div>";
     } else {
-      var cx = 108, cy = 115, RR = 92, rr = 58, a = 0;
-      o = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Share of each overall rating">';
-      [5, 4, 3, 2, 1].forEach(function (s) {
-        var c = counts[s - 1]; if (!c) return;
-        var frac = c / total, tip = s + " · " + SCORE_NAMES[s - 1] + ": " + c + (c === 1 ? " response" : " responses") + " (" + Math.round(frac * 100) + "%)";
-        var d = frac > 0.9999 ? "M" + (cx - RR) + "," + cy + "a" + RR + "," + RR + " 0 1,0 " + 2 * RR + ",0a" + RR + "," + RR + " 0 1,0 " + (-2 * RR) + ",0ZM" + (cx - rr) + "," + cy + "a" + rr + "," + rr + " 0 1,0 " + 2 * rr + ",0a" + rr + "," + rr + " 0 1,0 " + (-2 * rr) + ",0Z" : arcPath(cx, cy, RR, rr, a, a + frac * 2 * Math.PI);
-        o += '<path class="slice o' + s + '" fill-rule="evenodd" d="' + d + '" data-tip="' + esc(tip) + '"/>'; a += frac * 2 * Math.PI;
-      });
-      o += '<text class="big" x="' + cx + '" y="' + (cy + 4) + '" text-anchor="middle">' + total + '</text><text class="ax" x="' + cx + '" y="' + (cy + 22) + '" text-anchor="middle">' + (total === 1 ? "response" : "responses") + "</text>";
-      [5, 4, 3, 2, 1].forEach(function (s, i) {
-        var y = 52 + i * 31, c = counts[s - 1];
-        o += '<rect class="sw o' + s + '" x="236" y="' + (y - 11) + '" width="13" height="13" rx="3"/><text class="lab" x="258" y="' + y + '">' + s + " · " + SCORE_NAMES[s - 1] + '</text><text class="lab num" x="' + (W - 6) + '" y="' + y + '" text-anchor="end">' + c + "  (" + Math.round(c / total * 100) + "%)</text>";
-      });
-      o += "</svg>";
+      var circ = 2 * Math.PI * 70, off = circ * (1 - (s.avg.overall === null ? 0 : s.avg.overall / 5));
+      body =
+        '<div class="mr-hero"><div class="mr-ring"><svg viewBox="0 0 170 170" aria-hidden="true"><defs><linearGradient id="mr-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9bd2"/><stop offset=".5" stop-color="#9be7ff"/><stop offset="1" stop-color="#b8ffcf"/></linearGradient></defs><circle class="bg" cx="85" cy="85" r="70" fill="none" stroke-width="13"/><circle class="fg" cx="85" cy="85" r="70" fill="none" stroke="url(#mr-g)" stroke-width="13" style="--circ:' + circ + ";--off:" + off + ";stroke-dasharray:" + circ + ";stroke-dashoffset:" + off + '"/></svg>' +
+        '<div class="mr-ringtxt"><span class="mr-big" data-to="' + (s.avg.overall === null ? "" : s.avg.overall) + '" data-dec="1">' + f1(s.avg.overall) + "</span><small>Overall<br>out of 5</small></div></div>" +
+        '<div class="mr-tiles"><div class="mr-tile" style="animation-delay:.3s"><div class="l">Responses</div><div class="n"><span data-to="' + s.n + '" data-dec="0">' + s.n + "</span></div><div class=\"s\">" + (p ? delta(s.n, p.n, true) + " vs previous report" : "first report") + "</div></div>" +
+        '<div class="mr-tile" style="animation-delay:.4s"><div class="l">Schools</div><div class="n"><span data-to="' + s.schools + '" data-dec="0">' + s.schools + '</span></div><div class="s">that took part</div></div>' +
+        [5, 6, 7].map(function (y, i) { return '<div class="mr-tile" style="animation-delay:' + (0.5 + i * 0.1) + 's"><div class="l">Year ' + y + '</div><div class="n"><span data-to="' + s.years[y] + '" data-dec="0">' + s.years[y] + '</span></div><div class="s">' + (s.yearOverall[y] === null ? "reflections" : "reflections · " + f1(s.yearOverall[y]) + " overall") + "</div></div>"; }).join("") + "</div></div>" +
+        '<div class="mr-cats">' + ["resources", "engagement", "clarity"].map(function (c, i) {
+          var v = s.avg[c];
+          return '<div class="mr-cat" style="animation-delay:' + (0.6 + i * 0.12) + 's"><div class="mr-row"><b>' + LABEL[c] + '</b>' + (p ? delta(v, p.avg[c]) : "") + '<span class="v"><span data-to="' + (v === null ? "" : v) + '" data-dec="1">' + f1(v) + '</span><small style="font-size:13px;color:#b7c7e6;font-weight:600"> / 5</small></span></div><div class="mr-bar"><i style="width:' + (v === null ? 0 : Math.round(v / 5 * 100)) + "%;animation-delay:" + (0.7 + i * 0.12) + 's,0s"></i></div></div>';
+        }).join("") + "</div>" +
+        (withAI ? '<div class="mr-ov-box mr-aibox" id="mr-ai"></div>' : "") +
+        (withAI ? "" : '<div class="mr-ov-box"' + (withAI ? ' style="animation-delay:1s"' : "") + '><h3>Overview</h3>' + overview(s, p, list, k).map(function (t) { return "<p>" + esc(t) + "</p>"; }).join("") +
+        '<p class="mr-note">' + ("Written automatically from the numbers above. No AI was used, and no teacher comments or names are shown here.") + "</p></div>");
     }
-    return { svg: o, table: table };
+    ov.innerHTML = '<div class="mr-card" role="dialog" aria-modal="true" aria-labelledby="mr-t"><div class="mr-frame"></div><div class="mr-wrap"><div class="mr-orb"></div>' +
+      '<div class="mr-top"><h2 id="mr-t">Monthly report</h2><button type="button" class="mr-x" aria-label="Close">&times;</button></div>' +
+      '<div class="mr-nav"><button type="button" class="mr-arrow" id="mr-prev" aria-label="Earlier report"' + (k <= 0 ? " disabled" : "") + '>‹</button><span><b>' + esc(nice(pStart(k))) + " – " + esc(nice(pEnd(k), true)) + '</b> · ' + span(k) + '</span><button type="button" class="mr-arrow" id="mr-next" aria-label="Later report"' + (k >= done ? " disabled" : "") + '>›</button></div>' +
+      body + "</div></div>";
+    ov.hidden = false; document.body.style.overflow = "hidden";
+    ov.querySelectorAll("[data-to]").forEach(function (el) { var to = parseFloat(el.getAttribute("data-to")); if (!isNaN(to)) countUp(el, to, Number(el.getAttribute("data-dec")), 1400); });
+    ov.querySelector(".mr-x").focus();
+    if (withAI) aiFill(k);
+    if (k === done) markSeen(done);
   }
+  function close() { ov.hidden = true; ov.innerHTML = ""; document.body.style.overflow = ""; }
 
-  /* put a chart (and its "show as table" view) into a box */
-  function mount(id, res) {
-    var el = $(id); if (!el) return;
-    el.innerHTML = res.svg + (res.table ? '<details class="tv"><summary>Show as table</summary>' + res.table + "</details>" : "");
-  }
-  function renderCharts() {
-    mount("ch-cats", chartCats(shown)); mount("ch-trend", chartTrend(shown)); mount("ch-dist", chartDist(shown, distMode));
-    $("dist-pie").setAttribute("aria-pressed", distMode === "pie"); $("dist-bar").setAttribute("aria-pressed", distMode === "bar");
-  }
-
-  /* one small tooltip for every chart (hover with a mouse, tap on a phone) */
-  var tipEl = document.createElement("div"); tipEl.className = "chart-tip"; tipEl.hidden = true; document.body.appendChild(tipEl);
-  function tipAt(e) {
-    var t = e.target.closest && e.target.closest("[data-tip]");
-    if (!t) { tipEl.hidden = true; return; }
-    tipEl.textContent = t.getAttribute("data-tip"); tipEl.hidden = false;
-    var w = tipEl.offsetWidth, x = Math.min(Math.max(8, e.clientX - w / 2), window.innerWidth - w - 8);
-    tipEl.style.left = x + "px"; tipEl.style.top = Math.max(8, e.clientY - tipEl.offsetHeight - 14) + "px";
-  }
-  document.addEventListener("mousemove", tipAt); document.addEventListener("click", tipAt);
-  document.addEventListener("scroll", function () { tipEl.hidden = true; }, true);
-
-  /* ================= REPORT (a designed page you can print or save as PDF) ================= */
-  var showNames = false;
-  function cap(w) { return w ? w.charAt(0).toUpperCase() + w.slice(1) : w; }
-  function who(x) { return showNames ? String(x.email) : "Colleague"; }
-  function periodText() {
-    var p = $("period").value, r = range();
-    if (p === "all") return "All time";
-    var days = shown.map(function (x) { return x._day; }).sort();
-    if (p === "custom" && (r[0] === "0000-01-01" || r[1] === "9999-12-31")) return days.length ? nice(days[0]) + " – " + nice(days[days.length - 1]) : "Selected dates";
-    return nice(r[0]) + " – " + nice(r[1]);
-  }
-  function tile(label, v, n) {
-    return '<div class="tile"><span>' + label + "</span><b>" + (v === null ? "–" : r1(v).toFixed(1)) + (v === null ? "" : "<small> / 5</small>") + '</b><div class="meter"><i style="width:' + (v === null ? 0 : Math.round(v / 5 * 100)) + '%"></i></div></div>';
-  }
-  function reportHTML() {
-    var list = shown, years = yearsOf(list), now = new Date();
-    var yl = $("yr").value ? "Year " + $("yr").value : "All years";
-    var weeks = Object.keys(list.reduce(function (a, x) { a[x._mon] = 1; return a; }, {})).length;
-    var h = '<header class="rhead"><div><p class="rkick">IPT FEEDBACK REPORT</p><h1>' + esc(periodText()) + '</h1><p class="rsub">' + esc(yl) + " · " + list.length + (list.length === 1 ? " response" : " responses") + " · prepared " + nice(fmtDay(now)) + '</p></div><img class="rlogo" src="assets/logo-menu.png" alt="" onerror="this.remove()"></header><div class="rbody">';
-    if (!list.length) return h + '<p class="chart-empty">There is no feedback in this selection.</p></div>';
-    h += '<section class="rsec"><h2>At a glance</h2><div class="tiles"><div class="tile"><span>Responses</span><b>' + list.length + '</b><div class="sub6">' + years.map(function (y) { return "Year " + y + ": " + list.filter(function (x) { return x.year === y; }).length; }).join(" · ") + "</div></div>" +
-      CATS.map(function (c) { return tile(c[1], avg(list, c[0])); }).join("") + "</div></section>";
-    h += '<section class="rsec"><h2>The numbers</h2><div class="rgrid"><div class="chart-card"><h3>Scores by category</h3><p class="cap">Average score out of 5</p>' + chartCats(list).svg + '</div><div class="chart-card"><h3>How the week was rated</h3><p class="cap">Share of each overall rating</p>' + chartDist(list, "pie").svg + "</div>" +
-      (weeks > 1 ? '<div class="chart-card wide"><h3>Week by week</h3><p class="cap">Average overall rating</p>' + chartTrend(list).svg + "</div>" : "") + "</div></section>";
-    var qs = [["worked", "What worked well"], ["challenge", "What didn’t work"], ["plan", "Ideas for the next plan"], ["notes", "One more thought"]];
-    years.forEach(function (y) {
-      var sub = list.filter(function (x) { return x.year === y; });
-      h += '<section class="rsec ry' + y + '"><h2><span class="ypill">Year ' + y + "</span> in their own words</h2><p class=\"cap\">" + sub.length + (sub.length === 1 ? " response" : " responses") + " · overall " + (avg(sub, "overall") === null ? "–" : r1(avg(sub, "overall")).toFixed(1)) + " out of 5</p>";
-      qs.forEach(function (q) {
-        var items = sub.filter(function (x) { var t = (x[q[0]] || "").trim(); return t && t !== "-"; }).sort(function (a, b) { return b._d - a._d; });
-        if (!items.length) return;
-        h += '<div class="rq"><h3>' + q[1] + "</h3>" + items.map(function (x) { return '<blockquote class="rc"><p>' + esc(x[q[0]]) + "</p><footer>" + esc(who(x)) + " · " + esc(x.week) + " · " + nice(x._day) + "</footer></blockquote>"; }).join("") + "</div>";
-      });
-      h += "</section>";
-    });
-    return h + '<footer class="rfoot">Generated from the IPT Feedback admin page. Scores are averages of teachers’ ratings from 1 to 5.</footer></div>';
-  }
-  function openReport() {
-    $("rpage").innerHTML = reportHTML(); $("report").hidden = false; document.body.classList.add("has-report"); $("report").scrollTop = 0;
-  }
-
-  /* One-click PDF download. Falls back to the print window if the PDF tool could not load. */
-  function inlineSvgStyles(root) {
-    // The charts take their colours from the page's style sheet; copy the final colours onto each shape so they survive the PDF capture.
-    root.querySelectorAll("svg *").forEach(function (el) {
-      var cs = getComputedStyle(el), s = el.style;
-      s.fill = cs.fill; s.stroke = cs.stroke; s.strokeWidth = cs.strokeWidth; s.fontSize = cs.fontSize; s.fontWeight = cs.fontWeight; s.fontFamily = cs.fontFamily; s.opacity = cs.opacity;
-    });
-  }
-  function pdfName() {
-    var days = shown.map(function (x) { return x._day; }).sort();
-    return "IPT-feedback-report" + (days.length ? "_" + days[0] + "_to_" + days[days.length - 1] : "") + ".pdf";
-  }
-  /* Keeps every chart, tile row and comment whole in the PDF: if one would be cut by a page edge, it is moved down to the next page.
-     The PDF tool slices its picture of the report every pageH pixels, so we measure the copy at the same width and add space where needed. */
-  function keepBlocksWhole(root, pageW, pageH) {
-    var host = document.createElement("div");
-    host.style.cssText = "position:absolute;left:-10000px;top:0;width:194mm;margin:0;padding:0";
-    root.style.width = "194mm"; host.appendChild(root); document.body.appendChild(host);
-    try {
-      // The PDF tool cannot work out how big a chart should be from "width:100%" alone and draws it far too large.
-      // So each chart is given its real size in pixels, measured here at the same page width.
-      root.querySelectorAll("svg").forEach(function (svg) {
-        var b = svg.getBoundingClientRect(); if (!b.width || !b.height) return;
-        svg.setAttribute("width", Math.round(b.width)); svg.setAttribute("height", Math.round(b.height));
-        svg.style.width = Math.round(b.width) + "px"; svg.style.height = Math.round(b.height) + "px"; svg.style.maxWidth = "none";
-      });
-      var list = root.querySelectorAll(".rhead, .tiles, .chart-card, .rc, .rsec h2, .rq h3");
-      for (var i = 0; i < list.length; i++) {
-        var el = list[i], base = root.getBoundingClientRect().top, r = el.getBoundingClientRect();
-        var top = r.top - base, h = r.height, isHead = el.tagName === "H2" || el.tagName === "H3";
-        var need = isHead ? h + (el.tagName === "H2" ? 150 : 90) : h;       // a heading must keep company with what follows it
-        if (need >= pageH) continue;
-        var page = Math.floor(top / pageH);
-        if (top + need > (page + 1) * pageH - 3) {
-          var push = (page + 1) * pageH - top + 2;
-          if (getComputedStyle(el.parentNode).display === "grid") el.style.marginTop = push + "px";      // grid items never merge their margins
-          else { var sp = document.createElement("div"); sp.style.cssText = "height:" + push + "px;margin:0;padding:0"; el.parentNode.insertBefore(sp, el); }   // a spacer, because neighbouring margins would otherwise swallow part of the push
-        }
-      }
-    } finally { root.style.width = "100%"; document.body.removeChild(host); host.removeChild(root); }
-    return root;
-  }
-  function savePdf() {
-    var btn = $("rsave"), label = btn.textContent;
-    if (!window.html2pdf) { window.print(); return; }
-    btn.disabled = true; btn.textContent = "Preparing PDF…";
-    // The PDF tool takes its picture relative to the page behind the report. If that page is scrolled down, the picture starts too low
-    // (the top of the report is lost and every page break lands in the wrong place), so the page goes back to the top while it works.
-    var sy = window.pageYOffset || 0; if (sy) window.scrollTo(0, 0);
-    var done = function () { btn.disabled = false; btn.textContent = label; if (sy) window.scrollTo(0, sy); };
-    try {
-      var src = $("rpage"); inlineSvgStyles(src);
-      // A plain copy of the report that simply fills the PDF page. (Do not set a window width or an offset here:
-      // the PDF tool measures the real window itself, and a different number shifts the whole page sideways.)
-      var copy = src.cloneNode(true); copy.removeAttribute("id");
-      copy.style.cssText = "width:100%;max-width:none;margin:0;border-radius:0;box-shadow:none;overflow:visible";
-      var pageW = 733;
-      var h = Math.max(1, src.scrollHeight * (src.offsetWidth / pageW) * 1.15);
-      var scale = Math.max(0.7, Math.min(2, 32000 / h, Math.sqrt(24e6 / (pageW * h))));   // very long reports are drawn a little smaller so the browser can cope
-      var opts = {
-        margin: [8, 8, 10, 8], filename: pdfName(),
-        image: { type: "jpeg", quality: 0.95 },
-        html2canvas: { scale: scale, useCORS: true, backgroundColor: "#ffffff", scrollX: 0, scrollY: 0 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-      };
-      // The PDF tool cuts its picture into pages at a height that depends on the picture's exact pixel width. A guess is off by a fraction of a
-      // pixel per page, which adds up and ends up cutting boxes in half. So a tiny test picture is drawn first to learn the real width,
-      // and the page height is worked out from it exactly the way the tool does.
-      var probe = document.createElement("div"); probe.style.cssText = "width:100%;height:4px";
-      window.html2pdf().set(opts).from(probe).toCanvas().get("canvas", function (c) {
-        var slice = Math.floor(c.width * (279 / 194));                 // pixels per PDF page in the picture (printable 194 x 279 mm)
-        var pageH = slice / scale;                                     // the same height in screen pixels
-        keepBlocksWhole(copy, pageW, pageH);
-        window.html2pdf().set(opts).from(copy).save().then(done).catch(function () { done(); window.print(); });
-      }).catch(function () { done(); window.print(); });
-    } catch (e) { done(); window.print(); }
-  }
-  function closeReport() { $("report").hidden = true; document.body.classList.remove("has-report"); }
-
-
-  /* ---------- AI summary ----------
-     Preview mode (no "endpoint" in config.js > aiSummary): shows sample text and makes no AI call at all.
-     The numbers on top and the "what would be sent" box are always real. */
-  var AIS = CFG.aiSummary || {};
-  var sumRun = 0, sumData = null, sumDemo = true;
-  var SAMPLE = {
-    overview: "Across these responses, teachers describe the week as engaging and well paced, with hands-on and game-based activities mentioned most often. The main concerns are timing, with activities running longer than planned, and projector or device set-up at the start of lessons. For the next plan, teachers ask for optional extension tasks for early finishers and a little more time for the practical parts.",
-    worked: [
-      { t: "Hands-on and game-based activities", d: "Students stayed focused and keen when they were building or playing rather than listening.", q: "The students loved the challenge and asked to continue it in the next lesson." },
-      { t: "A clear, step-by-step lesson plan", d: "The sequence was easy to follow and quick to prepare." },
-      { t: "Pair and group work", d: "Working in small groups helped quieter students take part." }
-    ],
-    challenge: [
-      { t: "Timing", d: "Several activities needed more time than planned, so the final task was rushed.", q: "We ran out of time before the last task." },
-      { t: "Devices and projector set-up", d: "A few lessons started late while technical issues were sorted out." },
-      { t: "Mixed readiness", d: "Some students finished early while others needed extra support." }
-    ],
-    plan: [
-      { t: "Optional extension activities", d: "Fillers for early finishers and for lessons with spare time." },
-      { t: "Shorter practical blocks", d: "Split the longest practical tasks into two shorter parts." },
-      { t: "A short set-up checklist", d: "Share it before the week begins so lessons start on time." }
-    ],
-    actions: [
-      "Share a one-page device and projector checklist with every school.",
-      "Add two or three optional extension tasks to the plan.",
-      "Review the timing of the two longest activities.",
-      "Thank the teachers for the detailed feedback and share the main points back."
-    ]
-  };
-  function sumClip(t) { return String(t || "").replace(/[\w.+-]+@[\w-]+(\.[\w-]+)+/g, "[email]").replace(/\s+/g, " ").trim().slice(0, 1200); }
-  /* ?aitest=1 : sends a few MADE-UP answers to the real AI, so the whole chain can be tried without any teacher data */
-  var AITEST = /[?&]aitest=1(&|$)/.test(location.search);
-  var TEST_ROWS = [
-    ["Year 6","Week 3","The short video hook got every pupil talking straight away.","Two laptops would not open the shared file, so we lost ten minutes.","Add a printed backup of the worksheet.",5,4,5,5],
-    ["Year 6","Week 3","Pair work on the sorting task was lively and pupils stayed on task.","The slides were too wordy for the younger group.","Shorten the slides and add more pictures.",4,4,5,4],
-    ["Year 5","Week 3","Pupils loved the hands-on activity and asked to repeat it.","Not enough time to finish the reflection at the end.","Move the reflection earlier or cut one task.",5,5,5,4],
-    ["Year 7","Week 3","Clear instructions made the lesson easy to run.","The extension task was too easy for the stronger pupils.","Add a harder challenge for fast finishers.",4,5,3,5],
-    ["Year 7","Week 3","The step-by-step slides helped pupils who were absent last week.","The projector in our room was dim and hard to read.","Send a device and projector checklist to each school.",4,3,4,5],
-    ["Year 5","Week 3","Good balance of talking and doing.","Some pupils needed the vocabulary explained again.","Add a short word list at the start.",4,4,4,3]
-  ].map(function (a) { return { year: a[0], week: a[1], worked: a[2], challenge: a[3], plan: a[4], notes: "", overall: a[5], resources: a[6], engagement: a[7], clarity: a[8] }; });
-  function sumList() { return AITEST ? TEST_ROWS : shown; }
-  function sumPayload(list) {
-    var rows = list.map(function (x) {
-      return { year: x.year, week: x.week, worked: sumClip(x.worked), challenge: sumClip(x.challenge), plan: sumClip(x.plan), notes: sumClip(x.notes),
-        scores: { overall: x.overall, resources: x.resources, engagement: x.engagement, clarity: x.clarity } };
-    });
-    var words = rows.reduce(function (n, r) { return n + [r.worked, r.challenge, r.plan, r.notes].join(" ").split(/\s+/).filter(Boolean).length; }, 0);
-    return { rows: rows, words: words };
-  }
-  function sumScope() {
-    if (AITEST) return "TEST DATA · made-up answers, not from teachers";
-    var yl = $("yr").value ? "Year " + $("yr").value : "All years";
-    return periodText() + " · " + yl + " · " + shown.length + (shown.length === 1 ? " response" : " responses");
-  }
-  function sumTheme(a, label, cls) {
-    a = Array.isArray(a) ? a : [];
-    return '<div class="sum-sec ' + (cls || "") + '"><h3>' + label + "</h3>" + a.map(function (o) {
-      return '<div class="sum-theme"><b>' + esc(o.t) + "</b><span>" + esc(o.d) + "</span></div>" + (o.q ? '<p class="sum-quote">&ldquo;' + esc(o.q) + "&rdquo;</p>" : "");
-    }).join("") + "</div>";
-  }
-  var SPARK = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>';
-  function sumHTML(d) {
-    var acts = Array.isArray(d.actions) ? d.actions : [];
-    return (d.note ? '<p class="sum-check" style="margin:0 0 14px">' + esc(d.note) + "</p>" : "") +
-      (acts.length ? '<div class="sum-actbox" id="sum-actbox" hidden><h3>' + SPARK + '<span class="sum-actt">Suggested actions</span><span class="sum-actn">' + acts.length + '</span></h3><ol class="sum-acts">' + acts.map(function (a) { return "<li><span>" + esc(a) + "</span></li>"; }).join("") + "</ol></div>" : "") +
-      '<div class="sum-sec"><div class="sum-ovh"><h3>Overview</h3>' +
-      (acts.length ? '<button type="button" class="sum-actpill" id="sum-actpill" aria-expanded="false" aria-controls="sum-actbox">' + SPARK + 'Suggested actions<b>' + acts.length + "</b></button>" : "") +
-      '</div><p class="sum-over">' + esc(d.overview) + "</p>" +
-      "</div>" +
-      sumTheme(d.worked, "What worked well", "t-worked") + sumTheme(d.challenge, "What didn’t work", "t-challenge") + sumTheme(d.plan, "Shape the next plan", "t-plan") +
-      (d.meta && d.meta.model ? '<p class="dim" style="margin:0 0 10px;font-size:12.5px">Written by ' + esc(d.meta.model) + (d.meta.provider ? " on " + esc(d.meta.provider) : "") + ".</p>" : "") + '<p class="sum-check"><b>Check before you act.</b> A summary can miss detail or lose nuance. Open the full responses behind any point (click a row in the table) before you share or act on it.</p>';
-  }
-  function sumText(d) {
-    function blk(a) { return a.map(function (o) { return "- " + o.t + ": " + o.d + (o.q ? ' "' + o.q + '"' : ""); }).join("\n"); }
-    return "IPT feedback summary\n" + sumScope() + (sumDemo ? "\n(PREVIEW: sample text, not a real summary)" : "") + "\n\nOVERVIEW\n" + d.overview +
-      "\n\nWHAT WORKED WELL\n" + blk(d.worked) + "\n\nWHAT DIDN'T WORK\n" + blk(d.challenge) + "\n\nSHAPE THE NEXT PLAN\n" + blk(d.plan) +
-      "\n\nSUGGESTED ACTIONS\n" + d.actions.map(function (a, i) { return (i + 1) + ". " + a; }).join("\n");
-  }
-  async function sumRequest(pay, scopeText) {
-    if (!AIS.endpoint) { await new Promise(function (r) { setTimeout(r, 4200); }); return { demo: true, data: SAMPLE }; }
-    if (!session) throw new Error("expired");
-    if (Date.now() > session.exp - 30000) await refresh();
-    var r;
-    try { r = await fetch(AIS.endpoint, { method: "POST", headers: { "Content-Type": "application/json", apikey: KEY, Authorization: "Bearer " + session.access }, body: JSON.stringify({ responses: pay.rows, scope: scopeText || sumScope() }) }); }
-    catch (e) {      // the browser gives no detail here: the function is not deployed, the internet dropped, or the ALLOWED_ORIGIN secret does not match this page's address
-      try { console.warn("AI summary: the request was blocked or failed. This page's address (what ALLOWED_ORIGIN must be exactly):", location.origin); } catch (e2) {}
-      throw new Error("Could not reach the summary service. Check your connection and try again. If it keeps happening, tell Ufuk.");
+  function openLatest() {
+    var d = lastDone();
+    if (d < 0) {
+      ov.innerHTML = '<div class="mr-card" role="dialog" aria-modal="true"><div class="mr-frame"></div><div class="mr-wrap"><div class="mr-top"><h2>Monthly report</h2><button type="button" class="mr-x" aria-label="Close">&times;</button></div><div class="mr-empty">The first monthly report will be ready on <b>' + esc(nice(addDays(pEnd(0), 1), true)) + "</b>, when the first period is over.</div></div></div>";
+      ov.hidden = false; document.body.style.overflow = "hidden"; ov.querySelector(".mr-x").focus(); return;
     }
-    if (!r.ok) { var ej = null; try { ej = await r.json(); } catch (e) {} throw new Error((ej && ej.error) || "The summary service answered with an error (" + r.status + ")."); }
-    return { demo: false, data: await r.json() };
-  }
-  /* used by the Monthly report window (admin-monthly.js): same safe path as AI Summary, same anonymising, same server checks */
-  window.IPT_AI = {
-    ready: function () { return AIS.enabled !== false; },
-    test: AITEST,
-    run: function (list, scopeText) { return sumRequest(sumPayload(AITEST ? TEST_ROWS : list), AITEST ? "TEST DATA \u00B7 made-up answers, not from teachers. " + scopeText : scopeText); }
-  };
-  function sumFill(pay) {
-    $("sum-pay").textContent = pay.rows.length ? JSON.stringify(pay.rows.slice(0, 3), null, 1) + (pay.rows.length > 3 ? "\n\n… and " + (pay.rows.length - 3) + " more response" + (pay.rows.length - 3 === 1 ? "" : "s") + " in the same form (" + pay.words + " words in total)." : "") : "Nothing to send.";
-  }
-  async function runSum() {
-    var id = ++sumRun, pay = sumPayload(sumList()); sumFill(pay);
-    sumData = null; $("sum-copy").disabled = true; $("sum-again").disabled = true; say($("sum-msg"), "");
-    $("sum-body").innerHTML = '<div class="ai-load" role="status" aria-live="polite"><div class="ai-orb"><span class="ai-glow"></span><span class="ai-ring"></span><span class="ai-ring r2"></span><b class="ai-core"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></b><u class="ai-dot"></u><u class="ai-dot d2"></u><u class="ai-dot d3"></u></div><div class="ai-steps"><span>Reading ' + pay.rows.length + (pay.rows.length === 1 ? " response" : " responses") + " (" + pay.words + ' words)…</span><span>Finding what teachers agree on…</span><span>Checking that every quote is real…</span><span>Writing your suggested actions…</span></div><div class="ai-bar"><i></i></div><div class="ai-skel"><em style="width:94%"></em><em style="width:80%"></em><em style="width:88%"></em><em style="width:58%"></em></div></div>';
-    try {
-      var res = await sumRequest(pay); if (id !== sumRun) return;
-      sumDemo = res.demo; sumData = res.data;
-      $("sum-badge").textContent = sumDemo ? "PREVIEW · sample text, no AI used" : (AITEST ? "TEST · AI on made-up answers" : "AI summary"); $("sum-badge").className = "sum-badge" + (sumDemo ? "" : " live");
-      $("sum-body").innerHTML = sumHTML(sumData); $("sum-copy").disabled = false;
-    } catch (err) { if (id !== sumRun) return; $("sum-body").innerHTML = '<p class="msg err">' + esc(err.message || "Could not make the summary.") + "</p>"; }
-    $("sum-again").disabled = false;
-  }
-  function openSum() {
-    $("sum-btn").classList.add("seen"); try { localStorage.setItem("ipt-sum-seen", "1"); } catch (e) {}
-    $("sum-scope").textContent = sumScope();
-    var n = sumList().length;
-    $("sum-stats").innerHTML = [["Responses", String(n), ""], ["Overall", avg(sumList(), "overall"), " / 5"], ["Resources", avg(sumList(), "resources"), " / 5"], ["Engagement", avg(sumList(), "engagement"), " / 5"], ["Clarity", avg(sumList(), "clarity"), " / 5"]].map(function (t) {
-      var v = typeof t[1] === "number" ? r1(t[1]).toFixed(1) : (t[1] === null ? "–" : t[1]);
-      return '<div class="sum-stat"><span>' + t[0] + "</span><b>" + v + "</b>" + (typeof t[1] === "number" ? "<small>" + t[2] + "</small>" : "") + "</div>";
-    }).join("");
-    $("sum-badge").textContent = AIS.endpoint ? (AITEST ? "TEST · AI on made-up answers" : "AI summary") : "PREVIEW · sample text, no AI used"; $("sum-badge").className = "sum-badge" + (AIS.endpoint ? " live" : "");
-    $("sum").hidden = false; document.body.style.overflow = "hidden";
-    if (!n) { sumRun++; $("sum-body").innerHTML = '<p class="dim">There are no responses in this selection. Change the period or year above and try again.</p>'; $("sum-pay").textContent = "Nothing to send."; $("sum-copy").disabled = true; $("sum-again").disabled = true; return; }
-    $("sum-prov").textContent = AIS.endpoint ? " It is processed by " + (AIS.provider || "an AI service") + "." : "";
-    if (AIS.endpoint) {      // real AI: nothing leaves this page until the button below is pressed
-      var pay = sumPayload(sumList()); sumFill(pay); $("sum-sent").open = true;
-      sumData = null; $("sum-copy").disabled = true; $("sum-again").disabled = true; say($("sum-msg"), "");
-      $("sum-body").innerHTML = '<div class="sum-ready"><p>' + n + (n === 1 ? " response" : " responses") + " (" + pay.words + " words) will be sent to " + esc(AIS.provider || "the AI service") + ". Emails and school names are removed. <b>Nothing has been sent yet.</b></p><button class=\"btn\" id=\"sum-go\" type=\"button\">Create summary</button></div>";
-      $("sum-go").focus(); return;
-    }
-    runSum(); $("sum-x").focus();
-  }
-  function closeSum() { sumRun++; $("sum-sent").open = false; $("sum").hidden = true; document.body.style.overflow = ""; }
-  function copySum() {
-    if (!sumData) return; var t = sumText(sumData);
-    function ok() { say($("sum-msg"), "Copied.", "ok"); }
-    function fallback() { var a = document.createElement("textarea"); a.value = t; a.style.cssText = "position:fixed;left:-9999px"; document.body.appendChild(a); a.select(); try { document.execCommand("copy"); ok(); } catch (e) { say($("sum-msg"), "Could not copy.", "err"); } a.remove(); }
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, fallback); else fallback();
+    show(d);
   }
 
-  /* ---------- wiring ---------- */
-  if (!URL_ || !KEY) {
-    document.querySelector(".wrap").innerHTML = '<section class="card login"><h1>Not set up yet</h1><p class="dim" style="margin-top:8px">Add the Supabase address and key to config.js, then reload this page.</p></section>';
-    return;
+  /* the welcome window */
+  function welcome() {
+    var d = lastDone();
+    if (popped || d < 0 || seenK() >= d || !inPeriod(rows, d).length) return;
+    try { if (sessionStorage.getItem("ipt-monthly-later:" + String(email).toLowerCase()) === String(d)) return; } catch (e) {}
+    popped = true;
+    if (aiOn()) { try { aiGet(d).catch(function () {}); } catch (e) {} }      // the AI starts reading while the welcome window is open
+    ov.innerHTML = '<div class="mr-pop" role="dialog" aria-modal="true" aria-labelledby="mr-pt"><div class="mr-frame"></div><div class="mr-orb"></div><span class="mr-ico" aria-hidden="true">📊</span><h2 id="mr-pt">Your monthly report is ready</h2><p>The period from <b>' + esc(nice(pStart(d))) + "</b> to <b>" + esc(nice(pEnd(d))) + '</b> is done. Click below to view it.</p><div class="mr-acts"><button type="button" class="mr-go" id="mr-view">Click here to view it</button><button type="button" class="mr-later" id="mr-later">Later</button></div></div>';
+    ov.hidden = false; document.body.style.overflow = "hidden";
+    ov.querySelector("#mr-view").focus();
   }
-  $("login-form").addEventListener("submit", async function (e) {
-    e.preventDefault(); var b = $("login-btn"); b.disabled = true; say($("login-msg"), "Signing in…");
-    try { await signIn($("em").value.trim(), $("pw").value); $("pw").value = ""; say($("login-msg"), ""); showDash(); await reload(); }
-    catch (err) { say($("login-msg"), err.message || "Could not sign in.", "err"); }
-    b.disabled = false;
+
+  btn.addEventListener("click", openLatest);
+  ov.addEventListener("click", function (e) {
+    var t = e.target;
+    if (t === ov || t.closest(".mr-x")) { close(); return; }
+    if (t.closest("#mr-view")) { openLatest(); return; }
+    if (t.closest("#mr-later")) { try { sessionStorage.setItem("ipt-monthly-later:" + String(email).toLowerCase(), String(lastDone())); } catch (er) {} close(); return; }
+    if (t.closest("#mr-ai-again")) { aiFill(k); return; }
+    if (t.closest("#mr-prev") && k > 0) show(k - 1);
+    if (t.closest("#mr-next") && k < lastDone()) show(k + 1);
   });
-  $("logout").addEventListener("click", async function () { await signOut(); all = []; shown = []; showLogin(); });
-  $("refresh").addEventListener("click", function () { reload(); });
-  setInterval(autoTick, AUTO_MS);
-  document.addEventListener("visibilitychange", function () { if (!document.hidden) autoTick(); });   // coming back to the tab refreshes right away
-  $("xlsx").addEventListener("click", download);
-  $("report-btn").addEventListener("click", openReport);
-  if (AIS.enabled !== false) $("sum-btn").hidden = false;
-  try { if (localStorage.getItem("ipt-sum-seen")) $("sum-btn").classList.add("seen"); } catch (e) {}
-  $("sum-btn").addEventListener("click", openSum);
-  $("sum-body").addEventListener("click", function (e) {
-    var b = e.target.closest ? e.target.closest("#sum-actpill") : null; if (!b) return;
-    var box = $("sum-actbox"); if (!box) return;
-    var open = box.hidden; box.hidden = !open; b.setAttribute("aria-expanded", String(open)); b.classList.toggle("open", open);
-  });
-  $("sum-x").addEventListener("click", closeSum); $("sum-close").addEventListener("click", closeSum);
-  $("sum-body").addEventListener("click", function (e) { if (e.target && e.target.id === "sum-go") runSum(); });
-  $("sum-again").addEventListener("click", runSum); $("sum-copy").addEventListener("click", copySum);
-  $("sum").addEventListener("click", function (e) { if (e.target === $("sum")) closeSum(); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("sum").hidden) closeSum(); });
-  $("rclose").addEventListener("click", closeReport);
-  $("rsave").addEventListener("click", savePdf);
-  $("rprint").addEventListener("click", function () { window.print(); });
-  $("rnames").addEventListener("change", function () { showNames = $("rnames").checked; $("rpage").innerHTML = reportHTML(); });
-  $("dist-pie").addEventListener("click", function () { distMode = "pie"; renderCharts(); });
-  $("dist-bar").addEventListener("click", function () { distMode = "bar"; renderCharts(); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("report").hidden) closeReport(); });
-  $("period").addEventListener("change", function () { var c = $("period").value === "custom"; $("from-box").hidden = !c; $("to-box").hidden = !c; render(); });
-  ["from", "to", "yr", "thin"].forEach(function (id) { $(id).addEventListener("change", render); });
-  $("find").addEventListener("input", render);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !ov.hidden) close(); });
 
-  session = loadSession();
-  if (session) { showDash(); reload(); } else showLogin();
+  /* the admin page announces its rows after every load */
+  function onRows(e) {
+    var d = (e && e.detail) || {};
+    rows = d.rows || []; email = d.email || email;
+    paintDot();
+    if (!popped && !popTimer) popTimer = setTimeout(function () { popTimer = 0; if (ov.hidden && ref.offsetParent) welcome(); }, 3800);   // after the welcome greeting has finished
+  }
+  window.addEventListener("ipt:rows", onRows);
+  if (window.IPT_ROWS) onRows({ detail: window.IPT_ROWS });      // the rows may have arrived before this file ran
+  window.addEventListener("ipt:signout", function () { popped = false; rows = []; clearTimeout(popTimer); popTimer = 0; close(); });
 })();
-</script>
-<script src="admin-news.js"></script>
-<script src="admin-monthly.js"></script>
-</body>
-</html>
