@@ -78,6 +78,18 @@
     return { y5: window.IPT_year5For ? window.IPT_year5For(iso) : null, y6: YEAR6[i], y7: YEAR7[i] };
   }
 
+  /* The next Monday (after this week) when a school gives feedback. Used by the thank-you box after Submit. */
+  window.IPTNextFeedback = function (y, name) {
+    if (!name) return null;
+    const key = y === "year5" ? "y5" : y === "year7" ? "y7" : "y6";
+    const now = new Date(), mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+    for (let i = 1; i <= 60; i++) {
+      const d = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 7 * i), s = schools(d);
+      if (s && [].concat(s[key] || []).indexOf(name) > -1) return { date: d, days: dn(d) - dn(now) };
+    }
+    return null;
+  };
+
   /* ---------- BUILD ---------- */
   document.addEventListener("DOMContentLoaded", () => {
     const menu = document.getElementById("menu-view");
