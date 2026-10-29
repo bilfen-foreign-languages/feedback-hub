@@ -9,9 +9,11 @@
      and the report shows the AI's overview and suggested actions. It starts by itself
      when the welcome window appears. When OFF (the default) nothing is sent anywhere.
      Open admin.html?aitest=1 to try it on made-up answers instead of teacher answers.
-   * The first report covers the dates set in config.js (start and firstEnd); after that a
-     new report follows every 4 weeks (28 days). Every admin sees the same reports.
-     A report is ready the day after its last day.
+   * The first report covers the dates set in config.js (start and firstEnd). After that each report
+     covers the next 4 FEEDBACK Mondays and ends on the 4th one. A Monday on a break or holiday
+     (see "holidays" in config.js) is not counted, so the cycle pauses during a break and carries on
+     afterwards where it left off. The last report of the year ends on the last school day.
+     Every admin sees the same reports. A report is ready the day after its last day.
    * The welcome window shows once per report for each admin (until they open it).
    Settings (config.js > admin > monthly):  { start: "2026-10-19", firstEnd: "2026-11-09" }
    Turn it off:                            admin: { monthly: false }
@@ -35,9 +37,33 @@
   var YMD = /^\d{4}-\d{2}-\d{2}$/;
   var START = YMD.test(M.start || "") ? M.start : "2026-10-19", FIRST_END = YMD.test(M.firstEnd || "") ? M.firstEnd : "2026-11-09";
   if (FIRST_END < START) FIRST_END = addDays(START, LEN - 1);
-  function pStart(k) { return k <= 0 ? START : addDays(FIRST_END, 1 + (k - 1) * LEN); }
-  function pEnd(k) { return k <= 0 ? FIRST_END : addDays(FIRST_END, k * LEN); }
-  function lastDone() { var t = dayNo(today()), e = dayNo(FIRST_END); return t <= e ? -1 : Math.ceil((t - e) / LEN) - 1; }   // -1 = the first report is not ready yet
+  var SCHOOL_END = (window.IPT_CONFIG && YMD.test(window.IPT_CONFIG.schoolEnd || "")) ? window.IPT_CONFIG.schoolEnd : "";
+  function offMonday(m) { return window.IPT_offReason ? window.IPT_offReason(m) : ""; }       // "" = a normal feedback Monday
+  var PERIODS = null;
+  function periods() {            // [{ s, e }]: the first one is set in config.js; each next one ends on its 4th feedback Monday
+    if (PERIODS) return PERIODS;
+    var P = [{ s: START, e: FIRST_END }];
+    for (var guard = 0; guard < 40; guard++) {
+      var s = addDays(P[P.length - 1].e, 1);
+      if (SCHOOL_END && s > SCHOOL_END) break;
+      var m = addDays(mondayOf(s), mondayOf(s) < s ? 7 : 0), n = 0, end = null;
+      for (var i = 0; i < 80; i++, m = addDays(m, 7)) {
+        if (SCHOOL_END && m > SCHOOL_END) break;
+        if (offMonday(m)) continue;
+        if (++n === 4) { end = m; break; }
+      }
+      if (!end) { if (SCHOOL_END && n > 0) end = SCHOOL_END; else break; }          // the last, shorter report ends on the last school day
+      P.push({ s: s, e: end });
+    }
+    return (PERIODS = P);
+  }
+  window.IPTMonthlyPeriods = function () { return periods().map(function (p) { return { s: p.s, e: p.e }; }); };
+  function pStart(k) { var P = periods(); return P[Math.max(0, Math.min(k, P.length - 1))].s; }
+  function pEnd(k) { var P = periods(); return P[Math.max(0, Math.min(k, P.length - 1))].e; }
+  function lastDone() { var t = today(), P = periods(), r = -1; for (var i = 0; i < P.length; i++) if (P[i].e < t) r = i; return r; }   // -1 = the first report is not ready yet
+  function pauses(k) {            // names of the breaks / holidays whose Mondays were not counted in this report
+    var out = [], seen = {}; for (var m = mondayOf(pStart(k)); m <= pEnd(k); m = addDays(m, 7)) { if (m < pStart(k)) continue; var r = offMonday(m); if (r && !seen[r]) { seen[r] = 1; out.push(r); } } return out;
+  }
   function span(k) { var d = dayNo(pEnd(k)) - dayNo(pStart(k)) + 1; return d % 7 === 0 ? d / 7 + " weeks" : d + " days"; }
 
   /* ---------- numbers ---------- */
@@ -106,6 +132,7 @@
     ".mr-x{width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:22px;line-height:1;cursor:pointer;padding:0}" +
     ".mr-nav{position:relative;display:flex;align-items:center;gap:8px;margin:0 0 16px;color:#b7c7e6;font-size:14px}.mr-nav b{color:#eef5ff}" +
     ".mr-arrow{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:16px;cursor:pointer;padding:0}.mr-arrow:disabled{opacity:.3;cursor:default}" +
+    ".mr-pause{position:relative;margin:-8px 0 14px;padding:.4rem .75rem;border-radius:12px;font-size:13px;color:#d9ccff;background:rgba(176,150,255,.16);border:1px solid rgba(190,170,255,.4)}" +
     ".mr-hero{position:relative;display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center;margin-bottom:16px}" +
     ".mr-ring{position:relative;width:170px;height:170px;animation:mrRise .6s .15s both}.mr-ring svg{width:100%;height:100%;transform:rotate(-90deg)}.mr-ring .bg{stroke:rgba(255,255,255,.12)}" +
     ".mr-ring .fg{stroke-linecap:round;animation:mrRing 1.5s .35s cubic-bezier(.2,.8,.2,1) both}.mr-ringtxt{position:absolute;inset:0;display:grid;place-content:center;text-align:center}" +
@@ -230,6 +257,7 @@
     ov.innerHTML = '<div class="mr-card" role="dialog" aria-modal="true" aria-labelledby="mr-t"><div class="mr-frame"></div><div class="mr-wrap"><div class="mr-orb"></div>' +
       '<div class="mr-top"><h2 id="mr-t">Monthly report</h2><button type="button" class="mr-x" aria-label="Close">&times;</button></div>' +
       '<div class="mr-nav"><button type="button" class="mr-arrow" id="mr-prev" aria-label="Earlier report"' + (k <= 0 ? " disabled" : "") + '>‹</button><span><b>' + esc(nice(pStart(k))) + " – " + esc(nice(pEnd(k), true)) + '</b> · ' + span(k) + '</span><button type="button" class="mr-arrow" id="mr-next" aria-label="Later report"' + (k >= done ? " disabled" : "") + '>›</button></div>' +
+      (pauses(k).length ? '<div class="mr-pause">Includes a pause: ' + esc(pauses(k).join(", ")) + ". Those Mondays are not counted.</div>" : "") +
       body + "</div></div>";
     ov.hidden = false; document.body.style.overflow = "hidden";
     ov.querySelectorAll("[data-to]").forEach(function (el) { var to = parseFloat(el.getAttribute("data-to")); if (!isNaN(to)) countUp(el, to, Number(el.getAttribute("data-dec")), 1400); });
