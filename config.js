@@ -218,7 +218,7 @@ window.IPT_CONFIG = {
      thinWords: an answer with fewer words than this (or "n/a", "good", a copy of another answer...) is flagged "Weak" on the admin page. */
   admin: {
     thinWords: 6,
-    /* Monthly report: the first report covers start to firstEnd (inclusive); after that a new one follows every 4 weeks. Set  monthly: false  to turn it off.
+    /* Monthly report: the first report covers start to firstEnd (inclusive); each next one covers the next 4 feedback Mondays (a break or holiday Monday is not counted, so the cycle pauses and carries on afterwards). Set  monthly: false  to turn it off.
        ai: true  adds an AI-written overview (sends the month's answers to the AI Summary service, e-mails and school names removed).
        Keep it false until your HoD has approved it and the KVKK check is done. To try it on made-up answers first, open admin.html?aitest=1 */
     monthly: { start: "2026-10-19", firstEnd: "2026-11-09", ai: true },
