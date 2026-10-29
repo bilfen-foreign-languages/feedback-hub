@@ -1,276 +1,304 @@
 /* IPT Feedback · Created by Ufuk Korkmaz, 2026. */
-/* ============ SCHOOL SCHEDULE CALENDAR ============ */
-(function () {
-  /* ---------- SETTINGS (edit here) ---------- */
-  // The Monday when week 1 of the rotation starts (format: YYYY-MM-DD). Must be a Monday.
-  // (These come from config.js. The values here are only a safety net if that file is missing.)
-  const ROT = (window.IPT_CONFIG && window.IPT_CONFIG.rotation) || {};
-  const CYCLE_START = ROT.cycleStart || "2026-10-05";
+/* ==========================================================================
+   IPT FEEDBACK SETTINGS
+   This is the one file you edit for everyday changes. Save it, upload it to
+   GitHub, and the whole site follows: the meetings box, the calendar,
+   the "Feedback this week" box, the form, and the Help & FAQ window.
+   Keep the quotes " " and commas , exactly as they are.
+   ========================================================================== */
+window.IPT_CONFIG = {
 
-  // Year 6 rotation: one entry per Monday, repeating forever.
-  const YEAR6 = (Array.isArray(ROT.year6) && ROT.year6.length) ? ROT.year6 : [
-    ["Antalya", "Esenşehir"],
-    ["Ataşehir", "Halkalı"],
-    ["Bahçeşehir", "İskenderun"],
-    ["Bornova", "Kayseri"],
-    ["Bursa", "Kurtköy"],
-    ["Çamlıca", "Maslak"],
-    ["İncek", "Sancaktepe"],
-    ["Çayyolu", "İskenderun"]
-  ];
-  // Year 7 uses the same list starting from the bottom.
-  const YEAR7 = YEAR6.slice().reverse();
+  /* ----- Where feedback is sent (your Formspree form address) ----- */
+  // Your own database (Supabase). Fill these in after the set-up steps; while they are empty, Formspree is still used.
+  supabaseUrl: "https://hceltuncmajojiyhzlcl.supabase.co",
+  supabaseKey: "sb_publishable_AewQ2fT439tNreacQXUKYg_RRXBA2Xq",
+  emailCopy: true,                                    // true = every saved feedback is also e-mailed through Formspree (free plan: about 50 a month). false = database only.
+  formEndpoint: "https://formspree.io/f/xbglqzql",
 
-  /* ---------- STYLES ---------- */
-  const css = `
-  .cal-panel{position:relative;color:var(--t-label);display:flex;flex-direction:column;flex:1;width:100%;min-width:0;padding:.9rem 1rem}
-  .cal-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.5rem}
-  .cal-head h2{margin:0;font-size:18px;font-weight:700;color:var(--t-title);text-align:center;flex:1}
-  .cal-nav{width:34px;height:34px;border-radius:10px;border:1px solid var(--edge);background:rgba(255,255,255,.12);color:var(--t-title);font-size:18px;line-height:1;display:grid;place-items:center;padding:0}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-  .cal-dow{text-align:center;font-size:12px;font-weight:600;color:var(--t-help);padding:2px 0}
-  .cal-cell{aspect-ratio:1/1;max-height:64px;display:grid;place-items:center;border-radius:10px;font-size:13px;color:var(--t-label);background:transparent;border:1px solid transparent;font-family:inherit;padding:0}
-  .cal-monday{background:rgba(121,235,221,.2);border-color:rgba(121,235,221,.55);font-weight:700;cursor:pointer}
-  .cal-monday:hover,.cal-monday:focus-visible{background:rgba(121,235,221,.38)}
-  .cal-week{background:linear-gradient(135deg,#52d9ca,#658ff1);color:#06214e;border-color:transparent;box-shadow:0 0 0 3px rgba(121,235,221,.35)}
-  .cal-week:hover,.cal-week:focus-visible{background:linear-gradient(135deg,#52d9ca,#658ff1)}
-  .cal-hday{cursor:pointer;font-weight:600}
-  .cal-h-break{background:rgba(176,150,255,.24);border-color:rgba(190,170,255,.65)}
-  .cal-h-public{background:rgba(255,120,130,.26);border-color:rgba(255,150,160,.7)}
-  .cal-h-religious{background:rgba(110,225,150,.24);border-color:rgba(140,235,170,.7)}
-  .cal-h-half{background:repeating-linear-gradient(135deg,rgba(255,120,130,.28) 0 5px,rgba(255,120,130,.06) 5px 10px);border:1px dashed rgba(255,150,160,.75)}
-  .cal-h-end{background:rgba(255,213,74,.2);border-color:rgba(255,213,74,.8)}
-  .cal-hday:hover,.cal-hday:focus-visible{filter:brightness(1.25)}
-  .cal-offmon{box-shadow:inset 0 0 0 2px rgba(255,255,255,.28)}
-  .cal-today{outline:2px solid #ffd54a;outline-offset:2px}
-  .cal-today:not(.cal-monday):not(.cal-hday){background:rgba(255,213,74,.16);font-weight:700}
-  .cal-note{margin-top:.4rem;font-size:12px;line-height:1.45;color:var(--t-help)}
-  .cal-legend{display:flex;flex-wrap:wrap;gap:.2rem .85rem;margin-top:.4rem;font-size:11.5px;color:var(--t-help)}
-  .cal-legend span{display:inline-flex;align-items:center;gap:.45rem}
-  .cal-legend i{width:13px;height:13px;border-radius:5px;display:inline-block}
-  .cal-tip{position:absolute;z-index:30;transform:translate(-50%,-100%);min-width:200px;max-width:270px;padding:.7rem .9rem;border-radius:14px;background:rgba(3,14,44,.96);border:1px solid var(--edge);color:#eef5ff;font-size:14px;line-height:1.5;pointer-events:none;box-shadow:0 12px 30px rgba(0,0,0,.35)}
-  .cal-tip[hidden]{display:none}
-  .cal-tip b{color:#9decE5}
+  /* ----- Only school emails ending with this can open the questions ----- */
+  emailDomain: "bilfen.k12.tr",
 
-  /* --- Animations: days pop in one after another, months slide --- */
-  .page-ready .cal-grid .cal-cell[style]{animation:calPop .42s cubic-bezier(.2,.8,.2,1) calc(var(--d,0)*16ms + 60ms) backwards}
-  .cal-grid.cal-out-l{animation:calOutL .13s ease-in forwards}
-  .cal-grid.cal-out-r{animation:calOutR .13s ease-in forwards}
-  .cal-grid.cal-in-l{animation:calInL .34s cubic-bezier(.2,.8,.2,1)}
-  .cal-grid.cal-in-r{animation:calInR .34s cubic-bezier(.2,.8,.2,1)}
-  .cal-head h2.cal-title-l{animation:calTitleL .34s cubic-bezier(.2,.8,.2,1)}
-  .cal-head h2.cal-title-r{animation:calTitleR .34s cubic-bezier(.2,.8,.2,1)}
-  @keyframes calPop{from{opacity:0;transform:scale(.55) translateY(6px)}to{opacity:1;transform:none}}
-  @keyframes calOutL{to{opacity:0;transform:translateX(-26px)}}
-  @keyframes calOutR{to{opacity:0;transform:translateX(26px)}}
-  @keyframes calInL{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}
-  @keyframes calInR{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:none}}
-  @keyframes calTitleL{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
-  @keyframes calTitleR{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
-  @media(prefers-reduced-motion:reduce){.page-ready .cal-grid .cal-cell[style],.cal-grid.cal-out-l,.cal-grid.cal-out-r,.cal-grid.cal-in-l,.cal-grid.cal-in-r,.cal-head h2{animation:none!important}}
-  @media(min-width:1024px){#cal-grid{flex:1;min-height:0;grid-auto-rows:minmax(24px,1fr)}.cal-panel .cal-cell{aspect-ratio:auto;max-height:none}}
-  @media(max-width:640px){.cal-cell{font-size:14px;border-radius:10px}.cal-grid{gap:4px}}`;
+  /* ----- "Need a boost?" mirror on the thank-you screen ----- */
+  boost: {
+    enabled: true,                                    // false = hide the button
+    // Each line is either a message or the file name of a hand-lettered picture (.png) kept next to index.html.
+    // They are shown one after another over the camera picture.
+    messages: [
+      "you-make-it-happen.png",
+      "you-are-the-best.png",
+      "Your students are lucky to have you",
+      "Small steps, big impact",
+      "You are doing great work",
+      "Thank you for showing up",
+      "Look at that smile. Keep going!",
+      "Teachers change the world, one lesson at a time"
+    ]
+  },
 
-  /* ---------- HELPERS ---------- */
-  const DAY = 864e5;
-  const dn = d => Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / DAY);
-  const [sy, sm, sd] = CYCLE_START.split("-").map(Number);
-  const startN = Date.UTC(sy, sm - 1, sd) / DAY;
-  const fmt = (d, o) => d.toLocaleDateString("en-GB", o);
+  /* ----- Online meetings ----- */
+  timezone: "Europe/Istanbul",                        // the time zone the meeting times below are written in
+  meetingLink: "https://meet.google.com/ohd-bjdt-bdo", // the Join Meeting button opens this
+  // One line per meeting.  year: 5, 6 or 7   day: Mon Tue Wed Thu Fri Sat Sun   times: 24-hour "HH:MM"
+  // link (optional): a meeting with its own link gets its own Join button; without it, meetingLink above is used.
+  // Meetings at the same time (Year 5 and Year 6) are shown together in the banner.
+  meetings: [
+    { year: 7, day: "Mon", start: "16:45", end: "17:15" },
+    { year: 5, day: "Mon", start: "17:40", end: "18:10", link: "https://meet.google.com/ove-dzhk-srb" },
+    { year: 6, day: "Mon", start: "17:40", end: "18:10" }
+  ],
 
-  const isoOf = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-  function schools(date) {           // returns the schools for a Monday, or null (also null on a holiday Monday)
-    if (date.getDay() !== 1) return null;
-    if (window.IPT_schedule) return window.IPT_schedule(isoOf(date));
-    const w = dn(date) - startN;
-    if (w < 0 || w % 7 !== 0) return null;
-    const i = (w / 7) % YEAR6.length;
-    const dt = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const iso = dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0") + "-" + String(dt.getDate()).padStart(2, "0");
-    return { y5: window.IPT_year5For ? window.IPT_year5For(iso) : null, y6: YEAR6[i], y7: YEAR7[i] };
-  }
+  /* ----- School rotation (calendar and "Feedback this week") ----- */
+  rotation: {
+    cycleStart: "2026-10-05",                         // the Monday when the first group starts (YYYY-MM-DD, must be a Monday)
+    // Year 6: one group of schools per Monday, repeating forever. Year 7 uses the same list from the bottom up.
+    year6: [
+      ["Antalya", "Esenşehir"],
+      ["Ataşehir", "Halkalı"],
+      ["Bahçeşehir", "İskenderun"],
+      ["Bornova", "Kayseri"],
+      ["Bursa", "Kurtköy"],
+      ["Çamlıca", "Maslak"],
+      ["İncek", "Sancaktepe"],
+      ["Çayyolu", "İskenderun"]
+    ]
+    ,
+    // Year 5: ONE school per Monday, in this order, starting on year5Start. It does not repeat: after the last
+    // school the Year 5 rows simply stop. A Monday listed in year5Skip (holiday) is skipped, and the list waits
+    // so no school is lost: every school after it moves one Monday later.
+    year5Start: "2026-10-19",                         // the Monday the first Year 5 school gives feedback
+    year5Skip: [],                                    // holiday Mondays to skip, e.g. ["2026-12-28", "2027-01-04"]
+    year5: [
+      ["Bursa", "Bornova"],
+      ["Çamlıca"],
+      ["Çayyolu"],
+      ["Esenşehir"],
+      ["Halkalı"],
+      ["İskenderun"],
+      ["Kayseri"],
+      ["Koşuyolu"],
+      ["Kurtköy"],
+      ["Maslak"],
+      ["Sancaktepe"],
+      ["Ataşehir"],
+      ["Antalya"],
+      ["Bahçeşehir"],
+      ["Bursa"],
+      ["Çamlıca"],
+      ["Çayyolu"],
+      ["Esenşehir"],
+      ["Halkalı"],
+      ["İskenderun"],
+      ["Kayseri"],
+      ["Koşuyolu"],
+      ["Kurtköy"],
+      ["Maslak"],
+      ["Sancaktepe"],
+      ["Ataşehir"],
+      ["Antalya"],
+      ["Bahçeşehir"]
+    ]
+  },
 
-  /* The next Monday (after this week) when a school gives feedback. Used by the thank-you box after Submit. */
-  window.IPTNextFeedback = function (y, name) {
-    if (!name) return null;
-    const key = y === "year5" ? "y5" : y === "year7" ? "y7" : "y6";
-    const now = new Date(), mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
-    for (let i = 1; i <= 60; i++) {
-      const d = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 7 * i), s = schools(d);
-      if (s && [].concat(s[key] || []).indexOf(name) > -1) return { date: d, days: dn(d) - dn(now) };
+  /* ----- Holidays and breaks (shown on the calendar; a Monday inside one has NO feedback) -----
+     One line per holiday.  from / to: "YYYY-MM-DD" (to is optional for a single day).  name: what people see.
+     type:  "break"      school break (school closed)
+            "public"     official holiday (school closed)
+            "religious"  religious holiday (school closed)
+            "half"       half day (school open, lessons stop at 13:00; a feedback Monday stays a feedback Monday)
+            "end"        the last day of the school year (marker only)
+     A Monday inside a break, public or religious line is skipped, and every school after it moves one Monday later
+     (for Year 5, Year 6 and Year 7, the calendar, the Feedback this week box and the admin page all follow this list).
+     schoolEnd: the last school day; Mondays after it have no feedback. */
+  schoolEnd: "2027-06-18",
+  holidays: [
+    { from: "2026-10-28", name: "Republic Day eve", type: "half" },
+    { from: "2026-10-29", name: "Republic Day", type: "public" },
+    { from: "2026-11-16", to: "2026-11-20", name: "First half-term break", type: "break" },
+    { from: "2027-01-01", name: "New Year's Day", type: "public" },
+    { from: "2027-01-25", to: "2027-02-05", name: "Term break", type: "break" },
+    { from: "2027-03-08", to: "2027-03-12", name: "Second half-term break", type: "break" },
+    { from: "2027-03-08", name: "Ramazan Bayramı eve", type: "half" },
+    { from: "2027-03-09", to: "2027-03-11", name: "Ramazan Bayramı", type: "religious" },
+    { from: "2027-04-23", name: "National Sovereignty and Children's Day", type: "public" },
+    { from: "2027-05-16", to: "2027-05-19", name: "Kurban Bayramı", type: "religious" },
+    { from: "2027-05-19", name: "Commemoration of Atatürk, Youth and Sports Day", type: "public" },
+    { from: "2027-06-18", name: "Last day of school", type: "end" }
+  ],
+
+  /* ----- Special days (greeting on the welcome screen, a message on the home page, optional effect) -----
+     date: "MM-DD" repeats every year, or "YYYY-MM-DD" for one year only. to: (optional) the last day of a range.
+     greet: replaces the welcome line that day, e.g. "Happy Teachers' Day," (keep the comma at the end).
+     banner: the message shown on the home page.   effect: "confetti" (once a day) or "snow" (while the home page is open).
+     colors: (optional) confetti colours.   solemn: true = quiet day: no effect and a calm tone.
+     noName: true = the welcome screen shows only the greeting, without the person's name.
+     The first matching line decides the greeting and the message, so put the specific days above season lines.
+     Holidays that move every year need their dates added when you know them (use the full YYYY-MM-DD form). */
+  occasions: [
+    { date: "10-05", greet: "Happy World Teachers' Day,", banner: "Happy World Teachers' Day! Thank you for everything you do. 🍎", effect: "confetti" },
+    { date: "10-29", greet: "Happy Republic Day,", banner: "Happy Republic Day! Cumhuriyet Bayramımız kutlu olsun! 🎉", effect: "confetti", colors: ["#e30a17", "#ffffff", "#f5c542"] },
+    { date: "11-10", greet: "In remembrance,", banner: "Today we remember Mustafa Kemal Atatürk with respect and gratitude.", solemn: true, noName: true },
+    { date: "11-24", greet: "Happy Teachers' Day,", banner: "Happy Teachers' Day! Thank you for inspiring our students every day. 🍎", effect: "confetti" },
+    { date: "12-31", to: "01-01", greet: "Happy New Year,", banner: "Happy New Year! Wishing you a wonderful year ahead. 🎆", effect: "confetti" },
+    { date: "12-20", to: "01-03", effect: "snow" },
+    { date: "03-08", greet: "Happy Women's Day,", banner: "Happy International Women's Day! 💐", effect: "confetti", colors: ["#a183ee", "#ff9ec7", "#ffffff", "#52d9ca"], noName: true },
+    { date: "03-18", greet: "In remembrance,", banner: "Today we remember the heroes of Çanakkale with respect and gratitude.", solemn: true, noName: true },
+    { date: "04-23", greet: "Happy Children's Day,", banner: "Happy Children's Day! 23 Nisan kutlu olsun! 🎈", effect: "confetti" },
+    { date: "05-01", greet: "Happy Labour Day,", banner: "Happy Labour and Solidarity Day! 🌷", effect: "confetti" },
+    { date: "05-19", greet: "Happy 19 Mayıs,", banner: "Happy Atatürk Commemoration, Youth and Sports Day! 19 Mayıs kutlu olsun! ⚽", effect: "confetti" }
+  ],
+
+  /* ----- Weather background (a soft glow and a very light effect behind the home page that follow the real weather) -----
+     Data comes from Open-Meteo (free, no account). Each visitor can pick their city with the small weather chip (bottom right).
+     enabled: false switches it off for everyone.   defaultPlace: the city used until a visitor picks another.
+     strength: 1 = normal, 0.6 = fainter, 1.4 = stronger (rain, snow, birds, wind and the glow together).   glowStrength: only the soft colour glow.   windKmh: wind speed (km/h) from which it counts as windy.
+     places: add or remove cities; lat and lon are the map coordinates.
+     autoLowEnd: true = a slow computer (little memory, few cores, data saver, or a page that really runs slowly) switches the effect off by itself.
+     lowEndMode: "off" = nothing at all on slow computers, "glow" = keep only the still soft glow. A visitor can always turn it back on from the chip.
+     To test a weather without waiting for it, add ?wx=rain to the site address (rain, snow, sun, wind, cloud, fog, storm, night). */
+  weather: {
+    enabled: false,
+    defaultPlace: "Istanbul",
+    strength: 1,
+    glowStrength: 0.65,                               // only the colour glow: 0.65 = gentle, 1 = stronger, 0.4 = barely there
+    windKmh: 32,
+    autoLowEnd: true,
+    lowEndMode: "off",
+    places: [
+      { name: "Istanbul", lat: 41.01, lon: 28.98 },
+      { name: "Ankara", lat: 39.93, lon: 32.86 },
+      { name: "İzmir", lat: 38.42, lon: 27.14 },
+      { name: "Bursa", lat: 40.19, lon: 29.06 },
+      { name: "Antalya", lat: 36.90, lon: 30.70 },
+      { name: "Kayseri", lat: 38.73, lon: 35.49 },
+      { name: "İskenderun", lat: 36.59, lon: 36.17 }
+    ]
+  },
+
+  /* ----- First-visit tour (a short guided tour of the home page for people opening the site for the first time) -----
+     enabled: false removes it completely.   autoStart: false = never shows by itself, only from the Help window.
+     To see it again yourself: add ?tour=1 to the site address. */
+  tour: {
+    enabled: true,
+    autoStart: true
+  },
+
+  /* ----- Soft glow around the Year 5 / 6 / 7 selector (a hint for brand-new visitors that it can be tapped) -----
+     It fades away as soon as the visitor presses a year. enabled: false removes the feature. To see it yourself: add ?glow=1 to the site address. */
+  selectorGlow: {
+    enabled: true
+  },
+
+  /* ----- "Before you start" card (shown once, the first time a teacher opens a feedback form, with an animated clip) -----
+     enabled: false removes it completely.   minutes: 6 adds "It takes about 6 minutes." to the card (leave it out to say nothing).
+     To see it again yourself: add ?guide=1 to the site address, then open a form. It can also be replayed from the Help window. */
+  beforeStart: {
+    enabled: true
+    // minutes: 6
+  },
+
+  /* ----- Hands-free cheat sheet (a small card listing the voice commands while hands-free is running) -----
+     enabled: false removes it. */
+  handsFreeCheat: {
+    enabled: true
+  },
+
+  /* ----- AI summary button on the admin page -----
+     enabled: false hides the button.
+     While "endpoint" is empty it is only a PREVIEW: it shows sample text and no AI is used.
+     With an address, the button asks first and then sends only the answers and scores (no emails, no school names) to that service.
+     The address is the "ai-summary" function in Supabase (see ai-summary-via-supabase/SETUP-STEPS.txt).
+     provider: the name shown to the person pressing the button. */
+  aiSummary: {
+    enabled: true,
+    endpoint: "https://hceltuncmajojiyhzlcl.supabase.co/functions/v1/ai-summary",
+    provider: "Cloudflare Workers AI"
+  },
+
+  /* ----- Admin page -----
+     thinWords: an answer with fewer words than this (or "n/a", "good", a copy of another answer...) is flagged "Weak" on the admin page. */
+  admin: {
+    thinWords: 6,
+    /* Monthly report: the first report covers start to firstEnd (inclusive); each next one covers the next 4 feedback Mondays (a break or holiday Monday is not counted, so the cycle pauses and carries on afterwards). Set  monthly: false  to turn it off.
+       ai: true  adds an AI-written overview (sends the month's answers to the AI Summary service, e-mails and school names removed).
+       Keep it false until your HoD has approved it and the KVKK check is done. To try it on made-up answers first, open admin.html?aitest=1 */
+    monthly: { start: "2026-10-19", firstEnd: "2026-11-09", ai: true },
+    /* First names for the "Welcome back, ..." line on the admin page (email -> name). An email like ayse.yilmaz@... works without an entry. */
+    names: {
+      "ufukkorkmaz@bilfen.k12.tr": "Ufuk",
+      "medihanarin@bilfen.k12.tr": "Mediha",
+      "aylinergun@bilfen.k12.tr": "Aylin",
+      "sevalbagdelen@bilfen.k12.tr": "Seval"
     }
+  },
+
+  /* ----- Help & FAQ window (the "Help" button). Add, remove or reword any question. ----- */
+  faq: [
+    { q: "How do I give my feedback?",
+      a: "Choose Year 5, Year 6 or Year 7, then type your school email. The questions open as soon as your email ends with @bilfen.k12.tr. Answer them, then press Submit feedback." },
+    { q: "Which email should I use?",
+      a: "Your Bilfen school address, the one ending with @bilfen.k12.tr. Other addresses cannot open the questions." },
+    { q: "Which schools are giving feedback this week?",
+      a: "The Feedback this week box on the main page shows the schools for the coming Monday. The calendar shows every feedback Monday: tap or hover a highlighted Monday to see its schools." },
+    { q: "Is feedback needed on holidays and breaks?",
+      a: "No. School breaks, official holidays and Bayram days are coloured on the calendar, and a Monday that falls on one has no feedback. The Feedback this week box then says so and shows the next feedback Monday, and the next group of schools simply moves one Monday later. Tap or hover any coloured day to see its name." },
+    { q: "Can I speak my answers instead of typing?",
+      a: "Yes. Press Speak in the corner of any answer box, talk, and press Stop. You can say comma, full stop or question mark to add punctuation. Or use Hands-free: say next question to move on, previous question to go back, scores like overall four, and submit feedback to send. Your browser will ask for microphone permission the first time. Chrome works best." },
+    { q: "I refreshed the page. Did I lose my answers?",
+      a: "No. Your answers are saved on this device while you write and come back when you reopen the page. Use Clear draft to remove them, especially on a shared computer." },
+    { q: "My internet dropped when I pressed Submit.",
+      a: "Your reflection is kept on this device and sent automatically when the connection returns. A small note at the bottom right shows it is waiting, with a Send now button. Keep the page open until it says it was sent." },
+    { q: "When are the online meetings?",
+      a: "The Online meetings box lists the times. The Join Meeting button and the Next meeting banner shine from 15 minutes before a meeting until it ends." },
+    { q: "Who receives my feedback?",
+      a: "It is saved securely and only the IPT team can read it, together with the school email address you entered, so they can follow up if needed." }
+  ]
+};
+
+/* Holiday helpers (used by the calendar, the Feedback this week box and the admin page). Dates are "YYYY-MM-DD". */
+(function () {
+  var day = function (t) { return Math.round(Date.parse(t + "T00:00:00Z") / 864e5); };
+  var iso = function (n) { return new Date(n * 864e5).toISOString().slice(0, 10); };
+  var C = function () { return window.IPT_CONFIG || {}; };
+  // every holiday line that covers a date
+  window.IPT_holidaysOn = function (d) {
+    var n = day(d);
+    return (C().holidays || []).filter(function (h) { return n >= day(h.from) && n <= day(h.to || h.from); });
+  };
+  // why a Monday has no feedback (text), or "" when it is a normal feedback Monday
+  window.IPT_offReason = function (d) {
+    var hit = window.IPT_holidaysOn(d).filter(function (h) { return h.type === "break" || h.type === "public" || h.type === "religious"; });
+    if (hit.length) return hit.map(function (h) { return h.name; }).join(" \u00B7 ");
+    var end = C().schoolEnd;
+    if (end && day(d) > day(end)) return "The school year has ended";
+    return "";
+  };
+  // the next Monday after d that has feedback (or null)
+  window.IPT_nextFeedbackAfter = function (d) {
+    for (var i = 1; i <= 60; i++) { var m = iso(day(d) + 7 * i); if (window.IPT_schedule(m)) return m; }
     return null;
   };
-
-  /* ---------- BUILD ---------- */
-  document.addEventListener("DOMContentLoaded", () => {
-    const menu = document.getElementById("menu-view");
-    if (!menu) return;
-
-    const style = document.createElement("style");
-    style.textContent = css;
-    document.head.appendChild(style);
-
-    const now = new Date();
-    const todayN = dn(now);
-    const thisMonday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
-    const weekN = dn(thisMonday);
-    let view = now < new Date(sy, sm - 1, sd) ? new Date(sy, sm - 1, 1) : new Date(now.getFullYear(), now.getMonth(), 1);
-
-    const wrap = document.createElement("section");
-    wrap.className = "mx-auto max-w-5xl mt-6";
-    wrap.setAttribute("aria-label", "Feedback schedule");
-    wrap.innerHTML = `
-      <div class="glass-panel cal-panel rounded-[28px]">
-        <div class="cal-head">
-          <button type="button" class="cal-nav" id="cal-prev" aria-label="Previous month">‹</button>
-          <h2 id="cal-title"></h2>
-          <button type="button" class="cal-nav" id="cal-next" aria-label="Next month">›</button>
-        </div>
-        <div class="cal-grid" id="cal-dows"></div>
-        <div class="cal-grid" id="cal-grid" style="margin-top:4px"></div>
-        <div class="cal-legend">
-          <span><i style="background:rgba(121,235,221,.35);border:1px solid rgba(121,235,221,.7)"></i>Feedback Monday</span>
-          <span><i style="background:linear-gradient(135deg,#52d9ca,#658ff1)"></i>This week</span>
-          <span><i style="border:2px solid #ffd54a"></i>Today</span>
-          <span><i style="background:rgba(176,150,255,.4);border:1px solid rgba(190,170,255,.8)"></i>Break</span>
-          <span><i style="background:rgba(255,120,130,.4);border:1px solid rgba(255,150,160,.8)"></i>Holiday</span>
-          <span><i style="background:rgba(110,225,150,.4);border:1px solid rgba(140,235,170,.8)"></i>Bayram</span>
-        </div>
-        <div class="cal-tip" id="cal-tip" hidden></div>
-      </div>`;
-    const mount = document.getElementById("schedule");
-    if (mount) { wrap.className = ""; wrap.style.cssText = "display:flex;flex:1;min-width:0"; mount.appendChild(wrap); }
-    else menu.appendChild(wrap);
-
-    const grid = wrap.querySelector("#cal-grid"), tip = wrap.querySelector("#cal-tip"), panel = wrap.querySelector(".cal-panel");
-    wrap.querySelector("#cal-dows").innerHTML = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => `<div class="cal-dow">${d}</div>`).join("");
-
-    const line = (label, arr) => `<div><b>${label}</b> ${arr.join(", ")}</div>`;
-
-    function hide() { tip.hidden = true; }
-    const TYPE_ORDER = ["public", "religious", "break", "half", "end"];
-    const HNOTE = { break: "School is closed.", public: "School is closed.", religious: "School is closed.", half: "Half day: lessons stop at 13:00.", end: "Last day of the school year." };
-    function holidayInfo(date) {                 // { type, names } for the most important holiday on a date, or null
-      const hs = window.IPT_holidaysOn ? window.IPT_holidaysOn(isoOf(date)) : [];
-      if (!hs.length) return null;
-      const top = hs.slice().sort((a, b) => TYPE_ORDER.indexOf(a.type) - TYPE_ORDER.indexOf(b.type))[0];
-      return { type: top.type, names: hs.map(h => h.name), hs };
-    }
-    function placeTip(btn) {
-      tip.hidden = false;
-      const w = tip.offsetWidth;
-      const cx = btn.offsetLeft + btn.offsetWidth / 2;   // position inside the panel (not affected by page scaling)
-      const left = Math.min(Math.max(cx, w / 2 + 8), panel.clientWidth - w / 2 - 8);
-      tip.style.left = left + "px";
-      tip.style.top = (btn.offsetTop - 8) + "px";
-    }
-    function showHoliday(btn) {
-      const [yy, mm, dd] = btn.dataset.date.split("-").map(Number);
-      const date = new Date(yy, mm - 1, dd), info = holidayInfo(date), reason = date.getDay() === 1 && window.IPT_offReason ? window.IPT_offReason(isoOf(date)) : "";
-      if (!info && !reason) return;
-      const names = info ? info.names : [reason];
-      const notes = info ? [...new Set(info.hs.map(h => HNOTE[h.type]).filter(Boolean))] : [];
-      let more = "";
-      if (date.getDay() === 1 && reason) {
-        const nx = window.IPT_nextFeedbackAfter ? window.IPT_nextFeedbackAfter(isoOf(date)) : null;
-        more = `<div><b>No feedback this Monday.</b>${nx ? " Next feedback Monday: " + fmt(new Date(nx + "T00:00:00"), { day: "numeric", month: "long" }) + "." : ""}</div>`;
-      }
-      tip.innerHTML = `<strong>${fmt(date, { weekday: "long", day: "numeric", month: "long" })}</strong>${names.map(n => `<div>${n}</div>`).join("")}${notes.map(n => `<div>${n}</div>`).join("")}${more}`;
-      placeTip(btn);
-    }
-    function show(btn) {
-      if (btn.classList.contains("cal-hday")) { showHoliday(btn); return; }
-      const [yy, mm, dd] = btn.dataset.date.split("-").map(Number);
-      const date = new Date(yy, mm - 1, dd), s = schools(date);
-      if (!s) return;
-      const hi = holidayInfo(date), extra = hi ? hi.hs.map(h => `<div>${h.name}: ${HNOTE[h.type] || ""}</div>`).join("") : "";
-      tip.innerHTML = `<strong>${fmt(date, { weekday: "long", day: "numeric", month: "long" })}</strong>${s.y5 ? line("Year 5", s.y5) : ""}${line("Year 6", s.y6)}${line("Year 7", s.y7)}${extra}`;
-      placeTip(btn);
-    }
-
-    const title = wrap.querySelector("#cal-title");
-    const restart = (el, cls, all) => { el.classList.remove(...all); void el.offsetWidth; el.classList.add(cls); };
-    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    function render(dir) {                      // dir: 1 = moved forward, -1 = moved back, undefined = first draw
-      hide();
-      const y = view.getFullYear(), m = view.getMonth();
-      wrap.querySelector("#cal-title").textContent = fmt(view, { month: "long", year: "numeric" });
-      const offset = (new Date(y, m, 1).getDay() + 6) % 7;
-      const days = new Date(y, m + 1, 0).getDate();
-      let html = "";
-      for (let i = 0; i < offset; i++) html += '<span class="cal-cell"></span>';
-      for (let d = 1; d <= days; d++) {
-        const date = new Date(y, m, d), n = dn(date);
-        const isMonday = date.getDay() === 1 && schools(date);
-        const cls = ["cal-cell"];
-        const hi = holidayInfo(date), offMon = date.getDay() === 1 && !isMonday && window.IPT_offReason && window.IPT_offReason(isoOf(date));
-        if (isMonday) cls.push("cal-monday");
-        if (isMonday && n === weekN) cls.push("cal-week");
-        if (n === todayN) cls.push("cal-today");
-        if (!isMonday && (hi || offMon)) {
-          if (hi) cls.push("cal-hday", "cal-h-" + hi.type); else cls.push("cal-hday");
-          if (offMon) cls.push("cal-offmon");
-          html += `<button type="button" class="${cls.join(" ")}" style="--d:${d}" data-date="${y}-${m + 1}-${d}" aria-label="${fmt(date, { weekday: "long", day: "numeric", month: "long" })}: ${(hi ? hi.names.join(", ") : offMon).replace(/"/g, "")}">${d}</button>`;
-        } else html += isMonday
-          ? `<button type="button" class="${cls.join(" ")}" style="--d:${d}" data-date="${y}-${m + 1}-${d}">${d}</button>`
-          : `<span class="${cls.join(" ")}" style="--d:${d}">${d}</span>`;
-      }
-      // always draw 6 weeks so the calendar never changes height between months
-      for (let i = offset + days; i < 42; i++) html += '<span class="cal-cell"></span>';
-      grid.innerHTML = html;
-      if (dir && !reduce) {
-        restart(grid, dir > 0 ? "cal-in-l" : "cal-in-r", ["cal-in-l", "cal-in-r", "cal-out-l", "cal-out-r"]);
-        restart(title, dir > 0 ? "cal-title-l" : "cal-title-r", ["cal-title-l", "cal-title-r"]);
-      }
-    }
-
-    let busy = false;
-    function go(delta) {                        // slide the old month out, then the new one in
-      if (busy) return;
-      if (reduce) { view = new Date(view.getFullYear(), view.getMonth() + delta, 1); render(); return; }
-      busy = true; hide();
-      restart(grid, delta > 0 ? "cal-out-l" : "cal-out-r", ["cal-in-l", "cal-in-r", "cal-out-l", "cal-out-r"]);
-      setTimeout(() => {
-        view = new Date(view.getFullYear(), view.getMonth() + delta, 1);
-        render(delta);
-        busy = false;
-      }, 130);
-    }
-
-    const HIT = ".cal-monday,.cal-hday";
-    grid.addEventListener("mouseover", e => { const b = e.target.closest(HIT); if (b) show(b); });
-    grid.addEventListener("mouseout", e => { if (e.target.closest(HIT)) hide(); });
-    grid.addEventListener("focusin", e => { const b = e.target.closest(HIT); if (b) show(b); });
-    grid.addEventListener("focusout", hide);
-    grid.addEventListener("click", e => { const b = e.target.closest(HIT); if (b) show(b); });
-    document.addEventListener("click", e => { if (!e.target.closest(HIT)) hide(); });
-    wrap.querySelector("#cal-prev").addEventListener("click", () => go(-1));
-    wrap.querySelector("#cal-next").addEventListener("click", () => go(1));
-
-    /* ---------- "FEEDBACK THIS WEEK" BOX ---------- */
-    // Shows the schools for the next Monday (today, if today is Monday).
-    // From Tuesday on it switches to the following Monday.
-    const box = document.getElementById("feedback-week");
-    if (box) {
-      let up = new Date(now.getFullYear(), now.getMonth(), now.getDate() + ((8 - now.getDay()) % 7));
-      if (dn(up) < startN) up = new Date(sy, sm - 1, sd);   // before the rotation starts
-      const u = schools(up), reason = !u && window.IPT_offReason ? window.IPT_offReason(isoOf(up)) : "";
-      if (!u && reason) {          // a holiday or break Monday: say so instead of listing schools
-        const nx = window.IPT_nextFeedbackAfter ? window.IPT_nextFeedbackAfter(isoOf(up)) : null;
-        box.innerHTML =
-          `<div class="fw-head"><span class="fw-title">Feedback this week</span><span class="fw-date">${fmt(up, { weekday: "short", day: "numeric", month: "short" })}</span></div>` +
-          `<div class="fw-off"><span class="fw-off-ico" aria-hidden="true">\u2600\uFE0F</span><span><b>No feedback this week</b><span>${reason}</span></span></div>` +
-          (nx ? `<div class="fw-next">Next feedback Monday: <b>${fmt(new Date(nx + "T00:00:00"), { weekday: "short", day: "numeric", month: "short" })}</b></div>` : "");
-      } else if (u) {
-        box.innerHTML =
-          `<div class="fw-head"><span class="fw-title">Feedback this week</span><span class="fw-date">${fmt(up, { weekday: "short", day: "numeric", month: "short" })}</span></div>` +
-          (u.y5 ? `<div class="fw-row"><span class="fw-chip fw-chip-5">Year 5</span><span class="fw-schools">${u.y5.join(", ")}</span></div>` : "") +
-          `<div class="fw-row"><span class="fw-chip fw-chip-6">Year 6</span><span class="fw-schools">${u.y6.join(", ")}</span></div>` +
-          `<div class="fw-row"><span class="fw-chip fw-chip-7">Year 7</span><span class="fw-schools">${u.y7.join(", ")}</span></div>`;
-      }
-    }
-    render();
-  });
+  /* Year 5 schedule helper. Give it a Monday; it returns that Monday's school list, or null when Year 5 has no feedback that day.
+     A holiday Monday is skipped and every school after it moves one Monday later (year5Skip can still add extra Mondays). */
+  window.IPT_year5For = function (d) {
+    var R = C().rotation || {};
+    if (!Array.isArray(R.year5) || !R.year5.length || !R.year5Start) return null;
+    var w = day(d) - day(R.year5Start);
+    if (!(w >= 0) || w % 7) return null;
+    var skip = (R.year5Skip || []).map(day), n = day(d);
+    if (skip.indexOf(n) > -1 || window.IPT_offReason(d)) return null;
+    var k = w / 7;
+    for (var m = day(R.year5Start); m < n; m += 7) if (skip.indexOf(m) > -1 || window.IPT_offReason(iso(m))) k--;
+    return R.year5[k] || null;
+  };
+  /* All three years for a Monday: { y5, y6, y7 }, or null when that Monday has no feedback (holiday, break, before the start, after the school year). */
+  window.IPT_schedule = function (d) {
+    var R = C().rotation || {}, six = R.year6;
+    if (!Array.isArray(six) || !six.length) return null;
+    var c0 = day(R.cycleStart || "2026-10-05"), n = day(d), w = n - c0;
+    if (w < 0 || w % 7 || window.IPT_offReason(d)) return null;
+    var k = w / 7;
+    for (var m = c0; m < n; m += 7) if (window.IPT_offReason(iso(m))) k--;
+    var i = k % six.length;
+    return { y5: window.IPT_year5For(d), y6: six[i], y7: six.slice().reverse()[i] };
+  };
 })();
