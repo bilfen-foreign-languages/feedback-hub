@@ -7,6 +7,8 @@
 (function () {
   "use strict";
   var NEWS = [
+    { id: "2026-10-30-holidays", date: "30 Oct 2026", title: "Holidays and breaks on the calendar", tag: "Ufuk",
+      text: "The calendar now shows school breaks, official holidays, Bayram days and half days, with the dates in config.js. A Monday that falls on a break has no feedback: the Feedback this week box says so and shows the next feedback Monday, and every school after it moves one Monday later (Year 5, 6 and 7, and the Schools yet to respond list on this page)." },
     { id: "2026-10-28-next", date: "28 Oct 2026", title: "Thank-you card shows the next feedback Monday", tag: "Ufuk",
       text: "After a teacher presses Submit, the thank-you card now also says when their school\u2019s next feedback Monday is, for example \u201CMonday 14 December \u00B7 in 47 days\u201D. It uses the same school rotation as the calendar." },
     { id: "2026-10-28-scroll", date: "28 Oct 2026", title: "New scroll bar", tag: "Ufuk",
