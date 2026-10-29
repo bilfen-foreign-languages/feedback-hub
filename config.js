@@ -99,6 +99,32 @@ window.IPT_CONFIG = {
     ]
   },
 
+  /* ----- Holidays and breaks (shown on the calendar; a Monday inside one has NO feedback) -----
+     One line per holiday.  from / to: "YYYY-MM-DD" (to is optional for a single day).  name: what people see.
+     type:  "break"      school break (school closed)
+            "public"     official holiday (school closed)
+            "religious"  religious holiday (school closed)
+            "half"       half day (school open, lessons stop at 13:00; a feedback Monday stays a feedback Monday)
+            "end"        the last day of the school year (marker only)
+     A Monday inside a break, public or religious line is skipped, and every school after it moves one Monday later
+     (for Year 5, Year 6 and Year 7, the calendar, the Feedback this week box and the admin page all follow this list).
+     schoolEnd: the last school day; Mondays after it have no feedback. */
+  schoolEnd: "2027-06-18",
+  holidays: [
+    { from: "2026-10-28", name: "Republic Day eve", type: "half" },
+    { from: "2026-10-29", name: "Republic Day", type: "public" },
+    { from: "2026-11-16", to: "2026-11-20", name: "First half-term break", type: "break" },
+    { from: "2027-01-01", name: "New Year's Day", type: "public" },
+    { from: "2027-01-25", to: "2027-02-05", name: "Term break", type: "break" },
+    { from: "2027-03-08", to: "2027-03-12", name: "Second half-term break", type: "break" },
+    { from: "2027-03-08", name: "Ramazan Bayramı eve", type: "half" },
+    { from: "2027-03-09", to: "2027-03-11", name: "Ramazan Bayramı", type: "religious" },
+    { from: "2027-04-23", name: "National Sovereignty and Children's Day", type: "public" },
+    { from: "2027-05-16", to: "2027-05-19", name: "Kurban Bayramı", type: "religious" },
+    { from: "2027-05-19", name: "Commemoration of Atatürk, Youth and Sports Day", type: "public" },
+    { from: "2027-06-18", name: "Last day of school", type: "end" }
+  ],
+
   /* ----- Special days (greeting on the welcome screen, a message on the home page, optional effect) -----
      date: "MM-DD" repeats every year, or "YYYY-MM-DD" for one year only. to: (optional) the last day of a range.
      greet: replaces the welcome line that day, e.g. "Happy Teachers' Day," (keep the comma at the end).
@@ -226,16 +252,51 @@ window.IPT_CONFIG = {
   ]
 };
 
-/* Year 5 schedule helper (used by the calendar and the admin page). Give it a Monday as "YYYY-MM-DD";
-   it returns that Monday's school list, or null when Year 5 has no feedback that day. */
-window.IPT_year5For = function (iso) {
-  var R = (window.IPT_CONFIG || {}).rotation || {};
-  if (!Array.isArray(R.year5) || !R.year5.length || !R.year5Start) return null;
+/* Holiday helpers (used by the calendar, the Feedback this week box and the admin page). Dates are "YYYY-MM-DD". */
+(function () {
   var day = function (t) { return Math.round(Date.parse(t + "T00:00:00Z") / 864e5); };
-  var w = day(iso) - day(R.year5Start);
-  if (!(w >= 0) || w % 7) return null;
-  var skip = (R.year5Skip || []).map(day), d = day(iso);
-  if (skip.indexOf(d) > -1) return null;
-  var k = w / 7 - skip.filter(function (x) { return x >= day(R.year5Start) && x < d && (x - day(R.year5Start)) % 7 === 0; }).length;
-  return R.year5[k] || null;
-};
+  var iso = function (n) { return new Date(n * 864e5).toISOString().slice(0, 10); };
+  var C = function () { return window.IPT_CONFIG || {}; };
+  // every holiday line that covers a date
+  window.IPT_holidaysOn = function (d) {
+    var n = day(d);
+    return (C().holidays || []).filter(function (h) { return n >= day(h.from) && n <= day(h.to || h.from); });
+  };
+  // why a Monday has no feedback (text), or "" when it is a normal feedback Monday
+  window.IPT_offReason = function (d) {
+    var hit = window.IPT_holidaysOn(d).filter(function (h) { return h.type === "break" || h.type === "public" || h.type === "religious"; });
+    if (hit.length) return hit.map(function (h) { return h.name; }).join(" \u00B7 ");
+    var end = C().schoolEnd;
+    if (end && day(d) > day(end)) return "The school year has ended";
+    return "";
+  };
+  // the next Monday after d that has feedback (or null)
+  window.IPT_nextFeedbackAfter = function (d) {
+    for (var i = 1; i <= 60; i++) { var m = iso(day(d) + 7 * i); if (window.IPT_schedule(m)) return m; }
+    return null;
+  };
+  /* Year 5 schedule helper. Give it a Monday; it returns that Monday's school list, or null when Year 5 has no feedback that day.
+     A holiday Monday is skipped and every school after it moves one Monday later (year5Skip can still add extra Mondays). */
+  window.IPT_year5For = function (d) {
+    var R = C().rotation || {};
+    if (!Array.isArray(R.year5) || !R.year5.length || !R.year5Start) return null;
+    var w = day(d) - day(R.year5Start);
+    if (!(w >= 0) || w % 7) return null;
+    var skip = (R.year5Skip || []).map(day), n = day(d);
+    if (skip.indexOf(n) > -1 || window.IPT_offReason(d)) return null;
+    var k = w / 7;
+    for (var m = day(R.year5Start); m < n; m += 7) if (skip.indexOf(m) > -1 || window.IPT_offReason(iso(m))) k--;
+    return R.year5[k] || null;
+  };
+  /* All three years for a Monday: { y5, y6, y7 }, or null when that Monday has no feedback (holiday, break, before the start, after the school year). */
+  window.IPT_schedule = function (d) {
+    var R = C().rotation || {}, six = R.year6;
+    if (!Array.isArray(six) || !six.length) return null;
+    var c0 = day(R.cycleStart || "2026-10-05"), n = day(d), w = n - c0;
+    if (w < 0 || w % 7 || window.IPT_offReason(d)) return null;
+    var k = w / 7;
+    for (var m = c0; m < n; m += 7) if (window.IPT_offReason(iso(m))) k--;
+    var i = k % six.length;
+    return { y5: window.IPT_year5For(d), y6: six[i], y7: six.slice().reverse()[i] };
+  };
+})();
