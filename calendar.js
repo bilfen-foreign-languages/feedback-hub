@@ -45,7 +45,7 @@
   .cal-today{outline:2px solid #ffd54a;outline-offset:2px}
   .cal-today:not(.cal-monday):not(.cal-hday){background:rgba(255,213,74,.16);font-weight:700}
   .cal-note{margin-top:.4rem;font-size:12px;line-height:1.45;color:var(--t-help)}
-  .cal-legend{display:flex;flex-wrap:wrap;gap:.25rem 1rem;margin-top:.5rem;font-size:12px;color:var(--t-help)}
+  .cal-legend{display:flex;flex-wrap:wrap;gap:.2rem .85rem;margin-top:.4rem;font-size:11.5px;color:var(--t-help)}
   .cal-legend span{display:inline-flex;align-items:center;gap:.45rem}
   .cal-legend i{width:13px;height:13px;border-radius:5px;display:inline-block}
   .cal-tip{position:absolute;z-index:30;transform:translate(-50%,-100%);min-width:200px;max-width:270px;padding:.7rem .9rem;border-radius:14px;background:rgba(3,14,44,.96);border:1px solid var(--edge);color:#eef5ff;font-size:14px;line-height:1.5;pointer-events:none;box-shadow:0 12px 30px rgba(0,0,0,.35)}
@@ -130,16 +130,13 @@
         <div class="cal-grid" id="cal-dows"></div>
         <div class="cal-grid" id="cal-grid" style="margin-top:4px"></div>
         <div class="cal-legend">
-          <span><i style="background:rgba(121,235,221,.35);border:1px solid rgba(121,235,221,.7)"></i>Feedback Monday (hover or tap)</span>
-          <span><i style="background:linear-gradient(135deg,#52d9ca,#658ff1)"></i>This week's Monday</span>
+          <span><i style="background:rgba(121,235,221,.35);border:1px solid rgba(121,235,221,.7)"></i>Feedback Monday</span>
+          <span><i style="background:linear-gradient(135deg,#52d9ca,#658ff1)"></i>This week</span>
           <span><i style="border:2px solid #ffd54a"></i>Today</span>
-          <span><i style="background:rgba(176,150,255,.4);border:1px solid rgba(190,170,255,.8)"></i>School break</span>
-          <span><i style="background:rgba(255,120,130,.4);border:1px solid rgba(255,150,160,.8)"></i>Public holiday</span>
-          <span><i style="background:rgba(110,225,150,.4);border:1px solid rgba(140,235,170,.8)"></i>Religious holiday</span>
-          <span><i style="background:repeating-linear-gradient(135deg,rgba(255,120,130,.55) 0 3px,rgba(255,120,130,.12) 3px 6px);border:1px dashed rgba(255,150,160,.9)"></i>Half day</span>
-          <span><i style="background:rgba(255,213,74,.4);border:1px solid rgba(255,213,74,.9)"></i>Last day of school</span>
+          <span><i style="background:rgba(176,150,255,.4);border:1px solid rgba(190,170,255,.8)"></i>Break</span>
+          <span><i style="background:rgba(255,120,130,.4);border:1px solid rgba(255,150,160,.8)"></i>Holiday</span>
+          <span><i style="background:rgba(110,225,150,.4);border:1px solid rgba(140,235,170,.8)"></i>Bayram</span>
         </div>
-        <div class="cal-note" id="cal-note">No feedback is due on holidays and breaks. The next group of schools simply moves one Monday later.</div>
         <div class="cal-tip" id="cal-tip" hidden></div>
       </div>`;
     const mount = document.getElementById("schedule");
