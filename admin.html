@@ -743,7 +743,8 @@
   var ROT7 = ROT6.slice().reverse(), CYCLE0 = ROTA.cycleStart || "2026-10-05";
   var ROT5 = (Array.isArray(ROTA.year5) && ROTA.year5.length) ? ROTA.year5 : null;     // Year 5 only appears here once config.js has a year5 schedule (own start date, one school per Monday)
   function dayNo(ymd) { return Math.round(Date.parse(ymd + "T00:00:00Z") / 864e5); }
-  function scheduleFor(mon) {      // schools scheduled for a Monday, or null before the rotation starts
+  function scheduleFor(mon) {      // schools scheduled for a Monday, or null (before the rotation starts, or a holiday / break Monday)
+    if (window.IPT_schedule) { var z = window.IPT_schedule(mon); if (!z) return null; var q = { 6: z.y6, 7: z.y7 }; if (z.y5) q[5] = z.y5; return q; }
     var w = dayNo(mon) - dayNo(CYCLE0); if (w < 0 || w % 7) return null;
     var i = (w / 7) % ROT6.length, r = { 6: ROT6[i], 7: ROT7[i] }; var s5 = ROT5 && window.IPT_year5For ? window.IPT_year5For(mon) : null; if (s5) r[5] = s5; return r;
   }
@@ -761,7 +762,7 @@
     var mon = $("miss-week").value, body = $("miss-body"), note = $("miss-note"), cnt = $("miss-count"), bar = $("miss-bar");
     body.textContent = ""; note.textContent = ""; cnt.textContent = ""; bar.firstElementChild.style.width = "0"; bar.classList.remove("full");
     var sch = scheduleFor(mon);
-    if (!sch) { note.textContent = "No schools are scheduled for this week."; return; }
+    if (!sch) { var why = window.IPT_offReason ? window.IPT_offReason(mon) : ""; note.textContent = why ? "No feedback this week: " + why + "." : "No schools are scheduled for this week."; return; }
     var week = all.filter(function (x) { return x._mon === mon; }), noSchool = week.filter(function (x) { return !x.school; }).length, total = 0, done = 0;
     [5, 6, 7].forEach(function (y) {
       if (!sch[y]) return;
