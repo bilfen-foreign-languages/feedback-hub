@@ -3,14 +3,16 @@
    window as a row of glass cards. Saying "next question" slides to the next card,
    "previous question" slides back. The answers you speak appear live on the card.
    While you speak, the bottom of the screen glows in the site's colours and grows
-   with your voice, and a liquid glass orb with a sound wave inside floats at the top. When you submit (or stop), the window closes and everything is
+   with your voice, and a small frosted-glass Saturn sits right above the question card.
+   Its ring is the sound wave: it lies flat when you are quiet and ripples and tilts
+   gently when you speak. When you submit (or stop), the window closes and everything is
    on the normal feedback form, exactly as before.
 
    This file only WATCHES the form: it never changes how hands-free works.
 
    Turn it off:       config.js -> handsFreeWindow: { enabled: false }
    Glow only off:     config.js -> handsFreeWindow: { glow: false }
-   Orb only off:      config.js -> handsFreeWindow: { orb: false }
+   Saturn only off:   config.js -> handsFreeWindow: { saturn: false }
    (The orb bends what is behind it in Chrome and Edge. Safari and Firefox show it as frosted glass.)
    ========================================================================== */
 (function () {
@@ -18,6 +20,7 @@
   var CFG = (window.IPT_CONFIG && window.IPT_CONFIG.handsFreeWindow) || {};
   if (CFG.enabled === false) return;
   var GLOW = CFG.glow !== false;
+  var SAT = CFG.saturn !== false;                                 // the little frosted-glass Saturn that listens above the card
   var ORB = false;                                                    // the orb has been taken out; kept off for good
   var _orbUnused = CFG.orb;                                       // the liquid glass orb with the sound wave at the top
   var CHROMIUM = /Chrome\/|Chromium\//.test(navigator.userAgent) && !/iPhone|iPad|iPod|CriOS|FxiOS/.test(navigator.userAgent);   // only these can bend what is behind the orb
@@ -129,6 +132,20 @@
     "@media(max-width:860px){.hfw-step{display:none}.hfw-badge{margin-right:auto}}" +
     "@media(max-width:560px){.hfw{--ow:112px;--oh:70px;--ot:10px}.hfw-badge{letter-spacing:.03em;padding:.4rem .6rem;font-size:11px;gap:.4rem}}" +
     "@media(prefers-reduced-motion:reduce){.hfw-orb{animation:none;transform:none}.hfw-cast,.hfw-back::before{animation:none}}" +
+    /* the listening Saturn: a small frosted-glass planet above the question card, its ring is the sound wave */
+    ".hfw-sat{--pw:68px;--sw:300px;position:absolute;z-index:11;left:50%;top:0;width:var(--sw);margin-left:calc(var(--sw) / -2);height:126px;pointer-events:none;transition:top .6s cubic-bezier(.2,.8,.2,1);animation:hfwFloat 7s ease-in-out infinite alternate}" +
+    ".hfw-sat canvas{position:absolute;inset:0;width:100%;height:100%}" +
+    ".hfw-planet{position:absolute;left:50%;top:50%;width:var(--pw);height:var(--pw);margin:calc(var(--pw) / -2) 0 0 calc(var(--pw) / -2);border-radius:50%;overflow:hidden;" +
+      "background:radial-gradient(circle at 31% 26%,rgba(255,255,255,.62),rgba(255,255,255,.2) 30%,rgba(170,210,255,.12) 58%,rgba(8,26,74,.34) 100%);" +
+      "-webkit-backdrop-filter:blur(7px) saturate(1.5);backdrop-filter:blur(7px) saturate(1.5);border:1px solid rgba(255,255,255,.42);" +
+      "box-shadow:inset 0 -8px 14px -6px rgba(255,255,255,.3),inset 0 7px 12px -6px rgba(255,255,255,.35),inset 7px 0 12px -8px rgba(160,200,255,.4),inset -7px 0 12px -8px rgba(255,190,150,.3),0 0 calc(12px + var(--lvl)*30px) rgba(121,235,221,.38)}" +
+    ".hfw-bands{position:absolute;inset:-8%;border-radius:50%;opacity:.6;background:repeating-linear-gradient(180deg,rgba(255,255,255,0) 0 6px,rgba(255,255,255,.22) 6px 9px,rgba(255,255,255,0) 9px 16px,rgba(170,200,255,.2) 16px 19px,rgba(255,255,255,0) 19px 24px)}" +
+    ".hfw-shine{position:absolute;left:15%;top:10%;width:42%;height:24%;border-radius:50%;background:radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.7),rgba(255,255,255,0) 72%);transform:rotate(-24deg);filter:blur(1.5px)}" +
+    "@keyframes hfwFloat{from{transform:translateY(-3px)}to{transform:translateY(4px)}}" +
+    "@media(max-width:560px){.hfw-sat{--pw:50px;--sw:220px;height:94px}}" +
+    "@media(max-height:700px){.hfw-sat{--pw:50px;--sw:220px;height:92px}}" +
+    "@media(max-height:520px){.hfw-sat{display:none}}" +
+    "@media(prefers-reduced-motion:reduce){.hfw-sat{animation:none}}" +
     "body.hfw-open .hfc{display:none!important}";
   var st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
 
@@ -165,6 +182,7 @@
       c.append(el("div", "hfw-n"), el("h3"), el("div", "hfw-body"));
       stage.appendChild(c); cards.push(c);
     });
+    if (SAT) buildSaturn(stage);                                                                // floats in the stage, right above the current card
     var foot = el("div", "hfw-foot");
     msgEl = el("p", "hfw-msg"); msgEl.setAttribute("aria-hidden", "true");
     var dwrap = el("div", "hfw-dots"); KEYS.forEach(function () { var d = el("span", "hfw-d"); dwrap.appendChild(d); dots.push(d); });
@@ -332,12 +350,65 @@
     ribbon(c, W, H, s, v, dpr, { y: .63, amp: .24, f: 1.3, sp: 1.9, ph: 3.1, w: 2.4 * k, a: .45, b: 1.6 * k, drift: .09 });
   }
 
+  /* ---------- the listening Saturn ---------- */
+  var satEl = null, satBack = null, satFront = null, satPlanet = null, satBands = null, satBC = null, satFC = null;
+  var satE = 0, satA = "#52d9ca", satB = "#658ff1";             // satE = how much the ring is moving (0 = lying flat)
+  function buildSaturn(stage) {
+    satEl = el("div", "hfw-sat"); satEl.setAttribute("aria-hidden", "true");
+    satBack = el("canvas"); satFront = el("canvas");
+    satBC = satBack.getContext("2d"); satFC = satFront.getContext("2d");
+    satBands = el("span", "hfw-bands");
+    satPlanet = el("div", "hfw-planet"); satPlanet.append(satBands, el("span", "hfw-shine"));
+    satEl.append(satBack, satPlanet, satFront);                // far half of the ring, the glass planet (blurs it), near half of the ring
+    stage.appendChild(satEl);
+  }
+  function satHalf(c, cw, ch, from, to, o) {                    // one half of the ring, as a wavy line seen from a little above
+    var N = 64, cp = Math.cos(o.tilt), sp = Math.sin(o.tilt);
+    c.beginPath();
+    for (var i = 0; i <= N; i++) {
+      var th = from + (to - from) * i / N;
+      var wave = o.amp * (Math.sin(3 * th + o.s * 2.4 + o.ph) + .5 * Math.sin(5 * th - o.s * 3.3 + o.ph * 1.7)) / 1.5;
+      var sx = o.R * Math.cos(th), sy = o.R * Math.sin(th) * o.ky + wave;
+      var px = cw / 2 + sx * cp - sy * sp, py = ch / 2 + sx * sp + sy * cp;
+      if (i) c.lineTo(px, py); else c.moveTo(px, py);
+    }
+    c.stroke();
+  }
+  function drawSaturn(t, v) {
+    if (!satEl) return;
+    var cw = satEl.offsetWidth, ch = satEl.offsetHeight; if (!cw || !ch) return;
+    var card = cards[cur], stage = satEl.parentNode;                        // rest just above the card that is showing
+    if (card && stage) satEl.style.top = Math.max(0, (stage.clientHeight - card.offsetHeight) / 2 - satPlanet.offsetWidth / 2 - 14 - ch / 2 - 26) + "px";
+    var dpr = Math.min(2, window.devicePixelRatio || 1), W = Math.round(cw * dpr), H = Math.round(ch * dpr);
+    if (satBack.width !== W || satBack.height !== H) { satBack.width = satFront.width = W; satBack.height = satFront.height = H; }
+    var target = reduce ? 0 : Math.max(0, Math.min(1, (v - .17) / .5));   // the calm breathing level (about .1 to .15) counts as quiet
+    satE += (target - satE) * (target > satE ? .14 : .05);
+    var e = satE < .004 ? 0 : satE;
+    var s = t / 1000, k = (satPlanet.offsetWidth / 2) / 31;
+    var tilt = e * (.15 * Math.sin(s * 1.7) + .05 * Math.sin(s * 3.1));    // the whole ring rocks a little when you speak
+    var ky = .23 + e * .06 * Math.sin(s * 2.3 + 1);
+    satBands.style.transform = "rotate(" + tilt.toFixed(4) + "rad)";        // the planet's stripes lean with the ring
+    var p = .5 + .3 * Math.sin(s * .7);
+    [[satBC, 0, Math.PI, 2 * Math.PI, .5], [satFC, 1, 0, Math.PI, 1]].forEach(function (L) {
+      var c = L[0]; c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, cw, ch); c.lineCap = c.lineJoin = "round";
+      [[2.8, 8, .12 + e * .2, 0, true], [2.55, 2.4, 1, 0, false], [2.8, 1.4, .7, 1.9, false], [3.05, .9, .5, 3.8, false]].forEach(function (r) {
+        var R = r[0] * 31 * k, g = c.createLinearGradient(cw / 2 - R, 0, cw / 2 + R, 0);
+        g.addColorStop(0, satA); g.addColorStop(p, "#eef8ff"); g.addColorStop(1, satB);
+        c.strokeStyle = g; c.lineWidth = r[1] * k;
+        c.globalAlpha = (r[4] ? 1 : Math.min(1, .6 + e * .4)) * r[2] * L[4];
+        c.filter = r[4] && CAN_FILTER ? "blur(" + (4 * k) + "px)" : "none";
+        satHalf(c, cw, ch, L[2], L[3], { R: R, ky: ky, tilt: tilt, amp: e * 9 * k, s: s, ph: r[3] });
+      });
+      c.globalAlpha = 1; c.filter = "none";
+    });
+  }
+
   /* ---------- the voice glow ---------- */
   var A = { raf: 0, ctx: null, stream: null, an: null, data: null, lvl: 0, pulse: 0, t0: 0, dead: true };
   function startAudio() {
-    stopAudio(); A.dead = false; A.t0 = performance.now(); A.lvl = 0; A.pulse = 0; A.sm = null;
-    if (!GLOW && !ORB) return;
-    if (reduce) { root.style.setProperty("--lvl", ".25"); if (ORB) drawOrb(0, .18); return; }
+    stopAudio(); A.dead = false; A.t0 = performance.now(); A.lvl = 0; A.pulse = 0; A.sm = null; satE = 0;
+    if (!GLOW && !ORB && !SAT) return;
+    if (reduce) { root.style.setProperty("--lvl", ".25"); if (ORB) drawOrb(0, .18); if (SAT) drawSaturn(0, 0); return; }
     if (!isMobile && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {        // phones: the microphone is busy with speech recognition, so pulses stand in
       var me = A;
       navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
@@ -365,6 +436,7 @@
       var lv = A.sm;
       root.style.setProperty("--lvl", lv.toFixed(3));
       if (ORB) drawOrb(now, lv);
+      if (SAT) drawSaturn(now, lv);
       A.raf = requestAnimationFrame(tick);
     })(performance.now());
   }
@@ -386,6 +458,7 @@
     if (!root) build();
     var ac = ACCENT[y] || ACCENT.year7;
     root.style.setProperty("--a", ac[0]); root.style.setProperty("--b", ac[1]);
+    satA = ac[0]; satB = ac[1];
     cards.forEach(function (c) { c.classList.remove("sending", "sent"); });
     fillStatic();
     var s = currentStep(); cur = s < 0 ? 0 : s;
@@ -477,6 +550,6 @@
   }, true);
 
   document.addEventListener("keydown", function (e) { if (isOpen && e.key === "Escape") { e.preventDefault(); stopHandsFree(); } });
-  window.addEventListener("resize", function () { if (isOpen) { layout(); syncOrb(); } });
+  window.addEventListener("resize", function () { if (isOpen) { layout(); syncOrb(); if (SAT && reduce) drawSaturn(0, 0); } });
   window.addEventListener("pagehide", stopAudio);
 })();
