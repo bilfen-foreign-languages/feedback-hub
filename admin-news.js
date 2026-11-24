@@ -7,6 +7,8 @@
 (function () {
   "use strict";
   var NEWS = [
+    { id: "2026-11-24-hf-window", date: "24 Nov 2026", title: "Hands-free now opens in its own window", tag: "Ufuk",
+      text: "When a teacher starts hands-free, the questions open in a glass window as a row of cards. Saying next question slides to the next card and the spoken answer appears live. The bottom of the screen glows in the site colours and grows with the voice. After submit the window closes and the normal form is back." },
     { id: "2026-10-30-holidays", date: "30 Oct 2026", title: "Holidays and breaks on the calendar", tag: "Ufuk",
       text: "The calendar now shows school breaks, official holidays, Bayram days and half days, with the dates in config.js. A Monday that falls on a break has no feedback: the Feedback this week box says so and shows the next feedback Monday, and every school after it moves one Monday later (Year 5, 6 and 7, and the Schools yet to respond list on this page). The monthly report follows too: each report covers 4 feedback Mondays, so a break pauses the cycle and it carries on afterwards." },
     { id: "2026-10-28-next", date: "28 Oct 2026", title: "Thank-you card shows the next feedback Monday", tag: "Ufuk",
