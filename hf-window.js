@@ -3,19 +3,23 @@
    window as a row of glass cards. Saying "next question" slides to the next card,
    "previous question" slides back. The answers you speak appear live on the card.
    While you speak, the bottom of the screen glows in the site's colours and grows
-   with your voice. When you submit (or stop), the window closes and everything is
+   with your voice, and a liquid glass orb with a sound wave inside floats at the top. When you submit (or stop), the window closes and everything is
    on the normal feedback form, exactly as before.
 
    This file only WATCHES the form: it never changes how hands-free works.
 
    Turn it off:       config.js -> handsFreeWindow: { enabled: false }
    Glow only off:     config.js -> handsFreeWindow: { glow: false }
+   Orb only off:      config.js -> handsFreeWindow: { orb: false }
+   (The orb bends what is behind it in Chrome and Edge. Safari and Firefox show it as frosted glass.)
    ========================================================================== */
 (function () {
   "use strict";
   var CFG = (window.IPT_CONFIG && window.IPT_CONFIG.handsFreeWindow) || {};
   if (CFG.enabled === false) return;
   var GLOW = CFG.glow !== false;
+  var ORB = CFG.orb !== false;                                       // the liquid glass orb with the sound wave at the top
+  var CHROMIUM = /Chrome\/|Chromium\//.test(navigator.userAgent) && !/iPhone|iPad|iPod|CriOS|FxiOS/.test(navigator.userAgent);   // only these can bend what is behind the orb
   var reduce = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
   var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
@@ -101,6 +105,29 @@
     "@media(max-width:560px){.hfw-hint small{display:none}.hfw-pip{width:24px}.hfw-card{width:88vw;max-height:72%}}" +
     "@media(max-height:560px){.hfw-hint{display:none}}" +
     "@media(prefers-reduced-motion:reduce){.hfw,.hfw-card{transition:none}.hfw-glow i,.hfw-edge,.hfw-dot,.hfw-caret{animation:none}.hfw-glow{transform:scaleY(.55);opacity:.5}}" +
+    /* something behind the orb for it to bend: a soft aurora and a faint dot grid at the top */
+    ".hfw-back::before{content:'';position:absolute;left:0;right:0;top:0;height:46%;background:radial-gradient(42% 80% at 30% 0%,rgba(82,217,202,.3),transparent 72%),radial-gradient(42% 80% at 72% 0%,rgba(161,131,238,.28),transparent 72%);animation:hfwAurora 14s ease-in-out infinite alternate}" +
+    ".hfw-back::after{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.28) 1px,transparent 1.5px);background-size:26px 26px;opacity:.45;-webkit-mask-image:linear-gradient(180deg,#000,transparent 55%);mask-image:linear-gradient(180deg,#000,transparent 55%)}" +
+    "@keyframes hfwAurora{from{transform:translateX(-7%)}to{transform:translateX(7%)}}" +
+    /* the liquid glass orb */
+    ".hfw{--ow:156px;--oh:96px;--ot:clamp(10px,8.5vh,78px)}" +
+    ".hfw-orb{position:absolute;z-index:6;left:50%;top:calc(var(--ot) + env(safe-area-inset-top,0px));width:var(--ow);height:var(--oh);margin-left:calc(var(--ow) / -2);overflow:hidden;pointer-events:none;" +
+      "border-radius:36% / 50%;animation:hfwBlob 10s ease-in-out infinite;transform:scale(calc(1 + var(--lvl)*.08),calc(1 + var(--lvl)*.1));" +
+      "background:linear-gradient(180deg,rgba(0,3,12,.62),rgba(0,3,12,.24) 58%,rgba(0,3,12,.4));" +
+      "-webkit-backdrop-filter:blur(7px) saturate(1.5);backdrop-filter:blur(7px) saturate(1.5);" +
+      "box-shadow:inset 0 -12px 20px -10px rgba(255,255,255,.28),inset 0 10px 16px -10px rgba(255,255,255,.22),inset 12px 0 18px -14px rgba(160,200,255,.3),inset -12px 0 18px -14px rgba(255,180,140,.28)}" +
+    ".hfw-orb.refract{-webkit-backdrop-filter:url(#hfw-refract) blur(.6px) saturate(1.45) brightness(.92);backdrop-filter:url(#hfw-refract) blur(.6px) saturate(1.45) brightness(.92)}" +
+    ".hfw-orb canvas{position:absolute;inset:0;width:100%;height:100%}" +
+    ".hfw-orb-hi{position:absolute;left:12%;top:7%;width:46%;height:20%;border-radius:50%;background:radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.3),rgba(255,255,255,0) 72%);transform:rotate(-8deg);filter:blur(3px)}" +
+    /* the orb throws coloured light on whatever is under it */
+    ".hfw-cast{position:absolute;z-index:5;pointer-events:none;left:50%;top:calc(var(--ot) + env(safe-area-inset-top,0px) + var(--oh)*.5);width:calc(var(--ow)*1.7);height:calc(var(--oh)*1.5);margin-left:calc(var(--ow)*-.85);" +
+      "background:radial-gradient(40% 60% at 22% 40%,rgba(47,110,255,.9),transparent 70%),radial-gradient(38% 60% at 46% 55%,rgba(255,227,90,.8),transparent 70%),radial-gradient(38% 60% at 68% 45%,rgba(255,92,70,.85),transparent 70%),radial-gradient(34% 55% at 86% 55%,rgba(178,92,255,.8),transparent 70%);" +
+      "filter:blur(38px) saturate(1);mix-blend-mode:screen;opacity:calc(.1 + var(--lvl)*.28);animation:hfwCast 8s ease-in-out infinite alternate}" +
+    "@keyframes hfwCast{from{transform:translateX(-5%) scaleX(.92)}to{transform:translateX(5%) scaleX(1.06)}}" +
+    "@keyframes hfwBlob{0%,100%{border-radius:36% 36% 36% 36% / 50% 50% 50% 50%}25%{border-radius:39% 33% 38% 34% / 48% 53% 47% 52%}50%{border-radius:33% 39% 34% 38% / 52% 47% 53% 48%}75%{border-radius:37% 35% 39% 33% / 49% 52% 48% 51%}}" +
+    "@media(max-width:860px){.hfw-step{display:none}.hfw-badge{margin-right:auto}}" +
+    "@media(max-width:560px){.hfw{--ow:112px;--oh:70px;--ot:10px}.hfw-badge{letter-spacing:.03em;padding:.4rem .6rem;font-size:11px;gap:.4rem}}" +
+    "@media(prefers-reduced-motion:reduce){.hfw-orb{animation:none;transform:none}.hfw-cast,.hfw-back::before{animation:none}}" +
     "body.hfw-open .hfc{display:none!important}";
   var st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
 
@@ -128,6 +155,7 @@
     var stop = el("button", "hf-btn hfw-stop", "Stop"); stop.type = "button";            // "hf-btn" keeps the site's own click rule from ending hands-free twice
     stop.addEventListener("click", stopHandsFree);
     top.append(badge, stepEl, stop); root.appendChild(top);
+    if (ORB) buildOrb();
 
     var stage = el("div", "hfw-stage"); root.appendChild(stage);
     KEYS.forEach(function (k, i) {
@@ -236,12 +264,79 @@
     var i = KEYS.indexOf(ta.id.replace(/^year\d-/, "")); return i;
   }
 
+  /* ---------- the liquid glass orb ---------- */
+  var orbEl = null, orbCv = null, orbCtx = null;
+  var PALETTE = [[0, "#2d4bff"], [.17, "#1fb6ff"], [.33, "#2fe3c8"], [.48, "#ffe35a"], [.63, "#ff8a2e"], [.78, "#ff3d5a"], [.9, "#b25cff"], [1, "#2d4bff"]];
+  var CAN_FILTER = (function () { try { return "filter" in document.createElement("canvas").getContext("2d"); } catch (e) { return false; } })();
+  function lensMap() {                                           // a picture that tells the browser how to bend the light: calm in the middle, strongest at the rim and strongest along the bottom edge
+    var N = 192, c = document.createElement("canvas"); c.width = c.height = N;
+    var x = c.getContext("2d"), im = x.createImageData(N, N);
+    for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) {
+      var nx = (i + .5) / N * 2 - 1, ny = (j + .5) / N * 2 - 1, r = Math.sqrt(nx * nx + ny * ny), m = r >= 1 ? 0 : Math.pow(r, 2.6);
+      var dx = r ? nx / r : 0, dy = r ? ny / r : 0, k = (j * N + i) * 4, down = 1 + .35 * Math.max(0, ny);
+      im.data[k] = 128 - dx * m * 127 * .8; im.data[k + 1] = 128 - Math.max(-1, Math.min(1, dy * m * down)) * 127; im.data[k + 2] = 128; im.data[k + 3] = 255;
+    }
+    x.putImageData(im, 0, 0); return c.toDataURL("image/png");
+  }
+  function buildOrb() {
+    if (CHROMIUM && !document.getElementById("hfw-refract")) {
+      var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("width", "0"); svg.setAttribute("height", "0"); svg.setAttribute("aria-hidden", "true"); svg.style.cssText = "position:absolute;width:0;height:0;pointer-events:none";
+      // the light is bent a little differently for red, green and blue, so the edge breaks into colour like real glass
+      var ch = function (id, sc, mat) {
+        return '<feDisplacementMap in="SourceGraphic" in2="m" scale="' + sc + '" xChannelSelector="R" yChannelSelector="G" result="d' + id + '"/>' +
+               '<feColorMatrix in="d' + id + '" type="matrix" values="' + mat + '" result="c' + id + '"/>';
+      };
+      svg.innerHTML = '<filter id="hfw-refract" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">' +
+        '<feImage id="hfw-map" x="0" y="0" width="156" height="96" preserveAspectRatio="none" result="m"/>' +
+        ch("r", 112, "1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0") + ch("g", 104, "0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0") + ch("b", 96, "0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0") +
+        '<feBlend in="cr" in2="cg" mode="screen" result="rg"/><feBlend in="rg" in2="cb" mode="screen"/></filter>';
+      document.body.appendChild(svg);
+      var fe = svg.querySelector("feImage"), url = lensMap(); fe.setAttribute("href", url); fe.setAttributeNS("http://www.w3.org/1999/xlink", "href", url);
+    }
+    root.appendChild(el("div", "hfw-cast")).setAttribute("aria-hidden", "true");
+    orbEl = el("div", "hfw-orb" + (CHROMIUM ? " refract" : "")); orbEl.setAttribute("aria-hidden", "true");
+    orbCv = el("canvas"); orbCtx = orbCv.getContext("2d");
+    orbEl.append(orbCv, el("span", "hfw-orb-hi"));
+    root.appendChild(orbEl);
+  }
+  function syncOrb() {                                           // the bending picture must be exactly as big as the orb
+    var fe = document.getElementById("hfw-map"); if (!fe || !orbEl) return;
+    fe.setAttribute("width", orbEl.offsetWidth || 156); fe.setAttribute("height", orbEl.offsetHeight || 96);
+  }
+  function ribbon(c, W, H, s, v, dpr, o) {                       // one soft colour ribbon that follows the voice
+    var shift = ((s * o.drift) % 1) * W;
+    var g = c.createLinearGradient(-W - shift, 0, 2 * W - shift, 0);
+    for (var rep = 0; rep < 3; rep++) PALETTE.forEach(function (st) { g.addColorStop(Math.min(1, (rep + st[0]) / 3), st[1]); });
+    var amp = (.05 + v * .26) * H * o.amp, base = H * o.y;
+    c.beginPath();
+    for (var x = -4 * dpr, first = true; x <= W + 4 * dpr; x += 3 * dpr) {
+      var nx = x / W, env = .35 + .65 * Math.pow(Math.sin(Math.PI * Math.min(1, Math.max(0, nx))), .8);
+      var y = base + (Math.sin(nx * o.f * 6.283 + s * o.sp) + .5 * Math.sin(nx * o.f * 11.7 - s * o.sp * 1.6 + o.ph)) * amp * env / 1.5;
+      if (first) { c.moveTo(x, y); first = false; } else c.lineTo(x, y);
+    }
+    c.strokeStyle = g; c.lineWidth = o.w * dpr * (1 + v * .2);
+    c.globalAlpha = o.a;
+    if (CAN_FILTER) c.filter = "blur(" + (o.b * dpr) + "px)";
+    c.stroke(); c.filter = "none"; c.globalAlpha = 1;
+  }
+  function drawOrb(t, v) {                                       // the sound inside the orb: bright ribbons that swell and ripple with the voice
+    if (!orbCv) return;
+    var dpr = Math.min(2, window.devicePixelRatio || 1), W = Math.round((orbEl.offsetWidth || 156) * dpr), H = Math.round((orbEl.offsetHeight || 96) * dpr);
+    if (orbCv.width !== W || orbCv.height !== H) { orbCv.width = W; orbCv.height = H; }
+    var c = orbCtx; c.clearRect(0, 0, W, H); c.globalCompositeOperation = "source-over"; c.lineCap = c.lineJoin = "round";
+    var s = t / 1000, k = H / 96;
+    ribbon(c, W, H, s, v, dpr, { y: .64, amp: .3, f: 1.1, sp: 1.5, ph: 0, w: 22 * k, a: .3, b: 12 * k, drift: .05 });
+    ribbon(c, W, H, s, v, dpr, { y: .62, amp: .27, f: 1.5, sp: -1.2, ph: 1.7, w: 9 * k, a: .38, b: 6 * k, drift: -.07 });
+    ribbon(c, W, H, s, v, dpr, { y: .63, amp: .24, f: 1.3, sp: 1.9, ph: 3.1, w: 2.4 * k, a: .45, b: 1.6 * k, drift: .09 });
+  }
+
   /* ---------- the voice glow ---------- */
   var A = { raf: 0, ctx: null, stream: null, an: null, data: null, lvl: 0, pulse: 0, t0: 0, dead: true };
   function startAudio() {
     stopAudio(); A.dead = false; A.t0 = performance.now(); A.lvl = 0; A.pulse = 0;
-    if (!GLOW) return;
-    if (reduce) { root.style.setProperty("--lvl", ".25"); return; }
+    if (!GLOW && !ORB) return;
+    if (reduce) { root.style.setProperty("--lvl", ".25"); if (ORB) drawOrb(0, .18); return; }
     if (!isMobile && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {        // phones: the microphone is busy with speech recognition, so pulses stand in
       var me = A;
       navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
@@ -264,7 +359,9 @@
       A.lvl += (target - A.lvl) * (target > A.lvl ? .5 : .12);
       A.pulse *= .93;
       var idle = .1 + .05 * Math.sin((now - A.t0) / 650);                                      // a calm breathing glow while it listens
-      root.style.setProperty("--lvl", Math.max(A.lvl, A.pulse, idle).toFixed(3));
+      var lv = Math.max(A.lvl, A.pulse, idle);
+      root.style.setProperty("--lvl", lv.toFixed(3));
+      if (ORB) drawOrb(now, lv);
       A.raf = requestAnimationFrame(tick);
     })(performance.now());
   }
@@ -296,6 +393,7 @@
     layout();
     setTimeout(function () { cards.forEach(function (c) { c.style.transitionDelay = ""; }); }, 900);
     isOpen = true; document.body.classList.add("hfw-open"); root.classList.add("on");
+    syncOrb();
     startAudio(); say("");
   }
   function closeNow() {
@@ -376,6 +474,6 @@
   }, true);
 
   document.addEventListener("keydown", function (e) { if (isOpen && e.key === "Escape") { e.preventDefault(); stopHandsFree(); } });
-  window.addEventListener("resize", function () { if (isOpen) layout(); });
+  window.addEventListener("resize", function () { if (isOpen) { layout(); syncOrb(); } });
   window.addEventListener("pagehide", stopAudio);
 })();
