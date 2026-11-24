@@ -18,7 +18,8 @@
   var CFG = (window.IPT_CONFIG && window.IPT_CONFIG.handsFreeWindow) || {};
   if (CFG.enabled === false) return;
   var GLOW = CFG.glow !== false;
-  var ORB = CFG.orb !== false;                                       // the liquid glass orb with the sound wave at the top
+  var ORB = false;                                                    // the orb has been taken out; kept off for good
+  var _orbUnused = CFG.orb;                                       // the liquid glass orb with the sound wave at the top
   var CHROMIUM = /Chrome\/|Chromium\//.test(navigator.userAgent) && !/iPhone|iPad|iPod|CriOS|FxiOS/.test(navigator.userAgent);   // only these can bend what is behind the orb
   var reduce = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
   var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -43,10 +44,10 @@
     /* the voice glow along the bottom edge */
     ".hfw-glow{position:absolute;left:-8%;right:-8%;bottom:0;height:96vh;pointer-events:none;transform-origin:50% 100%;" +
       "transform:scaleY(calc(.4 + var(--lvl)*.8));opacity:calc(.3 + var(--lvl)*.42);will-change:transform,opacity;overflow:visible}" +
-    ".hfw-glow i{position:absolute;inset:0;display:block;filter:blur(54px) saturate(1.25);mix-blend-mode:screen;animation:hfwDrift 9s ease-in-out infinite alternate;" +
+    ".hfw-glow i{position:absolute;inset:0;display:block;filter:blur(54px) saturate(1.25);mix-blend-mode:screen;animation:hfwDrift 16s ease-in-out infinite alternate;" +
       "background:radial-gradient(58% 92% at 14% 110%,#52d9ca 0,rgba(82,217,202,0) 78%),radial-gradient(56% 96% at 44% 114%,var(--b) 0,rgba(101,143,241,0) 78%)," +
       "radial-gradient(52% 90% at 74% 110%,#a183ee 0,rgba(161,131,238,0) 78%),radial-gradient(44% 84% at 94% 110%,var(--a) 0,rgba(255,243,123,0) 76%)}" +
-    ".hfw-glow i+i{animation-duration:13s;animation-direction:alternate-reverse;opacity:.65;filter:blur(80px) saturate(1.3)}" +
+    ".hfw-glow i+i{animation-duration:23s;animation-direction:alternate-reverse;opacity:.65;filter:blur(80px) saturate(1.3)}" +
     ".hfw-edge{position:absolute;left:0;right:0;bottom:0;height:calc(3px + var(--lvl)*7px);pointer-events:none;opacity:calc(.55 + var(--lvl)*.45);" +
       "background:linear-gradient(90deg,#52d9ca,var(--b),#a183ee,var(--a),#52d9ca);background-size:300% 100%;animation:hfwSlide 6s linear infinite;" +
       "box-shadow:0 0 calc(10px + var(--lvl)*34px) rgba(121,235,221,.8)}" +
@@ -334,7 +335,7 @@
   /* ---------- the voice glow ---------- */
   var A = { raf: 0, ctx: null, stream: null, an: null, data: null, lvl: 0, pulse: 0, t0: 0, dead: true };
   function startAudio() {
-    stopAudio(); A.dead = false; A.t0 = performance.now(); A.lvl = 0; A.pulse = 0;
+    stopAudio(); A.dead = false; A.t0 = performance.now(); A.lvl = 0; A.pulse = 0; A.sm = null;
     if (!GLOW && !ORB) return;
     if (reduce) { root.style.setProperty("--lvl", ".25"); if (ORB) drawOrb(0, .18); return; }
     if (!isMobile && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {        // phones: the microphone is busy with speech recognition, so pulses stand in
@@ -356,10 +357,12 @@
         var sum = 0; for (var i = 0; i < A.data.length; i++) { var v = (A.data[i] - 128) / 128; sum += v * v; }
         target = Math.min(1, Math.sqrt(sum / A.data.length) * 7);
       }
-      A.lvl += (target - A.lvl) * (target > A.lvl ? .5 : .12);
-      A.pulse *= .93;
-      var idle = .1 + .05 * Math.sin((now - A.t0) / 650);                                      // a calm breathing glow while it listens
-      var lv = Math.max(A.lvl, A.pulse, idle);
+      A.lvl += (target - A.lvl) * (target > A.lvl ? .14 : .045);
+      A.pulse *= .965;
+      var idle = .1 + .05 * Math.sin((now - A.t0) / 1100);                                      // a calm breathing glow while it listens
+      var want = Math.max(A.lvl, A.pulse, idle);
+      A.sm = (A.sm == null ? want : A.sm) + (want - (A.sm == null ? want : A.sm)) * (want > A.sm ? .12 : .05);   // one last glide so nothing ever jumps
+      var lv = A.sm;
       root.style.setProperty("--lvl", lv.toFixed(3));
       if (ORB) drawOrb(now, lv);
       A.raf = requestAnimationFrame(tick);
