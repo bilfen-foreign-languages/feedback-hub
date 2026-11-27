@@ -590,6 +590,7 @@ function setupDictation() {
         rec.continuous = !isMobile;
         rec.interimResults = !isMobile;
         rec.onresult = event => {
+          dbg("text received: " + (event.results[event.results.length - 1][0].transcript || ""));
           if (mySession !== session && activeTextarea === textarea) return;   // a newer session owns this box
           if (activeTextarea === textarea) { armSilence(SILENCE_AFTER_SPEECH_MS); pulseMeter(); }   // words are still coming in
           const live = hf.on && activeTextarea === textarea;                       // hands-free: listen for spoken commands
@@ -615,8 +616,15 @@ function setupDictation() {
           }
           if (command && live) setTimeout(() => hfCommand(command), 60);
         };
+        // Diagnostics: shows which step of speech recognition is reached (remove once dictation works)
+        const dbg = t => { if (feedback && activeTextarea === textarea) feedback.textContent = "[mic] " + t; console.log("[dictation]", t); };
+        rec.onstart = () => dbg("recognition started");
+        rec.onaudiostart = () => dbg("microphone audio is reaching the recogniser, now speak");
+        rec.onsoundstart = () => dbg("sound detected");
+        rec.onnomatch = () => dbg("heard sound but could not match words");
         rec.onspeechstart = () => { if (activeTextarea === textarea) { armSilence(SILENCE_AFTER_SPEECH_MS); pulseMeter(); } };
         rec.onerror = event => {
+          console.log("[dictation] error", event.error);
           if (event.error === "not-allowed" || event.error === "service-not-allowed") {
             wantListening = false;
             feedback.textContent = "Microphone access was blocked.";
