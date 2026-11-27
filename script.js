@@ -617,6 +617,7 @@ function setupDictation() {
         rec.continuous = !isMobile;
         rec.interimResults = !isMobile;
         rec.onresult = event => {
+          gotText = true; clearTimeout(silentTimer);
           dbg("text received: " + (event.results[event.results.length - 1][0].transcript || ""));
           if (mySession !== session && activeTextarea === textarea) return;   // a newer session owns this box
           if (activeTextarea === textarea) { armSilence(SILENCE_AFTER_SPEECH_MS); pulseMeter(); }   // words are still coming in
@@ -644,10 +645,20 @@ function setupDictation() {
           if (command && live) setTimeout(() => hfCommand(command), 60);
         };
         // Diagnostics: shows which step of speech recognition is reached (remove once dictation works)
-        const dbg = t => { if (feedback && activeTextarea === textarea) feedback.textContent = "[mic] " + t; console.log("[dictation]", t); };
+        const DEBUG_MIC = /[?&]mic=1\b/.test(location.search);                 // add ?mic=1 to the address to show the diagnostic line
+        let heardSound = false, gotText = false, silentTimer = 0;
+        const dbg = t => { console.log("[dictation]", t); if (DEBUG_MIC && feedback && activeTextarea === textarea) feedback.textContent = "[mic] " + t; };
+        // Chrome heard sound but never returned words (seen on some school-managed Chrome profiles): say so instead of staying silent
+        const armSilentFailure = () => {
+          clearTimeout(silentTimer);
+          silentTimer = setTimeout(() => {
+            if (heardSound && !gotText && activeTextarea === textarea && recognition === rec && !hf.on)
+              feedback.textContent = "Voice input is not working? In Chrome, turn on Live Caption (Settings → Accessibility → Live Caption), restart Chrome and try again. You can keep typing your answer in the meantime.";
+          }, 6000);
+        };
         rec.onstart = () => dbg(local ? "recognition started (on-device)" : "recognition started (online)");
         rec.onaudiostart = () => dbg("microphone audio is reaching the recogniser, now speak");
-        rec.onsoundstart = () => dbg("sound detected");
+        rec.onsoundstart = () => { heardSound = true; armSilentFailure(); dbg("sound detected"); };
         rec.onnomatch = () => dbg("heard sound but could not match words");
         rec.onspeechstart = () => { if (activeTextarea === textarea) { armSilence(SILENCE_AFTER_SPEECH_MS); pulseMeter(); } };
         rec.onerror = event => {
@@ -660,7 +671,7 @@ function setupDictation() {
           } else if (event.error === "audio-capture") {
             feedback.textContent = "No working microphone was found. Check which microphone your browser is using.";
           } else if (event.error !== "aborted" && event.error !== "no-speech") {
-            feedback.textContent = "Voice input is unavailable (" + event.error + ").";
+            feedback.textContent = "Voice input is unavailable (" + event.error + "). Try turning on Live Caption in Chrome (Settings → Accessibility → Live Caption) and restart Chrome.";
           }
         };
         rec.onend = () => {
