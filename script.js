@@ -512,42 +512,32 @@ function setupDictation() {
     }, ms);
   };
 
-  /* ----- Desktop: the glow around "Stop" follows how loud you speak (sets --voice from 0 to 1 on the button's wrapper) ----- */
+  /* ----- The glow around "Stop" pulses when speech arrives (sets --voice from 0 to 1 on the button's wrapper).
+     It must NOT open its own microphone stream: a second capture can starve speech recognition, so the mic would
+     "work" but no text would appear. The recognizer's own events drive the glow instead. ----- */
   const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let meter = null;
   function stopMeter() {
     if (!meter) return;
     const m = meter; meter = null;
     m.dead = true; cancelAnimationFrame(m.raf);
-    try { m.stream && m.stream.getTracks().forEach(t => t.stop()); } catch (err) {}
-    try { m.ctx && m.ctx.close(); } catch (err) {}
     if (m.wrap) { m.wrap.classList.remove("is-voice"); m.wrap.style.removeProperty("--voice"); }
   }
   function startMeter(wrap) {
     stopMeter();
-    if (isMobile || reduceMotion || !wrap || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
-    const m = meter = { wrap, dead: false, raf: 0, stream: null, ctx: null };
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-      if (m.dead) { stream.getTracks().forEach(t => t.stop()); return; }       // dictation ended before the mic opened
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) { stream.getTracks().forEach(t => t.stop()); return; }
-      m.stream = stream; m.ctx = new AC();
-      const analyser = m.ctx.createAnalyser(); analyser.fftSize = 512; analyser.smoothingTimeConstant = 0.6;
-      m.ctx.createMediaStreamSource(stream).connect(analyser);
-      const data = new Uint8Array(analyser.fftSize); let level = 0;
-      wrap.classList.add("is-voice");
-      const tick = () => {
-        if (m.dead) return;
-        analyser.getByteTimeDomainData(data);
-        let sum = 0; for (let i = 0; i < data.length; i++) { const v = (data[i] - 128) / 128; sum += v * v; }
-        const target = Math.min(1, Math.sqrt(sum / data.length) * 7);          // quiet room ~0, normal speech ~0.5-1
-        level += (target - level) * (target > level ? 0.5 : 0.12);              // rises fast, falls slowly
-        wrap.style.setProperty("--voice", level.toFixed(3));
-        m.raf = requestAnimationFrame(tick);
-      };
-      tick();
-    }).catch(() => { m.dead = true; });                                         // no mic access: the glow simply stays off
+    if (reduceMotion || !wrap) return;
+    const m = meter = { wrap, dead: false, raf: 0, level: 0, t0: performance.now() };
+    wrap.classList.add("is-voice");
+    const tick = now => {
+      if (m.dead) return;
+      const idle = 0.12 + 0.06 * Math.sin((now - m.t0) / 900);                  // a calm breathing glow while listening
+      m.level *= 0.94;                                                            // pulses fade away smoothly
+      wrap.style.setProperty("--voice", Math.max(m.level, idle).toFixed(3));
+      m.raf = requestAnimationFrame(tick);
+    };
+    m.raf = requestAnimationFrame(tick);
   }
+  function pulseMeter() { if (meter) meter.level = Math.min(1, 0.55 + Math.random() * 0.45); }
 
   function resetButton() {
     clearSilence(); stopMeter();
@@ -601,7 +591,7 @@ function setupDictation() {
         rec.interimResults = !isMobile;
         rec.onresult = event => {
           if (mySession !== session && activeTextarea === textarea) return;   // a newer session owns this box
-          if (activeTextarea === textarea) armSilence(SILENCE_AFTER_SPEECH_MS);   // words are still coming in
+          if (activeTextarea === textarea) { armSilence(SILENCE_AFTER_SPEECH_MS); pulseMeter(); }   // words are still coming in
           const live = hf.on && activeTextarea === textarea;                       // hands-free: listen for spoken commands
           let command = null;
           if (isMobile) {
@@ -625,13 +615,17 @@ function setupDictation() {
           }
           if (command && live) setTimeout(() => hfCommand(command), 60);
         };
-        rec.onspeechstart = () => { if (activeTextarea === textarea) armSilence(SILENCE_AFTER_SPEECH_MS); };
+        rec.onspeechstart = () => { if (activeTextarea === textarea) { armSilence(SILENCE_AFTER_SPEECH_MS); pulseMeter(); } };
         rec.onerror = event => {
           if (event.error === "not-allowed" || event.error === "service-not-allowed") {
             wantListening = false;
             feedback.textContent = "Microphone access was blocked.";
+          } else if (event.error === "network") {
+            feedback.textContent = "Speech recognition needs an internet connection (Chrome or Edge send the audio to an online service). Check your connection and try again.";
+          } else if (event.error === "audio-capture") {
+            feedback.textContent = "No working microphone was found. Check which microphone your browser is using.";
           } else if (event.error !== "aborted" && event.error !== "no-speech") {
-            feedback.textContent = "Voice input is unavailable.";
+            feedback.textContent = "Voice input is unavailable (" + event.error + ").";
           }
         };
         rec.onend = () => {
