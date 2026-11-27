@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Speech recognition test</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 760px; margin: 24px auto; padding: 0 16px; line-height: 1.5; }
+  button { font-size: 16px; padding: 10px 18px; margin: 4px 6px 4px 0; cursor: pointer; }
+  pre { background: #f3f4f6; padding: 12px; border-radius: 8px; white-space: pre-wrap; min-height: 160px; font-size: 14px; }
+  .note { color: #555; font-size: 14px; }
+</style>
+</head>
+<body>
+<h1>Speech recognition test</h1>
+<p class="note">Open this page in each Chrome profile, press a button, speak when it says SPEAK NOW (8 seconds), then use "Copy results" and paste them to me.</p>
+<div>
+  <button data-lang="en-US" data-local="0">English (online)</button>
+  <button data-lang="en-US" data-local="1">English (on-device)</button>
+  <button data-lang="tr-TR" data-local="0">Turkish (online)</button>
+  <button id="copy">Copy results</button>
+</div>
+<pre id="out"></pre>
+<script>
+(function () {
+  var out = document.getElementById("out");
+  function log(t) { out.textContent += t + "\n"; }
+  var R = window.SpeechRecognition || window.webkitSpeechRecognition;
+  log("Chrome: " + ((navigator.userAgent.match(/Chrome\/[\d.]+/) || ["?"])[0]));
+  log("navigator.languages: " + navigator.languages.join(","));
+  log("Secure context: " + window.isSecureContext + " | in iframe: " + (window.top !== window.self));
+  if (!R) { log("SpeechRecognition is NOT available in this browser."); return; }
+  if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+    navigator.mediaDevices.enumerateDevices().then(function (d) {
+      log("Mics: " + d.filter(function (x) { return x.kind === "audioinput"; }).map(function (x) { return x.label || "(no label)"; }).join(" | "));
+    });
+  }
+  if (typeof R.available === "function") {
+    ["en-US", "tr-TR"].forEach(function (l) {
+      Promise.resolve(R.available({ langs: [l], processLocally: true }))
+        .then(function (s) { log("On-device " + l + ": " + s); })
+        .catch(function (e) { log("On-device " + l + " check failed: " + e.message); });
+    });
+  } else { log("On-device recognition API: not supported"); }
+
+  var busy = false;
+  function test(lang, local) {
+    if (busy) return; busy = true;
+    var r = new R(); r.lang = lang; r.continuous = false; r.interimResults = true;
+    var tag = lang + (local ? " (on-device)" : " (online)");
+    if (local) { try { r.processLocally = true; } catch (e) {} }
+    var done = false;
+    function finish(why) {
+      if (done) return; done = true; log(tag + " -> " + why);
+      try { r.abort(); } catch (e) {} busy = false;
+    }
+    ["start", "audiostart", "soundstart", "speechstart", "speechend", "soundend", "audioend", "nomatch", "end"].forEach(function (n) {
+      r.addEventListener(n, function () { log(tag + " " + n); });
+    });
+    r.onresult = function (e) { log(tag + " TEXT: " + e.results[e.results.length - 1][0].transcript); };
+    r.onerror = function (e) { finish("ERROR: " + e.error + " " + (e.message || "")); };
+    r.onend = function () { finish("ended"); };
+    log("\n>>> SPEAK NOW (" + tag + ") for 8 seconds");
+    try { r.start(); } catch (e) { finish("start failed: " + e.message); return; }
+    setTimeout(function () { finish("TIMED OUT after 8s"); }, 8000);
+  }
+  document.querySelectorAll("button[data-lang]").forEach(function (b) {
+    b.addEventListener("click", function () { test(b.dataset.lang, b.dataset.local === "1"); });
+  });
+  document.getElementById("copy").addEventListener("click", function () {
+    var t = out.textContent;
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(
+      function () { log("(copied)"); },
+      function () { var s = document.createRange(); s.selectNodeContents(out); var sel = getSelection(); sel.removeAllRanges(); sel.addRange(s); log("(select all done: press Ctrl+C)"); });
+  });
+})();
+</script>
+</body>
+</html>
