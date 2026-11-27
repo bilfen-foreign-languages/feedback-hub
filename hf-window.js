@@ -409,7 +409,7 @@
     stopAudio(); A.dead = false; A.t0 = performance.now(); A.lvl = 0; A.pulse = 0; A.sm = null; satE = 0;
     if (!GLOW && !ORB && !SAT) return;
     if (reduce) { root.style.setProperty("--lvl", ".25"); if (ORB) drawOrb(0, .18); if (SAT) drawSaturn(0, 0); return; }
-    if (!isMobile && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {        // phones: the microphone is busy with speech recognition, so pulses stand in
+    if (false && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {        // disabled: a second mic capture can starve speech recognition; speech events drive the glow (see pulse below). Was: phones: the microphone is busy with speech recognition, so pulses stand in
       var me = A;
       navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
         if (me.dead || me !== A) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
