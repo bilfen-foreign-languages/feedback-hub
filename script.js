@@ -491,6 +491,32 @@ function setupDictation() {
     return;
   }
   const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  /* ----- On-device recognition (recent Chrome): runs without Google's online speech service.
+     Used for English when the language pack is installed; otherwise the normal online recogniser is used. ----- */
+  const SPEECH_LANG = "en-US";
+  let localState = "unknown";                       // unknown | unsupported | unavailable | downloadable | downloading | available
+  let localInstalling = false;
+  (function detectLocal() {
+    try {
+      if (typeof Recognition.available !== "function") { localState = "unsupported"; return; }
+      Promise.resolve(Recognition.available({ langs: [SPEECH_LANG], processLocally: true }))
+        .then(st => { localState = st || "unavailable"; console.log("[dictation] on-device English:", localState); })
+        .catch(() => { localState = "unsupported"; });
+    } catch (err) { localState = "unsupported"; }
+  })();
+  function useLocal(rec) {
+    try {
+      if (localState === "available" && "processLocally" in rec) { rec.processLocally = true; return true; }
+      if (localState === "downloadable" && !localInstalling && typeof Recognition.install === "function") {
+        localInstalling = true;                      // download the English pack in the background for next time
+        Promise.resolve(Recognition.install({ langs: [SPEECH_LANG], processLocally: true }))
+          .then(() => { localState = "available"; console.log("[dictation] on-device English installed"); })
+          .catch(() => { localInstalling = false; });
+      }
+    } catch (err) {}
+    return false;
+  }
   let activeButton = null, activeTextarea = null, activeFeedback = null, recognition = null, wantListening = false, session = 0;
   // Dictation switches itself off after a long silence (so the mic is never left open by accident)
   const SILENCE_AFTER_SPEECH_MS = 6000;   // quiet for this long after the last words: stop
@@ -586,7 +612,8 @@ function setupDictation() {
         const rec = new Recognition();
         const recId = ++recCounter;
         recognition = rec;
-        rec.lang = "en-US";
+        rec.lang = SPEECH_LANG;
+        const local = useLocal(rec);
         rec.continuous = !isMobile;
         rec.interimResults = !isMobile;
         rec.onresult = event => {
@@ -618,7 +645,7 @@ function setupDictation() {
         };
         // Diagnostics: shows which step of speech recognition is reached (remove once dictation works)
         const dbg = t => { if (feedback && activeTextarea === textarea) feedback.textContent = "[mic] " + t; console.log("[dictation]", t); };
-        rec.onstart = () => dbg("recognition started");
+        rec.onstart = () => dbg(local ? "recognition started (on-device)" : "recognition started (online)");
         rec.onaudiostart = () => dbg("microphone audio is reaching the recogniser, now speak");
         rec.onsoundstart = () => dbg("sound detected");
         rec.onnomatch = () => dbg("heard sound but could not match words");
@@ -773,7 +800,8 @@ function setupDictation() {
     const y = hf.y;
     const rec = new Recognition();
     hf.cmdRec = rec;
-    rec.lang = "en-US";
+    rec.lang = SPEECH_LANG;
+    useLocal(rec);
     rec.continuous = !isMobile;
     rec.interimResults = false;
     rec.onresult = ev => {
